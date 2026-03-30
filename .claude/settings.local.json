@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(awk 'NR>=720 && NR<=900' \"/Users/charming/Downloads/minutely \\(11\\).html\")",
+      "Bash(wc -l \"/Users/charming/Downloads/minutely \\(11\\).html\")",
+      "Bash(npm install:*)",
+      "Bash(npx tsc:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(lsof -ti:5173)",
+      "Bash(echo \"Exit: $?\")",
+      "Bash(echo ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY:0:20...)",
+      "Bash(printenv)",
+      "Bash(lsof -ti:3001)",
+      "Bash(curl -s -X POST http://localhost:3001/api/coach -H 'Content-Type: application/json' -d '{\"\"\"\"blocks\"\"\"\":[],\"\"\"\"date\"\"\"\":\"\"\"\"2026-03-25\"\"\"\"}')",
+      "Bash(find /Users/charming/Documents/minutely/server -name *.ts -not -path */node_modules/*)",
+      "Bash(/Users/charming/Documents/minutely/src/index.css:*)",
+      "Bash(echo \"Exit code: $?\")",
+      "Bash(npx vite:*)",
+      "Bash(npx postcss:*)",
+      "Bash(node -e \":*)"
+    ]
+  }
+}
