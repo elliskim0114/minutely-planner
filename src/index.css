@@ -2615,3 +2615,14 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
   border-radius:4px;padding:1px 5px;
   font-family:var(--font-m);font-size:10px;color:var(--ink3);
 }
+
+
+/* remove onboarding internal scrollbar */
+.ob-profile-card {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.ob-profile-card::-webkit-scrollbar {
+  display: none;
+}
