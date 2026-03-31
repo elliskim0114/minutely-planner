@@ -207,10 +207,10 @@ export default function Onboarding() {
       if (userId) {
         const { error } = await supabase
           .from('planner_profiles')
-          .upsert({
-            user_id: userId,
+          .update({
             onboarding_completed: true,
-          }, { onConflict: 'user_id' })
+          })
+          .eq('user_id', userId)
 
         if (error) {
           setSignInError(error.message)
