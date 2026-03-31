@@ -397,7 +397,7 @@ export default function App() {
 
   if (authLoading) return null
   if (!session) return <Onboarding />
-  if (!profile?.onboarding_completed) return <Onboarding />
+  if (!profile?.onboarding_completed && !onboarded) return <Onboarding />
   if (!tourDone) return <FeatureTour onDone={completeTour} />
 
   return (
