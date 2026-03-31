@@ -200,25 +200,6 @@ export default function Onboarding() {
         }
       : null
 
-    if (supabaseConfigured) {
-      const { data: { session } } = await supabase.auth.getSession()
-      const userId = session?.user?.id
-
-      if (userId) {
-        const { error } = await supabase
-          .from('planner_profiles')
-          .update({
-            onboarding_completed: true,
-          })
-          .eq('user_id', userId)
-
-        if (error) {
-          setSignInError(error.message)
-          return
-        }
-      }
-    }
-
     finishOnboarding({ mode, cfg: { tf, ds, de, ws: wsVal }, userName, userEmail, perfectDay: [], userProfile: profile })
 
     selectedGoals.forEach(i => {
@@ -227,6 +208,30 @@ export default function Onboarding() {
     })
     if (customGoal.trim()) {
       addGoal({ name: customGoal.trim(), color: customGoalColor, targetHours: 10 })
+    }
+
+    if (supabaseConfigured) {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        const userId = session?.user?.id
+
+        if (userId) {
+          const { error } = await supabase
+            .from('planner_profiles')
+            .upsert({
+              user_id: userId,
+              data: {},
+              onboarding_completed: true,
+              updated_at: new Date().toISOString(),
+            }, { onConflict: 'user_id' })
+
+          if (error) {
+            console.error('Failed to save onboarding_completed:', error)
+          }
+        }
+      } catch (err) {
+        console.error('Failed to save onboarding_completed:', err)
+      }
     }
   }
 
