@@ -396,8 +396,8 @@ export default function App() {
   }, [cfg.ds, cfg.de])
 
   if (authLoading) return null
-  if (!session) return <Onboarding />
-  if (!profile?.onboarding_completed && !onboarded) return <Onboarding />
+  if (!onboarded && !session) return <Onboarding />
+  if (!onboarded && session && !profile?.onboarding_completed) return <Onboarding />
   if (!tourDone) return <FeatureTour onDone={completeTour} />
 
   return (
