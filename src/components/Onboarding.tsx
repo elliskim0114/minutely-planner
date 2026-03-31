@@ -189,7 +189,7 @@ export default function Onboarding() {
     goTo('s2')
   }
 
-  const finishSetup = async () => {
+  const finishSetup = () => {
     const profile: UserProfile | null = (occupation.trim() || energyPattern || selectedLifestyle.size > 0 || selectedChallenges.size > 0 || profileBio.trim())
       ? {
           occupation: occupation.trim(),
@@ -208,30 +208,6 @@ export default function Onboarding() {
     })
     if (customGoal.trim()) {
       addGoal({ name: customGoal.trim(), color: customGoalColor, targetHours: 10 })
-    }
-
-    if (supabaseConfigured) {
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        const userId = session?.user?.id
-
-        if (userId) {
-          const { error } = await supabase
-            .from('planner_profiles')
-            .upsert({
-              user_id: userId,
-              data: {},
-              onboarding_completed: true,
-              updated_at: new Date().toISOString(),
-            }, { onConflict: 'user_id' })
-
-          if (error) {
-            console.error('Failed to save onboarding_completed:', error)
-          }
-        }
-      } catch (err) {
-        console.error('Failed to save onboarding_completed:', err)
-      }
     }
   }
 
