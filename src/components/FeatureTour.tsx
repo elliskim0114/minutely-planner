@@ -104,7 +104,7 @@ export default function FeatureTour({ onDone }: Props) {
           </div>
           <div className="ft-body">
             {bodyText.split('\n').map((line, i) => <p key={i}>{line}</p>)}
-            {bodyText.length > 0 && bodyText.length < typingBody.length && }
+            
           </div>
         </div>
 
