@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useStore } from './store'
 import { todayStr, toM } from './utils'
+import { supabase } from './supabase'
 import Onboarding from './components/Onboarding'
 import Sidebar from './components/Sidebar'
 import Topbar from './components/Topbar'
@@ -62,6 +63,55 @@ export default function App() {
 
   const [quickAddOpen, setQuickAddOpen] = useState(false)
   const [paletteOpen, setPaletteOpen] = useState(false)
+
+  const [session, setSession] = useState<any>(null)
+  const [profile, setProfile] = useState<any>(null)
+  const [authLoading, setAuthLoading] = useState(true)
+
+  useEffect(() => {
+    const loadAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      setSession(session)
+
+      if (session?.user) {
+        const { data } = await supabase
+          .from('planner_profiles')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .maybeSingle()
+
+        setProfile(data)
+      } else {
+        setProfile(null)
+      }
+
+      setAuthLoading(false)
+    }
+
+    loadAuth()
+
+    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
+      setSession(newSession)
+
+      if (newSession?.user) {
+        const { data } = await supabase
+          .from('planner_profiles')
+          .select('*')
+          .eq('user_id', newSession.user.id)
+          .maybeSingle()
+
+        setProfile(data)
+      } else {
+        setProfile(null)
+      }
+
+      setAuthLoading(false)
+    })
+
+    return () => {
+      listener.subscription.unsubscribe()
+    }
+  }, [])
 
   // Apply data-mode to <body> whenever mode changes
   useEffect(() => {
@@ -164,7 +214,6 @@ export default function App() {
     if (code && state === 'gcal_auth') {
       const verifier = sessionStorage.getItem('gcal_verifier')
       sessionStorage.removeItem('gcal_verifier')
-      // Clean URL
       window.history.replaceState({}, '', window.location.pathname)
       if (verifier) {
         import('./gcalUtils').then(async ({ exchangeCodeForToken, fetchGcalEvents }) => {
@@ -175,7 +224,7 @@ export default function App() {
             const events = await fetchGcalEvents(token.access_token)
             const s2 = useStore.getState()
             events.forEach(ev => {
-              if (!ev.start.dateTime) return // skip all-day
+              if (!ev.start.dateTime) return
               const date = ev.start.dateTime.slice(0, 10)
               const start = ev.start.dateTime.slice(11, 16)
               const end = ev.end.dateTime?.slice(11, 16) || start
@@ -191,8 +240,6 @@ export default function App() {
     }
   }, [])
 
-  // Notification chime — plays a soft tone 5 min before each block starts
-  // Also fires browser notifications if permission is granted
   const notifiedRef = useRef<Set<string>>(new Set())
   useEffect(() => {
     if (!notifSettings.blocks) return
@@ -204,7 +251,6 @@ export default function App() {
         if (b.date !== todayDate) return
         const [bh, bm] = b.start.split(':').map(Number)
         const blockMins = bh * 60 + bm
-        // Fire when we're within [4, 6] minutes of the block start
         const diff = blockMins - nowMins
         if (diff >= 4 && diff <= 6) {
           const key = `${b.id}-${b.start}`
@@ -227,7 +273,6 @@ export default function App() {
     return () => clearInterval(iv)
   }, [blocks, notifSettings.blocks])
 
-  // Gem reward — award a gem when a focus block completes naturally
   const activeFocusIdRef = useRef<number | null>(null)
   useEffect(() => {
     const check = () => {
@@ -238,7 +283,6 @@ export default function App() {
         b.date === td && toM(b.start) <= nowM && toM(b.end) > nowM && b.type === 'focus'
       )
       const liveId = liveBlock?.id ?? null
-      // If we were tracking a focus block and it's no longer active → it completed
       if (activeFocusIdRef.current !== null && activeFocusIdRef.current !== liveId) {
         useStore.getState().earnGem()
         useStore.getState().updateFocusStreak()
@@ -251,7 +295,6 @@ export default function App() {
     return () => clearInterval(iv)
   }, [blocks])
 
-  // Time blindness: nudge every 10 min when a block is active
   const tbnRef = useRef<Set<string>>(new Set())
   useEffect(() => {
     if (!timeBlindn) return
@@ -261,7 +304,6 @@ export default function App() {
       const td = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`
       const live = useStore.getState().blocks.find(b => b.date === td && toM(b.start) <= nowM && toM(b.end) > nowM)
       if (!live) return
-      // Fire at each 10-min mark within the block
       if (nowM % 10 === 0) {
         const key = `${live.id}-${nowM}`
         if (!tbnRef.current.has(key)) {
@@ -277,7 +319,6 @@ export default function App() {
     return () => clearInterval(iv)
   }, [timeBlindn])
 
-  // Mood prompt: fire when a block ends
   const moodFiredRef = useRef<Set<number>>(new Set())
   useEffect(() => {
     const check = () => {
@@ -285,7 +326,6 @@ export default function App() {
       const nowM = now.getHours() * 60 + now.getMinutes()
       const td = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`
       const s = useStore.getState()
-      // Find blocks that ended in the last 3 minutes and haven't been prompted
       s.blocks
         .filter(b => b.date === td)
         .forEach(b => {
@@ -302,7 +342,6 @@ export default function App() {
     return () => clearInterval(iv)
   }, [blocks])
 
-  // Morning brief browser notification — fires between 8:00–8:05 AM if app is open
   const morningFiredRef = useRef<string | null>(null)
   useEffect(() => {
     if (!notifSettings.morning) return
@@ -325,7 +364,6 @@ export default function App() {
     return () => clearInterval(iv)
   }, [notifSettings.morning])
 
-  // Day start / end greeting — fires at cfg.ds and cfg.de
   const greetingFiredRef = useRef<{ morning: string | null; evening: string | null; eodcheck: string | null }>({ morning: null, evening: null, eodcheck: null })
   useEffect(() => {
     const check = () => {
@@ -346,7 +384,6 @@ export default function App() {
         greetingFiredRef.current.evening = todayKey
         showGreeting('evening')
       }
-      // Check-in 1 hour before end of day
       const eodCheckM = endM - 60
       if (eodCheckM > startM && cur >= eodCheckM && cur <= eodCheckM + 4 && greetingFiredRef.current.eodcheck !== todayKey) {
         greetingFiredRef.current.eodcheck = todayKey
@@ -358,13 +395,14 @@ export default function App() {
     return () => clearInterval(iv)
   }, [cfg.ds, cfg.de])
 
-  if (!onboarded) return <Onboarding />
+  if (authLoading) return null
+  if (!session) return <Onboarding />
+  if (!profile?.onboarding_completed) return <Onboarding />
   if (!tourDone) return <FeatureTour onDone={completeTour} />
 
   return (
     <div id="app" className="on" data-mode={mode}>
       <Sidebar />
-      {/* Mobile overlay to close sidebar */}
       <div id="sb-overlay" onClick={() => useStore.getState().toggleSidebar()} />
       <div id="main">
         <Topbar />
@@ -425,11 +463,10 @@ export default function App() {
   )
 }
 
-// Soft chime via Web Audio API — no external library needed
 function playChime() {
   try {
     const ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
-    const notes = [523.25, 659.25, 783.99] // C5 E5 G5 major chord
+    const notes = [523.25, 659.25, 783.99]
     notes.forEach((freq, i) => {
       const osc = ctx.createOscillator()
       const gain = ctx.createGain()
