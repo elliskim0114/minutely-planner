@@ -189,7 +189,7 @@ export default function Onboarding() {
     goTo('s2')
   }
 
-  const finishSetup = () => {
+  const finishSetup = async () => {
     const profile: UserProfile | null = (occupation.trim() || energyPattern || selectedLifestyle.size > 0 || selectedChallenges.size > 0 || profileBio.trim())
       ? {
           occupation: occupation.trim(),
@@ -199,8 +199,28 @@ export default function Onboarding() {
           bio: profileBio.trim(),
         }
       : null
+
+    if (supabaseConfigured) {
+      const { data: { session } } = await supabase.auth.getSession()
+      const userId = session?.user?.id
+
+      if (userId) {
+        const { error } = await supabase
+          .from('planner_profiles')
+          .upsert({
+            user_id: userId,
+            onboarding_completed: true,
+          }, { onConflict: 'user_id' })
+
+        if (error) {
+          setSignInError(error.message)
+          return
+        }
+      }
+    }
+
     finishOnboarding({ mode, cfg: { tf, ds, de, ws: wsVal }, userName, userEmail, perfectDay: [], userProfile: profile })
-    // Add selected preset goals
+
     selectedGoals.forEach(i => {
       const g = GOAL_PRESETS[i]
       addGoal({ name: g.name, color: g.color, targetHours: g.targetHours })
