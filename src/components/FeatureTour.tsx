@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useStore } from '../store'
-import { useTypewriter } from '../hooks/useTypewriter'
 
 interface Props { onDone: () => void }
 
@@ -61,11 +60,8 @@ export default function FeatureTour({ onDone }: Props) {
   const current = STEPS[step]
   const isLast = step === STEPS.length - 1
 
-  const { displayed: titleText } = useTypewriter(typingTitle, 32)
-  const { displayed: bodyText, done: titleDone } = useTypewriter(
-    titleText.length >= typingTitle.length ? typingBody : '',
-    10
-  )
+  const titleText = typingTitle
+  const bodyText = typingBody
 
   const goTo = (next: number) => {
     setAnimDir('out')
@@ -104,11 +100,11 @@ export default function FeatureTour({ onDone }: Props) {
           </div>
 
           <div className="ft-title">
-            {titleText}<span className="ft-cursor">|</span>
+            {titleText}
           </div>
           <div className="ft-body">
             {bodyText.split('\n').map((line, i) => <p key={i}>{line}</p>)}
-            {bodyText.length > 0 && bodyText.length < typingBody.length && <span className="ft-cursor">|</span>}
+            {bodyText.length > 0 && bodyText.length < typingBody.length && }
           </div>
         </div>
 
