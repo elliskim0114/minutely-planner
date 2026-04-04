@@ -32,6 +32,7 @@ export interface Block {
   totalTracked?: number
   repeat?: 'none' | 'daily' | 'weekdays' | 'weekly'
   goalId?: number | null
+  completed?: 'done' | 'skipped' | null
 }
 
 export interface PDBlock {

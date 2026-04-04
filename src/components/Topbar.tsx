@@ -7,7 +7,7 @@ export default function Topbar() {
     view, wOff, selDate,
     toggleSidebar, navWeek, navDay,
     undo, redo, blockHistory, blockFuture,
-    openCoach, openFocus, openCapture, openCoachAt,
+    openCoach, openFocus, openCapture, openWhatNow,
   } = useStore()
 
   const getLabel = () => {
@@ -62,7 +62,7 @@ export default function Topbar() {
       {/* ── STAR FEATURE BUTTONS ── */}
       <div className="tb-stars">
         {/* What Now — primary star button */}
-        <button className="tb-star tb-star-whatnow" onClick={() => openCoachAt('analyze')} title="what should I do right now?">
+        <button className="tb-star tb-star-whatnow" onClick={openWhatNow} title="what should I do right now?">
           <svg className="tb-star-icon" width="15" height="15" viewBox="0 0 15 15" fill="none">
             <path d="M8.5 1.5L5 8H9L5.5 13.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>

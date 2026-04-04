@@ -17,7 +17,9 @@
       "Bash(echo \"Exit code: $?\")",
       "Bash(npx vite:*)",
       "Bash(npx postcss:*)",
-      "Bash(node -e \":*)"
+      "Bash(node -e \":*)",
+      "Bash(grep -n \"confirm\\\\|window.confirm\\\\|delete\" /Users/charming/Documents/minutely/src/components/*.tsx)",
+      "Bash(git add:*)"
     ]
   }
 }

@@ -68,7 +68,9 @@ app.post('/api/perfect-day', async (req, res) => {
     const a = txt.indexOf('[')
     const b = txt.lastIndexOf(']')
     if (a < 0 || b <= a) throw new Error('no JSON array in response')
-    const schedule = JSON.parse(txt.slice(a, b + 1))
+    const raw = txt.slice(a, b + 1)
+    const cleaned = raw.replace(/[\u0000-\u001F\u007F]/g, ' ').replace(/,(\s*[}\]])/g, '$1')
+    const schedule = JSON.parse(cleaned)
     return res.json(schedule)
   } catch (err) {
     console.error('perfect-day error:', err)
@@ -237,7 +239,9 @@ For "action": only include it when you recommend adding a SPECIFIC new block at 
     const a = txt.indexOf('[')
     const b = txt.lastIndexOf(']')
     if (a < 0 || b <= a) throw new Error('no JSON array')
-    const suggestions = JSON.parse(txt.slice(a, b + 1))
+    const raw = txt.slice(a, b + 1)
+    const cleaned = raw.replace(/[\u0000-\u001F\u007F]/g, ' ').replace(/,(\s*[}\]])/g, '$1')
+    const suggestions = JSON.parse(cleaned)
     return res.json({ suggestions })
   } catch (err) {
     console.error('coach error:', err)
@@ -379,7 +383,9 @@ Return ONLY a JSON array of new blocks:
     const a = txt.indexOf('[')
     const b = txt.lastIndexOf(']')
     if (a < 0 || b <= a) throw new Error('no JSON array in response')
-    const blocks = JSON.parse(txt.slice(a, b + 1))
+    const raw = txt.slice(a, b + 1)
+    const cleaned = raw.replace(/[\u0000-\u001F\u007F]/g, ' ').replace(/,(\s*[}\]])/g, '$1')
+    const blocks = JSON.parse(cleaned)
     return res.json(blocks)
   } catch (err) {
     console.error('build-day error:', err)
@@ -432,7 +438,9 @@ Return ONLY a JSON array, nothing else.`
     const a = txt.indexOf('[')
     const b = txt.lastIndexOf(']')
     if (a < 0 || b <= a) throw new Error('no JSON array in response')
-    const events = JSON.parse(txt.slice(a, b + 1))
+    const raw = txt.slice(a, b + 1)
+    const cleaned = raw.replace(/[\u0000-\u001F\u007F]/g, ' ').replace(/,(\s*[}\]])/g, '$1')
+    const events = JSON.parse(cleaned)
     return res.json(events)
   } catch (err) {
     console.error('capture error:', err)
@@ -517,7 +525,9 @@ Return ONLY a JSON array, nothing else.`
       console.error('capture-image: no JSON array found in:', jsonStr.slice(0, 200))
       throw new Error('AI did not return valid JSON — try the text tab instead')
     }
-    const events = JSON.parse(jsonStr.slice(a, b + 1))
+    const raw = jsonStr.slice(a, b + 1)
+    const cleaned = raw.replace(/[\u0000-\u001F\u007F]/g, ' ').replace(/,(\s*[}\]])/g, '$1')
+    const events = JSON.parse(cleaned)
     return res.json(events)
   } catch (err) {
     console.error('capture-image error:', err)
@@ -585,7 +595,9 @@ Return ONLY a JSON array: [{name, start, end, type}]`
     const a = txt.indexOf('[')
     const b = txt.lastIndexOf(']')
     if (a < 0 || b <= a) throw new Error('no JSON array in response')
-    const blocks = JSON.parse(txt.slice(a, b + 1))
+    const raw = txt.slice(a, b + 1)
+    const cleaned = raw.replace(/[\u0000-\u001F\u007F]/g, ' ').replace(/,(\s*[}\]])/g, '$1')
+    const blocks = JSON.parse(cleaned)
     return res.json(blocks)
   } catch (err) {
     console.error('build-day error:', err)
@@ -830,7 +842,9 @@ Return ONLY the JSON array. If no clear patterns exist, return [].`
     const a = txt.indexOf('[')
     const b = txt.lastIndexOf(']')
     if (a < 0 || b <= a) return res.json({ habits: [] })
-    const habits = JSON.parse(txt.slice(a, b + 1))
+    const raw = txt.slice(a, b + 1)
+    const cleaned = raw.replace(/[\u0000-\u001F\u007F]/g, ' ').replace(/,(\s*[}\]])/g, '$1')
+    const habits = JSON.parse(cleaned)
     return res.json({ habits })
   } catch (err) {
     console.error('habits error:', err)
@@ -1051,6 +1065,49 @@ Goals: ${goalsSummary}`
     return res.json(result)
   } catch (err) {
     console.error('analytics-insights error:', err)
+    return res.status(500).json({ error: String(err) })
+  }
+})
+
+// POST /api/what-now
+// Body: { currentTime, todayBlocks, profileContext?, extraContext?, apiKey? }
+// Returns: { message: string }
+app.post('/api/what-now', async (req, res) => {
+  const { currentTime, todayBlocks, profileContext, extraContext, apiKey } = req.body as {
+    currentTime: string
+    todayBlocks: Array<{ name: string; start: string; end: string; type: string; completed?: string | null }>
+    profileContext?: string
+    extraContext?: string
+    apiKey?: string
+  }
+
+  const scheduleLines = (todayBlocks || [])
+    .map(b => `${b.start}–${b.end}: ${b.name} (${b.type}${b.completed ? ', ' + b.completed : ''})`)
+    .join('\n')
+
+  const systemPrompt = `You are an in-the-moment productivity coach for a day planner app. The user is asking what they should do RIGHT NOW at ${currentTime}.
+
+Be direct, warm, specific. Give:
+1. One sentence acknowledging their exact current situation (what block they're in, if any)
+2. 2–3 concrete, specific actions for the next 30–60 minutes
+3. One short encouraging line
+
+Keep the total response under 160 words. Do not use markdown headers or bullet symbols — just write naturally, using line breaks between the 3 parts. Be like a smart friend who knows their schedule, not a formal advisor.${profileContext ? `\n\nUser profile: ${profileContext}` : ''}`
+
+  const userMsg = `It is ${currentTime}. Here is today's schedule:\n${scheduleLines || 'No blocks scheduled today.'}${extraContext ? `\n\nUser says: "${extraContext}"` : ''}`
+
+  try {
+    const client = getClient(apiKey)
+    const msg = await client.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 300,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userMsg }],
+    })
+    const message = (msg.content[0] as { type: string; text: string }).text?.trim() ?? ''
+    return res.json({ message })
+  } catch (err: any) {
+    console.error('what-now error:', err)
     return res.status(500).json({ error: String(err) })
   }
 })

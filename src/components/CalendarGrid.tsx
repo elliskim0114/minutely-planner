@@ -22,7 +22,7 @@ interface Props {
 export default function CalendarGrid({ scrollId, numDays, getDate }: Props) {
   const {
     cfg, blocks, wOff,
-    openBlockModalNew, openBlockModalEdit, updateBlock,
+    openBlockModalNew, openBlockModalEdit, updateBlock, completeBlock,
     showCtxMenu, scheduleQueueItem, trackTime, stopTimer, applyRecurring,
     setHoveredBlock, typeColorOverrides, blockMoods,
   } = useStore()
@@ -266,8 +266,9 @@ export default function CalendarGrid({ scrollId, numDays, getDate }: Props) {
   }, [cfg, endM, scheduleQueueItem])
 
   const blkClass = (b: Block) => {
-    if (b.cc) return 'td'
-    return ({ focus: 'tf', routine: 'tr', study: 'ts', free: 'tl', gcal: 'tg2', custom: 'td' }[b.type] || 'td')
+    const tc = b.cc ? 'td' : (({ focus: 'tf', routine: 'tr', study: 'ts', free: 'tl', gcal: 'tg2', custom: 'td' } as Record<string, string>)[b.type] || 'td')
+    const cc = b.completed === 'done' ? ' blk-done' : b.completed === 'skipped' ? ' blk-skip' : ''
+    return tc + cc
   }
 
   const cw = containerRef.current ? (containerRef.current.offsetWidth - 56) / numDays : 0
@@ -441,6 +442,22 @@ export default function CalendarGrid({ scrollId, numDays, getDate }: Props) {
                 }}
               >
                 {b.timerStart ? '⏹' : '▶'}
+              </button>
+              <button
+                className={`blk-check${b.completed ? ' is-set' : ''} ${b.completed || ''}`}
+                title={b.completed === 'done' ? 'mark undone' : b.completed === 'skipped' ? 'clear' : 'mark done'}
+                onClick={e => {
+                  e.stopPropagation()
+                  const next = b.completed === 'done' ? null : b.completed === 'skipped' ? null : 'done'
+                  completeBlock(b.id, next)
+                }}
+                onContextMenu={e => {
+                  e.stopPropagation()
+                  e.preventDefault()
+                  completeBlock(b.id, b.completed === 'skipped' ? null : 'skipped')
+                }}
+              >
+                {b.completed === 'done' ? '✓' : b.completed === 'skipped' ? '–' : '○'}
               </button>
               <div className="brz brz-top" onMouseDown={e => handleBlockResizeTop(e, b)} />
               <div className="brz" onMouseDown={e => handleBlockResize(e, b)} />

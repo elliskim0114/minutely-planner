@@ -95,7 +95,7 @@ export default function GoalsModal({ onClose }: { onClose: () => void }) {
                   </div>
                   <div className="gi-acts">
                     <button className="gi-edit" onClick={() => startEdit(g)}>edit</button>
-                    <button className="gi-del" onClick={() => { if (confirm(`Delete "${g.name}"?`)) deleteGoal(g.id) }}>×</button>
+                    <button className="gi-del" onClick={() => deleteGoal(g.id)}>×</button>
                   </div>
                 </div>
                 <div className="gi-bar">

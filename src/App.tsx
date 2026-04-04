@@ -13,6 +13,7 @@ import ContextMenu from './components/ContextMenu'
 import NotifModal from './components/NotifModal'
 import ShareModal from './components/ShareModal'
 import ShortcutsModal from './components/ShortcutsModal'
+import WhatNowModal from './components/WhatNowModal'
 import SignInModal from './components/SignInModal'
 import Toast from './components/Toast'
 import Confetti from './components/Confetti'
@@ -37,10 +38,10 @@ import UnlockCelebration from './components/UnlockCelebration'
 export default function App() {
   const {
     onboarded, mode, view, sbCol,
-    blockModal, kbdOpen, notifOpen, shareOpen, signInOpen,
+    blockModal, kbdOpen, whatNowOpen, notifOpen, shareOpen, signInOpen,
     copyBlock, pasteBlock, ctxMenu, blocks, selDate, notifSettings, hoveredBlockId,
     addToQueue,
-    openKbd, closeKbd, closeNotif, closeShare, closeSignIn,
+    openKbd, closeKbd, closeWhatNow, closeNotif, closeShare, closeSignIn,
     setView, navWeek, navDay, goToday,
     hideCtxMenu,
     weekReviewOpen, closeWeekReview,
@@ -191,7 +192,7 @@ export default function App() {
         }
       }
       else if (e.key === 'T' && e.shiftKey) openTemplates()
-      else if (k === '?') openKbd()
+      else if (k === '?' || (k === '/' && (e.metaKey || e.ctrlKey))) openKbd()
       else if (k === 'arrowleft') { if (view === 'week') navWeek(-1); else if (view === 'day') navDay(-1) }
       else if (k === 'arrowright') { if (view === 'week') navWeek(1); else if (view === 'day') navDay(1) }
     }
@@ -418,6 +419,7 @@ export default function App() {
       {notifOpen && <NotifModal />}
       {shareOpen && <ShareModal />}
       {kbdOpen && <ShortcutsModal />}
+      {whatNowOpen && <WhatNowModal onClose={closeWhatNow} />}
       {signInOpen && <SignInModal />}
       {quickAddOpen && <QuickAdd onClose={() => setQuickAddOpen(false)} />}
       {coachOpen && <AICoach onClose={closeCoach} />}

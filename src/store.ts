@@ -51,6 +51,7 @@ interface UIState {
   notifOpen: boolean
   shareOpen: boolean
   kbdOpen: boolean
+  whatNowOpen: boolean
   signInOpen: boolean
   gcalDone: boolean
   pendingAIPrompt: string | null  // energy → MPD AI handoff
@@ -176,6 +177,7 @@ type Actions = {
   addBlock: (b: Omit<Block, 'id'>) => void
   updateBlock: (id: number, patch: Partial<Block>) => void
   deleteBlock: (id: number) => void
+  completeBlock: (id: number, status: 'done' | 'skipped' | null) => void
   setFocus: (date: string, text: string) => void
   setEnergy: (date: string, e: number) => void
   setPriority: (date: string, idx: number, val: string) => void
@@ -227,6 +229,8 @@ type Actions = {
   closeShare: () => void
   openKbd: () => void
   closeKbd: () => void
+  openWhatNow: () => void
+  closeWhatNow: () => void
   openSignIn: () => void
   closeSignIn: () => void
   doLateSignIn: (email: string, name?: string) => void
@@ -395,6 +399,7 @@ export const useStore = create<Store>()(
       notifOpen: false,
       shareOpen: false,
       kbdOpen: false,
+      whatNowOpen: false,
       signInOpen: false,
       gcalDone: false,
       pendingAIPrompt: null,
@@ -534,6 +539,12 @@ export const useStore = create<Store>()(
         blockFuture: [],
         blocks: s.blocks.filter(b => b.id !== id),
       })),
+      completeBlock: (id, status) => {
+        const block = get().blocks.find(b => b.id === id)
+        if (!block) return
+        set(s => ({ blocks: s.blocks.map(b => b.id === id ? { ...b, completed: status } : b) }))
+        if (status === 'done' && block.type === 'focus') get().earnGem()
+      },
       setFocus: (date, text) => set(s => ({ focuses: { ...s.focuses, [date]: text } })),
       setEnergy: (date, e) => set(s => {
         const int = s.intentions[date] || { e: 0, p: ['', '', ''] }
@@ -741,6 +752,8 @@ export const useStore = create<Store>()(
       closeShare: () => set({ shareOpen: false }),
       openKbd: () => set({ kbdOpen: true }),
       closeKbd: () => set({ kbdOpen: false }),
+      openWhatNow: () => set({ whatNowOpen: true }),
+      closeWhatNow: () => set({ whatNowOpen: false }),
       openSignIn: () => set({ signInOpen: true }),
       closeSignIn: () => set({ signInOpen: false }),
       doLateSignIn: (email, name) => {
