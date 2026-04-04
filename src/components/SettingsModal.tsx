@@ -188,6 +188,7 @@ export default function SettingsModal() {
     closeSettings, cfg, setCfg, userName, setUserName, mode,
     focusGems, unlockedModes, unlockedCelebrations,
     setMode, triggerCelebration, userProfile, setUserProfile,
+    signOut, deleteAccount,
   } = useStore()
 
   const [tab, setTab] = useState<Tab>('profile')
@@ -505,12 +506,24 @@ export default function SettingsModal() {
 
         {/* Footer — only on profile tab */}
         {tab === 'profile' && (
-          <div className="sm-footer">
-            <button className="sm-cancel" onClick={closeSettings}>cancel</button>
-            <button className={`sm-save${saved ? ' saved' : ''}`} onClick={saveProfile}>
-              {saved ? '✓ saved!' : 'save changes'}
-            </button>
-          </div>
+          <>
+            <div className="sm-footer">
+              <button className="sm-cancel" onClick={closeSettings}>cancel</button>
+              <button className={`sm-save${saved ? ' saved' : ''}`} onClick={saveProfile}>
+                {saved ? '✓ saved!' : 'save changes'}
+              </button>
+            </div>
+            <div className="sm-danger-zone">
+              <button className="sm-signout-btn" onClick={() => { signOut(); closeSettings() }}>
+                sign out
+              </button>
+              <button className="sm-delete-btn" onClick={() => {
+                if (window.confirm('Delete all your data? This cannot be undone.')) deleteAccount()
+              }}>
+                delete account
+              </button>
+            </div>
+          </>
         )}
       </div>
     </div>

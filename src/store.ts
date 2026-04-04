@@ -233,6 +233,8 @@ type Actions = {
   closeWhatNow: () => void
   openSignIn: () => void
   closeSignIn: () => void
+  signOut: () => void
+  deleteAccount: () => void
   doLateSignIn: (email: string, name?: string) => void
   connectGCal: () => void
   toggleNotif: (key: keyof NotifSettings) => void
@@ -756,6 +758,11 @@ export const useStore = create<Store>()(
       closeWhatNow: () => set({ whatNowOpen: false }),
       openSignIn: () => set({ signInOpen: true }),
       closeSignIn: () => set({ signInOpen: false }),
+      signOut: () => set({ onboarded: false }),
+      deleteAccount: () => {
+        localStorage.removeItem('mn-store')
+        window.location.reload()
+      },
       doLateSignIn: (email, name) => {
         set({
           userName: name || (email ? email.split('@')[0] : 'guest'),

@@ -57,7 +57,7 @@ export default function WhatNowModal({ onClose }: { onClose: () => void }) {
       if (userProfile?.energyPattern) profileParts.push(`Energy: ${userProfile.energyPattern} person`)
       if (goals?.length) profileParts.push(`Goals: ${goals.map(g => g.name).join(', ')}`)
 
-      const res = await fetch('http://localhost:3001/api/what-now', {
+      const res = await fetch('/api/what-now', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

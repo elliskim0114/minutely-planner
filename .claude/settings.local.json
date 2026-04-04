@@ -19,7 +19,9 @@
       "Bash(npx postcss:*)",
       "Bash(node -e \":*)",
       "Bash(grep -n \"confirm\\\\|window.confirm\\\\|delete\" /Users/charming/Documents/minutely/src/components/*.tsx)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   }
 }
