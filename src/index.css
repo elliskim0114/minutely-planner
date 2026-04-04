@@ -718,26 +718,23 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .mpd-wizard-btn:active{transform:scale(.96)}
 
 /* Apply-to-today + dropdown wrapper */
-.mpd-apply-wrap{position:relative;display:flex;align-items:center}
+.mpd-apply-wrap{position:relative;display:flex;align-items:stretch;border-radius:var(--r);box-shadow:0 3px 12px var(--nowglow);overflow:hidden}
 .mpd-apply{
-  padding:10px 18px;
+  padding:10px 16px;
   background:linear-gradient(135deg,var(--acc) 0%,var(--acc2) 100%);
-  border:none;border-radius:var(--r) 0 0 var(--r);
+  border:none;border-radius:0;
   font-family:var(--font-u);font-size:12px;font-weight:700;color:#fff;
-  cursor:pointer;transition:all .18s var(--spring);
-  box-shadow:0 3px 12px var(--nowglow);
-  display:flex;align-items:center;gap:6px;
+  cursor:pointer;transition:filter .15s;
+  display:flex;align-items:center;gap:6px;white-space:nowrap;
 }
-.mpd-apply:hover{box-shadow:0 5px 18px var(--nowglow);filter:brightness(1.1)}
-.mpd-apply:active{transform:scale(.97)}
+.mpd-apply:hover{filter:brightness(1.1)}
+.mpd-apply:active{filter:brightness(.95)}
 .mpd-apply-more{
-  padding:10px 10px;
+  padding:0 10px;
   background:linear-gradient(135deg,var(--acc),var(--acc2));
   border:none;border-left:1px solid rgba(255,255,255,.2);
-  border-radius:0 var(--r) var(--r) 0;
-  cursor:pointer;transition:all .15s;
-  box-shadow:0 3px 12px var(--nowglow);color:#fff;
-  display:flex;align-items:center;
+  cursor:pointer;transition:filter .15s;color:#fff;
+  display:flex;align-items:center;justify-content:center;
 }
 .mpd-apply-more:hover{filter:brightness(1.15)}
 .mpd-apply-dropdown{

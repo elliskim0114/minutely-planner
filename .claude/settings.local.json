@@ -21,7 +21,8 @@
       "Bash(grep -n \"confirm\\\\|window.confirm\\\\|delete\" /Users/charming/Documents/minutely/src/components/*.tsx)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(grep -n \"apply.to.today\\\\|applyToToday\\\\|apply-today\" /Users/charming/Documents/minutely/src/components/*.tsx)"
     ]
   }
 }

@@ -321,7 +321,7 @@ export default function BlockModal() {
               <div
                 key={lbl}
                 className={`mtyp saved-lbl-btn${isActive ? ' ad' : ''}`}
-                style={savedColor && isActive ? { background: savedColor.bg, borderColor: savedColor.bd, color: savedColor.ink } : savedColor ? { borderColor: savedColor.bd } : {}}
+                style={savedColor && isActive ? { background: savedColor.bg, color: savedColor.ink } : {}}
                 draggable
                 onDragStart={() => onLblDragStart(i)}
                 onDragOver={e => onLblDragOver(e, i)}

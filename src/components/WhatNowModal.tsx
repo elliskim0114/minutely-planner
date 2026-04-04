@@ -48,29 +48,48 @@ export default function WhatNowModal({ onClose }: { onClose: () => void }) {
     setError('')
 
     try {
-      const scheduleLines = todayBlocks.map(b =>
-        `${b.start}–${b.end}: ${b.name} (${b.type})`
-      ).join('\n')
+      if (!anthropicKey) throw new Error('add your Anthropic API key in Settings to use What Now')
+
+      const scheduleLines = todayBlocks.length
+        ? todayBlocks.map(b => `${b.start}–${b.end}: ${b.name} (${b.type}${b.completed ? ', ' + b.completed : ''})`).join('\n')
+        : 'No blocks scheduled today.'
 
       const profileParts: string[] = []
       if (userProfile?.occupation) profileParts.push(`Occupation: ${userProfile.occupation}`)
       if (userProfile?.energyPattern) profileParts.push(`Energy: ${userProfile.energyPattern} person`)
       if (goals?.length) profileParts.push(`Goals: ${goals.map(g => g.name).join(', ')}`)
 
-      const res = await fetch('/api/what-now', {
+      const systemPrompt = `You are an in-the-moment productivity coach. The user is asking what they should do RIGHT NOW at ${nowStr}.
+
+Be direct, warm, specific. Give:
+1. One sentence acknowledging their exact current situation
+2. 2–3 concrete, specific actions for the next 30–60 minutes
+3. One short encouraging line
+
+Keep the total under 160 words. Write naturally with line breaks between parts, no bullet symbols or markdown headers.${profileParts.length ? `\n\nUser: ${profileParts.join(', ')}` : ''}`
+
+      const userMsg = `It is ${nowStr}. Today's schedule:\n${scheduleLines}${extraContext ? `\n\nI want to say: "${extraContext}"` : ''}`
+
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': anthropicKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
         body: JSON.stringify({
-          currentTime: nowStr,
-          todayBlocks: todayBlocks.map(b => ({ name: b.name, start: b.start, end: b.end, type: b.type, completed: b.completed })),
-          profileContext: profileParts.join(', '),
-          extraContext: extraContext || null,
-          apiKey: anthropicKey || undefined,
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 300,
+          system: systemPrompt,
+          messages: [{ role: 'user', content: userMsg }],
         }),
       })
       const data = await res.json()
-      if (data.error) throw new Error(data.error)
-      setText(data.message)
+      if (data.error) throw new Error(data.error.message || 'API error')
+      const message = data.content?.[0]?.text?.trim() ?? ''
+      if (!message) throw new Error('no response from AI')
+      setText(message)
     } catch (e: any) {
       setError(e.message || 'something went wrong')
     } finally {
