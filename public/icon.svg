@@ -4,42 +4,32 @@
       <stop offset="0%" stop-color="#FFFDF9"/>
       <stop offset="100%" stop-color="#F5EDE0"/>
     </linearGradient>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&amp;family=Lato:wght@400&amp;display=swap');
+    </style>
   </defs>
 
-  <!-- App icon background -->
+  <!-- Background -->
   <rect width="512" height="512" rx="110" fill="url(#bg)"/>
 
-  <!-- Calendar card -->
-  <rect x="72" y="96" width="368" height="320" rx="28" fill="white"/>
-
-  <!-- Calendar header strip -->
-  <rect x="72" y="96" width="368" height="88" rx="28" fill="#D9622B"/>
-  <!-- Square off bottom corners of header -->
-  <rect x="72" y="156" width="368" height="28" fill="#D9622B"/>
-
-  <!-- Ring holes -->
-  <rect x="168" y="74" width="24" height="56" rx="12" fill="#B34F1E"/>
-  <rect x="320" y="74" width="24" height="56" rx="12" fill="#B34F1E"/>
-
-  <!-- Month label -->
+  <!-- Day number in Playfair Display -->
   <text
-    x="256" y="157"
-    font-family="Georgia, 'Times New Roman', serif"
-    font-size="36"
-    font-weight="400"
-    letter-spacing="6"
-    fill="rgba(255,255,255,0.85)"
-    text-anchor="middle"
-  >MINUTELY</text>
-
-  <!-- Big date number — today's feel -->
-  <text
-    x="256" y="340"
-    font-family="Georgia, 'Times New Roman', serif"
-    font-size="180"
+    x="256" y="360"
+    font-family="'Playfair Display', Georgia, serif"
+    font-size="260"
     font-weight="700"
-    fill="#1A1410"
+    fill="#1C1208"
     text-anchor="middle"
-    dominant-baseline="auto"
-  >1</text>
+  >5</text>
+
+  <!-- Month in Lato -->
+  <text
+    x="256" y="440"
+    font-family="'Lato', 'Helvetica Neue', Arial, sans-serif"
+    font-size="56"
+    font-weight="400"
+    letter-spacing="8"
+    fill="#A07850"
+    text-anchor="middle"
+  >Apr</text>
 </svg>

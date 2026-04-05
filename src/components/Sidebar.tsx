@@ -106,12 +106,6 @@ export default function Sidebar() {
       {/* Header */}
       <div id="sb-hdr">
         <div id="sb-logo">
-          <svg className="logo-mark" width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <circle cx="11" cy="11" r="9.5" stroke="var(--acc)" strokeWidth="1.5"/>
-            <line x1="11" y1="11" x2="11" y2="5" stroke="var(--acc)" strokeWidth="2" strokeLinecap="round"/>
-            <line x1="11" y1="11" x2="15.5" y2="13.5" stroke="var(--acc)" strokeWidth="1.5" strokeLinecap="round"/>
-            <circle cx="11" cy="11" r="1.5" fill="var(--acc)"/>
-          </svg>
           <span className="logo-txt">minutely</span>
         </div>
         <button id="sb-tog" className="sbibtn" onClick={toggleSidebar} title="toggle sidebar">
