@@ -161,6 +161,45 @@
   --s3:0 16px 48px rgba(0,0,0,0.95);
 }
 
+/* ── UNLOCKABLE THEME: crimson (dragon fire, unlocks at 50 gems) ── */
+[data-mode="crimson"]{
+  --bg:#0A0002;--bg2:#120004;--bg3:#1C0006;
+  --surf:#100003;--surf2:#180005;
+  --bd:rgba(220,30,50,0.14);--bd2:rgba(220,30,50,0.26);
+  --ink:#FFF0F0;--ink2:#FF9090;--ink3:#900020;--ink4:#300008;
+  --acc:#DC2626;--acc2:#EF4444;
+  --accbg:rgba(220,38,38,0.1);--accbg2:rgba(220,38,38,0.22);
+  --nowglow:rgba(220,38,38,0.5);
+  --bfbg:#001428;--bfbd:#003C82;--bfink:#60B8FF;
+  --brbg:#001C08;--brbd:#005030;--brink:#3EE880;
+  --bsbg:#0A0020;--bsbd:#400080;--bsink:#C060FF;
+  --blbg:#1A0800;--blbd:#602000;--blink:#F0A040;
+  --bdbg:#100002;--bdbd:#400010;--bdink:#B04040;
+  --past:rgba(0,0,0,0.55);--nowstrip:rgba(220,38,38,0.07);
+  --s1:0 2px 8px rgba(0,0,0,0.7);
+  --s2:0 4px 20px rgba(0,0,0,0.82);
+  --s3:0 16px 48px rgba(0,0,0,0.95);
+}
+/* ── UNLOCKABLE THEME: gold (focus master, unlocks at 100 gems) ── */
+[data-mode="gold"]{
+  --bg:#040300;--bg2:#0C0900;--bg3:#140E00;
+  --surf:#080600;--surf2:#100C00;
+  --bd:rgba(245,180,30,0.16);--bd2:rgba(245,180,30,0.28);
+  --ink:#FFFAEC;--ink2:#FFD966;--ink3:#906600;--ink4:#302000;
+  --acc:#F59E0B;--acc2:#FCD34D;
+  --accbg:rgba(245,158,11,0.1);--accbg2:rgba(245,158,11,0.22);
+  --nowglow:rgba(245,158,11,0.55);
+  --bfbg:#001428;--bfbd:#004A82;--bfink:#60B8FF;
+  --brbg:#001C08;--brbd:#005030;--brink:#3EE880;
+  --bsbg:#0A0030;--bsbd:#4000A0;--bsink:#C060FF;
+  --blbg:#1A0800;--blbd:#602000;--blink:#F0A040;
+  --bdbg:#0A0800;--bdbd:#504000;--bdink:#C0A020;
+  --past:rgba(0,0,0,0.55);--nowstrip:rgba(245,158,11,0.09);
+  --s1:0 2px 8px rgba(0,0,0,0.7);
+  --s2:0 4px 20px rgba(0,0,0,0.82);
+  --s3:0 16px 48px rgba(0,0,0,0.95);
+}
+
 html,body{height:100%;overflow:hidden;-webkit-font-smoothing:antialiased}
 body{background:var(--bg);color:var(--ink);font-family:var(--font-u);font-size:14px}
 
@@ -197,6 +236,47 @@ body[data-mode="nebula"]{
   animation:nebulaShift 14s ease-in-out infinite !important;
 }
 [data-mode="nebula"] #app{background:transparent !important}
+
+/* ── CRIMSON: volcanic lava glow ── */
+@keyframes crimsonGlow{
+  0%,100%{background-position:0% 60%,100% 40%,50% 100%}
+  33%{background-position:100% 40%,0% 60%,50% 0%}
+  66%{background-position:50% 0%,50% 100%,100% 50%}
+}
+body[data-mode="crimson"]{
+  background:
+    radial-gradient(ellipse 80% 65% at 20% 60%,rgba(220,38,38,0.5) 0%,transparent 65%),
+    radial-gradient(ellipse 60% 75% at 80% 35%,rgba(180,0,20,0.35) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 50% at 50% 90%,rgba(255,80,0,0.3) 0%,transparent 60%),
+    #0A0002 !important;
+  background-size:220% 220%,220% 220%,220% 220%,auto !important;
+  animation:crimsonGlow 13s ease-in-out infinite !important;
+}
+[data-mode="crimson"] #app{background:transparent !important}
+
+/* ── GOLD: rich golden aurora sweep ── */
+@keyframes goldGlow{
+  0%,100%{background-position:0% 50%,100% 50%,50% 0%}
+  33%{background-position:100% 50%,0% 50%,50% 100%}
+  66%{background-position:50% 100%,50% 0%,0% 50%}
+}
+body[data-mode="gold"]{
+  background:
+    radial-gradient(ellipse 90% 70% at 20% 40%,rgba(245,158,11,0.38) 0%,transparent 65%),
+    radial-gradient(ellipse 70% 80% at 80% 60%,rgba(234,179,8,0.28) 0%,transparent 60%),
+    radial-gradient(ellipse 60% 50% at 50% 10%,rgba(251,191,36,0.2) 0%,transparent 65%),
+    #040300 !important;
+  background-size:220% 220%,220% 220%,220% 220%,auto !important;
+  animation:goldGlow 11s ease-in-out infinite !important;
+}
+[data-mode="gold"] #app{background:transparent !important}
+
+/* ── SIDEBAR GEM BADGE ── */
+.sb-gem-badge{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:20px;font-size:11px;font-weight:600;color:var(--ink2);background:var(--bg3);border:1px solid var(--bd);transition:all .2s;cursor:default;user-select:none;margin:4px 0 0}
+.sb-gem-badge.master{color:#FCD34D;background:rgba(245,158,11,0.12);border-color:rgba(245,158,11,0.3);box-shadow:0 0 12px rgba(245,158,11,0.2)}
+.sb-gem-badge .sb-gem-icon{font-size:12px;line-height:1}
+.sb-gem-badge .sb-gem-lbl{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+
 body.dragging{cursor:grabbing!important;user-select:none}
 
 /* ── GLOBAL ANIMATIONS ── */

@@ -1,4 +1,4 @@
-export type Mode = 'light' | 'dark' | 'night' | 'ember' | 'ocean' | 'forest' | 'aurora' | 'nebula'
+export type Mode = 'light' | 'dark' | 'night' | 'ember' | 'ocean' | 'forest' | 'aurora' | 'crimson' | 'nebula' | 'gold'
 export type View = 'week' | 'day' | 'mpd' | 'analytics' | 'goals'
 
 export interface Goal {

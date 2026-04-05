@@ -5,8 +5,10 @@ const THEME_PALETTES: Record<string, string[]> = {
   ember:  ['#0A0602', '#FF8C40', '#FFB870', '#FFA040', '#FF6010'],
   ocean:  ['#020810', '#00B4FF', '#40CCFF', '#0088CC', '#006090'],
   forest: ['#030A04', '#22C55E', '#4ADE80', '#16A34A', '#052E16'],
-  aurora: ['#000E1A', '#22D3EE', '#67E8F9', '#0066FF', '#330099'],
-  nebula: ['#060006', '#D946EF', '#E879F9', '#9A00C0', '#300030'],
+  aurora:  ['#000E1A', '#22D3EE', '#67E8F9', '#0066FF', '#330099'],
+  crimson: ['#0A0002', '#DC2626', '#EF4444', '#B00010', '#300008'],
+  nebula:  ['#060006', '#D946EF', '#E879F9', '#9A00C0', '#300030'],
+  gold:    ['#040300', '#F59E0B', '#FCD34D', '#D97706', '#302000'],
 }
 
 export default function UnlockCelebration() {

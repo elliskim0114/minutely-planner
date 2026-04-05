@@ -16,6 +16,7 @@ export default function Sidebar() {
     templates, openTemplates, applyTemplate,
     openCoachAt,
     focusStreak, focusStreakDate,
+    focusGems,
   } = useStore()
 
   const [lateMenuOpen, setLateMenuOpen] = useState(false)
@@ -169,6 +170,13 @@ export default function Sidebar() {
                       </div>
                     ) : null
                   })()}
+                  {focusGems > 0 && (
+                    <div className={`sb-gem-badge${focusGems >= 100 ? ' master' : ''}`} title={`${focusGems} focus gems earned`}>
+                      <span className="sb-gem-icon">◆</span>
+                      <span className="sb-gem-n">{focusGems}</span>
+                      {focusGems >= 100 && <span className="sb-gem-lbl">master</span>}
+                    </div>
+                  )}
                 </div>
                 <button className="clear-day-btn" title="clear all blocks for today (C)" onClick={() => clearDay(td)}>clear</button>
               </div>

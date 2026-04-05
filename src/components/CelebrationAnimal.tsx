@@ -142,9 +142,36 @@ function Rocket() {
   )
 }
 
+function Meteor() {
+  return (
+    <svg width="160" height="44" viewBox="0 0 160 44" fill="none">
+      <defs>
+        <linearGradient id="mtrail" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="rgba(252,211,77,0)"/>
+          <stop offset="60%" stopColor="rgba(252,211,77,0.4)"/>
+          <stop offset="100%" stopColor="rgba(252,211,77,0.9)"/>
+        </linearGradient>
+      </defs>
+      {/* Trail */}
+      <path d="M 4 22 Q 60 20 140 22" stroke="url(#mtrail)" strokeWidth="3" strokeLinecap="round"/>
+      <path d="M 20 22 Q 70 21 140 22" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" strokeLinecap="round"/>
+      {/* Glow halo */}
+      <circle cx="148" cy="22" r="14" fill="rgba(252,211,77,0.2)"/>
+      {/* Star core */}
+      <circle cx="148" cy="22" r="8" fill="#FCD34D"/>
+      <circle cx="148" cy="22" r="5" fill="white"/>
+      {/* Sparkles along trail */}
+      <text x="100" y="16" fontSize="7" fill="rgba(255,255,255,0.7)">✦</text>
+      <text x="70" y="28" fontSize="5" fill="rgba(252,211,77,0.6)">·</text>
+      <text x="50" y="18" fontSize="6" fill="rgba(255,255,255,0.5)">·</text>
+    </svg>
+  )
+}
+
 const ANIMALS: Record<string, { component: React.ReactNode; label: string; speed: number; y: number }> = {
   unicorn: { component: <Unicorn />, label: '🦄', speed: 3.5, y: 0 },
   fox:     { component: <Fox />,     label: '🦊', speed: 4.2, y: 4 },
+  meteor:  { component: <Meteor />,  label: '🌠', speed: 2.8, y: -30 },
   dragon:  { component: <Dragon />,  label: '🐉', speed: 5.0, y: -8 },
   rocket:  { component: <Rocket />,  label: '🚀', speed: 6.5, y: -20 },
 }

@@ -246,10 +246,10 @@ export default function SettingsModal() {
     { gems: 10,  reward: 'unicorn',             emoji: '🦄', type: 'animal',    unlocked: (unlockedCelebrations || []).includes('unicorn'), animalKey: 'unicorn' },
     { gems: 12,  reward: 'ocean theme',         emoji: '🌊', type: 'theme',     unlocked: unlockedModes.includes('ocean'),  themeKey: 'ocean' },
     { gems: 20,  reward: 'forest theme + fox',  emoji: '🌿', type: 'theme',     unlocked: unlockedModes.includes('forest'), themeKey: 'forest' },
-    { gems: 35,  reward: 'aurora theme',        emoji: '✨', type: 'theme',     unlocked: unlockedModes.includes('aurora'), themeKey: 'aurora' },
-    { gems: 50,  reward: 'dragon',              emoji: '🐉', type: 'animal',    unlocked: (unlockedCelebrations || []).includes('dragon'), animalKey: 'dragon' },
-    { gems: 75,  reward: 'nebula theme + rocket', emoji: '🚀', type: 'theme',     unlocked: unlockedModes.includes('nebula'), themeKey: 'nebula' },
-    { gems: 100, reward: 'focus master',        emoji: '💎', type: 'legendary', unlocked: focusGems >= 100 },
+    { gems: 35,  reward: 'aurora theme + meteor',   emoji: '🌠', type: 'theme',     unlocked: unlockedModes.includes('aurora'),  themeKey: 'aurora' },
+    { gems: 50,  reward: 'dragon + crimson theme',  emoji: '🐉', type: 'theme',     unlocked: unlockedModes.includes('crimson'), themeKey: 'crimson' },
+    { gems: 75,  reward: 'nebula theme + rocket',   emoji: '🚀', type: 'theme',     unlocked: unlockedModes.includes('nebula'),  themeKey: 'nebula' },
+    { gems: 100, reward: 'gold theme + all themes', emoji: '💎', type: 'legendary', unlocked: focusGems >= 100, themeKey: 'gold' },
   ]
 
   return (

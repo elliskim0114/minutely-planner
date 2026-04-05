@@ -1105,23 +1105,31 @@ export const useStore = create<Store>()(
             popup = { type: 'theme', name: 'forest', label: 'Forest Theme + Fox', description: 'A mossy dark green theme AND a fox that trots across your screen!', emoji: '🌿' }
           } else if (gems === 35 && !newModes.includes('aurora')) {
             newModes.push('aurora')
+            newCelebrations.push('meteor')
+            triggerAnimal = 'meteor'
             doConfetti = true
-            popup = { type: 'theme', name: 'aurora', label: 'Aurora Theme', description: 'A dark purple-teal aurora theme — mysterious and beautiful.', emoji: '✨' }
+            popup = { type: 'theme', name: 'aurora', label: 'Aurora Theme + Meteor', description: 'A vivid teal/blue aurora theme AND a shooting star streaks across your screen!', emoji: '🌠' }
           } else if (gems === 50 && !newCelebrations.includes('dragon')) {
             newCelebrations.push('dragon')
+            newModes.push('crimson')
             triggerAnimal = 'dragon'
             doConfetti = true
-            popup = { type: 'animal', name: 'dragon', label: 'Dragon Celebration', description: 'A dragon will soar across your screen when you earn gems!', emoji: '🐉' }
+            popup = { type: 'theme', name: 'crimson', label: 'Dragon + Crimson Theme', description: 'A dragon soars across your screen AND a fiery crimson theme unlocks!', emoji: '🐉' }
           } else if (gems === 75 && !newModes.includes('nebula')) {
             newModes.push('nebula')
             newCelebrations.push('rocket')
             triggerAnimal = 'rocket'
             doConfetti = true
             popup = { type: 'theme', name: 'nebula', label: 'Nebula Theme + Rocket', description: 'A deep space nebula theme AND a rocket that blasts across your screen!', emoji: '🚀' }
-          } else if (gems === 100) {
-            toastMsg = '◆ ×100 — absolute focus master!'
+          } else if (gems === 100 && !newModes.includes('gold')) {
+            newModes.push('gold')
+            const allModes = ['ember','ocean','forest','aurora','crimson','nebula','gold']
+            const allCels = ['unicorn','fox','meteor','dragon','rocket']
+            allModes.forEach(m => { if (!newModes.includes(m)) newModes.push(m) })
+            allCels.forEach(c => { if (!newCelebrations.includes(c)) newCelebrations.push(c) })
+            toastMsg = '◆ ×100 — focus master! all themes unlocked!'
             doConfetti = true
-            popup = { type: 'legendary', name: 'master', label: 'Focus Master', description: '100 focus gems. You\'ve achieved something truly rare. Legendary.', emoji: '💎' }
+            popup = { type: 'legendary', name: 'master', label: 'Focus Master 💎', description: '100 gems. Gold theme + every theme ever unlocked. You are legendary.', emoji: '💎' }
           }
 
           setTimeout(() => useStore.getState().showToast(toastMsg), 50)
@@ -1217,9 +1225,14 @@ export const useStore = create<Store>()(
           if (gems >= 10) grantCel('unicorn')
           if (gems >= 12) grantMode('ocean')
           if (gems >= 20) { grantMode('forest'); grantCel('fox') }
-          if (gems >= 35) grantMode('aurora')
-          if (gems >= 50) grantCel('dragon')
+          if (gems >= 35) { grantMode('aurora'); grantCel('meteor') }
+          if (gems >= 50) { grantCel('dragon'); grantMode('crimson') }
           if (gems >= 75) { grantMode('nebula'); grantCel('rocket') }
+          if (gems >= 100) {
+            grantMode('gold')
+            ;['ember','ocean','forest','aurora','crimson','nebula','gold'].forEach(m => grantMode(m))
+            ;['unicorn','fox','meteor','dragon','rocket'].forEach(c => grantCel(c))
+          }
           if (changed) {
             // Schedule microtask so the store is fully ready
             Promise.resolve().then(() =>
