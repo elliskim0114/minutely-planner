@@ -22,7 +22,9 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
-      "Bash(grep -n \"apply.to.today\\\\|applyToToday\\\\|apply-today\" /Users/charming/Documents/minutely/src/components/*.tsx)"
+      "Bash(grep -n \"apply.to.today\\\\|applyToToday\\\\|apply-today\" /Users/charming/Documents/minutely/src/components/*.tsx)",
+      "Bash(grep -rn \"TODAY\\\\|WEEK\\\\|GOALS\\\\|STATS\\\\|bottomBar\\\\|bottom-nav\\\\|bnav\" /Users/charming/Documents/minutely/src/components/*.tsx)",
+      "Bash(grep -rn \"mob-nav\\\\|MobNav\\\\|MobileNav\" /Users/charming/Documents/minutely/src/components/*.tsx)"
     ]
   }
 }

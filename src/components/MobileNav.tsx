@@ -47,7 +47,9 @@ const TABS = [
 ] as const
 
 export default function MobileNav() {
-  const { view, setView } = useStore()
+  const { view, setView, blockModal, captureOpen, focusOpen, coachOpen, kbdOpen, whatNowOpen } = useStore()
+  const anyModalOpen = blockModal.open || captureOpen || focusOpen || coachOpen || kbdOpen || whatNowOpen
+  if (anyModalOpen) return null
   return (
     <nav className="mob-nav">
       {TABS.map(t => (
