@@ -122,79 +122,79 @@
   --s2:0 4px 20px rgba(0,0,0,0.65);
   --s3:0 16px 48px rgba(0,0,0,0.8);
 }
-/* ── UNLOCKABLE THEME: aurora (hot pink / dancing lights, unlocks at 35 gems) ── */
+/* ── UNLOCKABLE THEME: aurora (teal/cyan/blue animated gradient, unlocks at 35 gems) ── */
 [data-mode="aurora"]{
-  --bg:#060408;--bg2:#0C0810;--bg3:#14101C;
-  --surf:#0A0612;--surf2:#12101E;
-  --bd:rgba(255,50,160,0.12);--bd2:rgba(255,50,160,0.24);
-  --ink:#FFF0F8;--ink2:#FF80C0;--ink3:#A02870;--ink4:#3C0820;
-  --acc:#FF3DA0;--acc2:#FF72BC;
-  --accbg:rgba(255,61,160,0.1);--accbg2:rgba(255,61,160,0.22);
-  --nowglow:rgba(255,61,160,0.32);
-  --bfbg:#001428;--bfbd:#003C82;--bfink:#5EBBFF;
+  --bg:#000E1A;--bg2:#001A28;--bg3:#002336;
+  --surf:#001020;--surf2:#001C2E;
+  --bd:rgba(0,210,255,0.14);--bd2:rgba(0,210,255,0.26);
+  --ink:#E8FCFF;--ink2:#67E8F9;--ink3:#0E7490;--ink4:#082532;
+  --acc:#22D3EE;--acc2:#67E8F9;
+  --accbg:rgba(34,211,238,0.1);--accbg2:rgba(34,211,238,0.22);
+  --nowglow:rgba(34,211,238,0.4);
+  --bfbg:#001A28;--bfbd:#004A82;--bfink:#5EBBFF;
   --brbg:#001C08;--brbd:#005030;--brink:#3EE880;
-  --bsbg:#1A0028;--bsbd:#60009A;--bsink:#CC70FF;
-  --blbg:#1A0A00;--blbd:#682A00;--blink:#F0A040;
-  --bdbg:#0C0810;--bdbd:#302050;--bdink:#9070B8;
-  --past:rgba(0,0,0,0.42);--nowstrip:rgba(255,61,160,0.06);
+  --bsbg:#0A0030;--bsbd:#4800AA;--bsink:#CC70FF;
+  --blbg:#1A0800;--blbd:#602000;--blink:#F0A040;
+  --bdbg:#001220;--bdbd:#003050;--bdink:#8AB8D0;
+  --past:rgba(0,0,0,0.45);--nowstrip:rgba(34,211,238,0.07);
   --s1:0 2px 8px rgba(0,0,0,0.6);
   --s2:0 4px 20px rgba(0,0,0,0.72);
   --s3:0 16px 48px rgba(0,0,0,0.88);
 }
-/* ── UNLOCKABLE THEME: nebula (deep space, unlocks at 75 gems) ── */
+/* ── UNLOCKABLE THEME: nebula (fuchsia/magenta on black, unlocks at 75 gems) ── */
 [data-mode="nebula"]{
-  --bg:#020210;--bg2:#060820;--bg3:#0C1030;
-  --surf:#040618;--surf2:#080A22;
-  --bd:rgba(120,80,255,0.12);--bd2:rgba(120,80,255,0.22);
-  --ink:#EEE8FF;--ink2:#B0A0FF;--ink3:#604898;--ink4:#1A1040;
-  --acc:#8B5CF6;--acc2:#A78BFA;
-  --accbg:rgba(139,92,246,0.1);--accbg2:rgba(139,92,246,0.2);
-  --nowglow:rgba(139,92,246,0.4);
-  --bfbg:#001830;--bfbd:#004090;--bfink:#60B8FF;
-  --brbg:#001A10;--brbd:#005530;--brink:#40E890;
-  --bsbg:#0C0028;--bsbd:#4000B0;--bsink:#B060FF;
-  --blbg:#1A0C00;--blbd:#602800;--blink:#F0A040;
-  --bdbg:#0A0820;--bdbd:#303060;--bdink:#9090C0;
-  --past:rgba(0,0,0,0.55);--nowstrip:rgba(139,92,246,0.07);
+  --bg:#060006;--bg2:#0C000C;--bg3:#140014;
+  --surf:#0A000A;--surf2:#120012;
+  --bd:rgba(220,60,255,0.14);--bd2:rgba(220,60,255,0.26);
+  --ink:#FFF0FF;--ink2:#F0A0FF;--ink3:#900090;--ink4:#300030;
+  --acc:#D946EF;--acc2:#E879F9;
+  --accbg:rgba(217,70,239,0.1);--accbg2:rgba(217,70,239,0.22);
+  --nowglow:rgba(217,70,239,0.5);
+  --bfbg:#001428;--bfbd:#003C82;--bfink:#60B8FF;
+  --brbg:#001C08;--brbd:#005030;--brink:#3EE880;
+  --bsbg:#1A002A;--bsbd:#60009A;--bsink:#CC70FF;
+  --blbg:#1A0A00;--blbd:#682A00;--blink:#F0A040;
+  --bdbg:#100010;--bdbd:#400040;--bdink:#B070B0;
+  --past:rgba(0,0,0,0.55);--nowstrip:rgba(217,70,239,0.06);
   --s1:0 2px 8px rgba(0,0,0,0.7);
-  --s2:0 4px 20px rgba(0,0,0,0.8);
-  --s3:0 16px 48px rgba(0,0,0,0.9);
+  --s2:0 4px 20px rgba(0,0,0,0.82);
+  --s3:0 16px 48px rgba(0,0,0,0.95);
 }
 
 html,body{height:100%;overflow:hidden;-webkit-font-smoothing:antialiased}
 body{background:var(--bg);color:var(--ink);font-family:var(--font-u);font-size:14px}
 
-/* ── AURORA: animated shifting light bands ── */
+/* ── AURORA: vivid teal/blue/purple animated gradient ── */
 @keyframes auroraShift{
-  0%,100%{background-position:0% 50%,100% 50%,50% 0%}
-  33%{background-position:100% 50%,0% 50%,50% 100%}
-  66%{background-position:50% 0%,50% 100%,100% 50%}
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
 }
 body[data-mode="aurora"]{
-  background:
-    radial-gradient(ellipse 110% 60% at 0% 50%,rgba(255,50,160,0.22) 0%,transparent 65%),
-    radial-gradient(ellipse 90% 60% at 100% 50%,rgba(0,220,160,0.16) 0%,transparent 65%),
-    radial-gradient(ellipse 80% 80% at 50% 0%,rgba(120,50,255,0.18) 0%,transparent 65%),
-    #060408 !important;
-  background-size:220% 220%,220% 220%,220% 220%,auto !important;
-  animation:auroraShift 18s ease-in-out infinite !important;
+  background:linear-gradient(
+    -45deg,
+    #000E1A,#005577,#00C8DD,#0066FF,
+    #330099,#004466,#00AACC,#1100AA
+  ) !important;
+  background-size:400% 400% !important;
+  animation:auroraShift 10s ease-in-out infinite !important;
 }
 [data-mode="aurora"] #app{background:transparent !important}
 
-/* ── NEBULA: animated deep-space star drift ── */
-@keyframes nebulaDrift{
-  from{background-position:0 0,60px 40px,120px 80px,0 0}
-  to{background-position:150px 200px,210px 240px,270px 280px,0 0}
+/* ── NEBULA: vivid fuchsia/magenta glowing clouds ── */
+@keyframes nebulaShift{
+  0%,100%{background-position:0% 50%,100% 50%,50% 0%}
+  33%{background-position:100% 50%,0% 50%,60% 100%}
+  66%{background-position:40% 100%,60% 0%,0% 50%}
 }
 body[data-mode="nebula"]{
   background:
-    radial-gradient(circle,rgba(255,255,255,0.55) 1px,transparent 1px),
-    radial-gradient(circle,rgba(255,215,80,0.45) 1px,transparent 1px),
-    radial-gradient(circle,rgba(170,120,255,0.4) 1.5px,transparent 1.5px),
-    linear-gradient(160deg,#020210 0%,#06042A 50%,#020210 100%) !important;
-  background-size:130px 200px,200px 150px,310px 280px,auto !important;
-  background-repeat:repeat,repeat,repeat,no-repeat !important;
-  animation:nebulaDrift 90s linear infinite !important;
+    radial-gradient(ellipse 90% 70% at 20% 50%,rgba(217,70,239,0.45) 0%,transparent 65%),
+    radial-gradient(ellipse 70% 80% at 80% 40%,rgba(255,50,220,0.3) 0%,transparent 60%),
+    radial-gradient(ellipse 60% 60% at 50% 80%,rgba(140,0,200,0.35) 0%,transparent 65%),
+    #060006 !important;
+  background-size:220% 220%,220% 220%,220% 220%,auto !important;
+  animation:nebulaShift 14s ease-in-out infinite !important;
 }
 [data-mode="nebula"] #app{background:transparent !important}
 body.dragging{cursor:grabbing!important;user-select:none}
