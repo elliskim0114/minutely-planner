@@ -2,13 +2,13 @@ import { useState } from 'react'
 import { useStore } from '../store'
 import { DAYS, MONTHS, ENERGY_TIPS } from '../constants'
 import { todayStr, plannedMinutes, totalDayMinutes, toM, nowMinutes } from '../utils'
-import GCalModal from './GCalModal'
+
 
 export default function Sidebar() {
   const {
     sbCol, toggleSidebar, toggleMode, mode, view, setView,
     blocks, focuses, setFocus, cfg, intentions, setEnergy, setPriority,
-    userName, openNotif, openSignIn, gcalDone, openSettings,
+    userName, openNotif, openSignIn, openSettings,
     clearDay, addBlock, selDate,
     timeBlindn, setTimeBlindn, openReschedule, setRescheduleDelay,
     lockedDays, lockDay, unlockDay, blockMoveCounts,
@@ -20,7 +20,7 @@ export default function Sidebar() {
   } = useStore()
 
   const [lateMenuOpen, setLateMenuOpen] = useState(false)
-  const [gcalModalOpen, setGcalModalOpen] = useState(false)
+
 
   // Mini calendar
   const [miniCalMonth, setMiniCalMonth] = useState(() => new Date())
@@ -399,14 +399,6 @@ export default function Sidebar() {
 
       {/* Bottom bar */}
       <div id="sb-btm">
-        <button
-          id="gcal-btn"
-          className={`sbb${gcalDone ? ' synced' : ''}`}
-          style={{ width: 'auto', padding: '5px 9px', border: `1.5px solid ${gcalDone ? 'var(--brbd)' : 'var(--bd)'}`, borderRadius: 20, fontSize: 11, fontFamily: 'var(--font-u)', fontWeight: 500 }}
-          onClick={() => setGcalModalOpen(true)}
-        >
-          <span className="gcal-t">{gcalDone ? 'synced' : 'gcal'}</span>
-        </button>
         <div style={{ flex: 1 }} />
         <button className="sbb" onClick={openNotif} title="notifications">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -434,7 +426,6 @@ export default function Sidebar() {
           </svg>
         </button>
       </div>
-      {gcalModalOpen && <GCalModal onClose={() => setGcalModalOpen(false)} />}
     </div>
   )
 }
