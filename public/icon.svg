@@ -1,35 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#FFFDF9"/>
-      <stop offset="100%" stop-color="#F5EDE0"/>
-    </linearGradient>
-    <style>
-      @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&amp;family=Lato:wght@400&amp;display=swap');
-    </style>
-  </defs>
+  <!-- Beige background -->
+  <rect width="512" height="512" rx="110" fill="#FAF5EE"/>
 
-  <!-- Background -->
-  <rect width="512" height="512" rx="110" fill="url(#bg)"/>
+  <!-- Box 1: Orange -->
+  <rect x="136" y="124" width="240" height="72" rx="18" fill="#D9622B"/>
 
-  <!-- Day number in Playfair Display -->
-  <text
-    x="256" y="360"
-    font-family="'Playfair Display', Georgia, serif"
-    font-size="260"
-    font-weight="700"
-    fill="#1C1208"
-    text-anchor="middle"
-  >5</text>
+  <!-- Box 2: Dark brown -->
+  <rect x="136" y="220" width="240" height="72" rx="18" fill="#2C1A10"/>
 
-  <!-- Month in Lato -->
-  <text
-    x="256" y="440"
-    font-family="'Lato', 'Helvetica Neue', Arial, sans-serif"
-    font-size="56"
-    font-weight="400"
-    letter-spacing="8"
-    fill="#A07850"
-    text-anchor="middle"
-  >Apr</text>
+  <!-- Box 3: Night purple-black -->
+  <rect x="136" y="316" width="240" height="72" rx="18" fill="#100E14"/>
 </svg>
