@@ -5,7 +5,9 @@ import Anthropic from '@anthropic-ai/sdk'
 const app = express()
 const PORT = 3001
 
-app.use(cors({ origin: ['http://localhost:5173', 'http://127.0.0.1:5173'] }))
+app.use(cors({
+  origin: (origin, cb) => cb(null, true), // allow all origins (same-domain on Vercel, localhost in dev)
+}))
 app.use(express.json({ limit: '15mb' }))
 
 function getClient(reqKey?: string) {
@@ -1112,6 +1114,11 @@ Keep the total response under 160 words. Do not use markdown headers or bullet s
   }
 })
 
-app.listen(PORT, () => {
-  console.log(`minutely server running on http://localhost:${PORT}`)
-})
+// Only listen when running locally (not on Vercel serverless)
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`minutely server running on http://localhost:${PORT}`)
+  })
+}
+
+export default app
