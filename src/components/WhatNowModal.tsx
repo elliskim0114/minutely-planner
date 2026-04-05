@@ -62,10 +62,11 @@ export default function WhatNowModal({ onClose }: { onClose: () => void }) {
           todayBlocks: todayBlocks.map(b => ({ name: b.name, start: b.start, end: b.end, type: b.type, completed: b.completed })),
           profileContext: profileParts.length ? profileParts.join(', ') : undefined,
           extraContext,
-          apiKey: anthropicKey || undefined,
         }),
       })
-      const data = await res.json()
+      const raw = await res.text()
+      let data: any
+      try { data = JSON.parse(raw) } catch { throw new Error('AI service unavailable — try again shortly') }
       if (data.error) throw new Error(data.error)
       if (!data.message) throw new Error('no response from AI')
       setText(data.message)

@@ -131,8 +131,10 @@ export default function MPDView() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: aiInput, dayStart: cfg.ds, dayEnd: cfg.de }),
       })
-      if (!res.ok) throw new Error('HTTP ' + res.status)
-      const data = await res.json()
+      const raw = await res.text()
+      let data: any
+      try { data = JSON.parse(raw) } catch { throw new Error('AI service unavailable — try again shortly') }
+      if (!res.ok) throw new Error(data?.error || 'HTTP ' + res.status)
       if (Array.isArray(data) && data.length > 0) {
         setPerfectDay(data)
         showToast('AI designed your perfect day')
