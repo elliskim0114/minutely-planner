@@ -26,11 +26,9 @@ export default function MPDView() {
     view, cfg, perfectDay, wOff, applyPDToday, applyPDTo,
     openBlockModalForPD, openBlockModalEditPD, setPerfectDay,
     openShare, showToast, pendingAIPrompt, setPendingAIPrompt,
-    anthropicKey, setAnthropicKey, userProfile, goals, intentions, blocks,
+    userProfile, goals, intentions, blocks,
   } = useStore()
   const [wizardOpen, setWizardOpen] = useState(false)
-  const [showKeyInput, setShowKeyInput] = useState(false)
-  const [keyDraft, setKeyDraft] = useState('')
   const [aiInput, setAiInput] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
   const aiInputRef = useRef<HTMLTextAreaElement>(null)
@@ -131,7 +129,7 @@ export default function MPDView() {
       const res = await fetch('/api/perfect-day', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: aiInput, dayStart: cfg.ds, dayEnd: cfg.de, apiKey: anthropicKey || undefined }),
+        body: JSON.stringify({ prompt: aiInput, dayStart: cfg.ds, dayEnd: cfg.de }),
       })
       if (!res.ok) throw new Error('HTTP ' + res.status)
       const data = await res.json()
@@ -329,35 +327,7 @@ export default function MPDView() {
           <div id="mpd-ai">
             <div className="ai-ttl-row">
               <div className="ai-ttl"><span>✦</span> AI day designer</div>
-              <button
-                className={`ai-key-btn${anthropicKey ? ' set' : ''}`}
-                onClick={() => { setShowKeyInput(v => !v); setKeyDraft(anthropicKey) }}
-                title={anthropicKey ? 'API key set — click to change' : 'Set your Anthropic API key'}
-              >
-                {anthropicKey ? '🔑 key set' : '🔑 add key'}
-              </button>
             </div>
-            {showKeyInput && (
-              <div className="ai-key-row">
-                <input
-                  className="ai-key-inp"
-                  type="password"
-                  placeholder="sk-ant-api03-…"
-                  value={keyDraft}
-                  onChange={e => setKeyDraft(e.target.value)}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter') { setAnthropicKey(keyDraft.trim()); setShowKeyInput(false); showToast('API key saved') }
-                    if (e.key === 'Escape') setShowKeyInput(false)
-                  }}
-                  autoFocus
-                />
-                <button className="ai-key-save" onClick={() => { setAnthropicKey(keyDraft.trim()); setShowKeyInput(false); showToast('API key saved') }}>save</button>
-                {anthropicKey && <button className="ai-key-clear" onClick={() => { setAnthropicKey(''); setKeyDraft(''); setShowKeyInput(false) }}>clear</button>}
-              </div>
-            )}
-            {!anthropicKey && !showKeyInput && (
-              <div className="ai-no-key">⚠ Add your Anthropic API key above, then run the server: <code>cd server && npm run dev</code></div>
-            )}
 
             {/* Personalized card — shown when profile exists */}
             {personalizedPrompt && (
