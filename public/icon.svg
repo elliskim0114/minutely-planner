@@ -3,11 +3,11 @@
   <rect width="512" height="512" rx="110" fill="#FAF5EE"/>
 
   <!-- Box 1: Orange -->
-  <rect x="136" y="124" width="240" height="72" rx="18" fill="#D9622B"/>
+  <rect x="64" y="90" width="384" height="96" rx="20" fill="#D9622B"/>
 
-  <!-- Box 2: Dark brown -->
-  <rect x="136" y="220" width="240" height="72" rx="18" fill="#2C1A10"/>
+  <!-- Box 2: Lighter warm brown -->
+  <rect x="64" y="208" width="384" height="96" rx="20" fill="#6B3D28"/>
 
-  <!-- Box 3: Night purple-black -->
-  <rect x="136" y="316" width="240" height="72" rx="18" fill="#100E14"/>
+  <!-- Box 3: Night -->
+  <rect x="64" y="326" width="384" height="96" rx="20" fill="#100E14"/>
 </svg>
