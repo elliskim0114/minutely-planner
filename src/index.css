@@ -141,21 +141,21 @@
   --s2:0 4px 20px rgba(0,0,0,0.72);
   --s3:0 16px 48px rgba(0,0,0,0.88);
 }
-/* ── UNLOCKABLE THEME: neon (electric dark, unlocks at 75 gems) ── */
-[data-mode="neon"]{
-  --bg:#020202;--bg2:#080808;--bg3:#0E0E0E;
-  --surf:#060606;--surf2:#0C0C0C;
-  --bd:rgba(57,255,20,0.12);--bd2:rgba(57,255,20,0.2);
-  --ink:#F0FFE8;--ink2:#A8F070;--ink3:#4A9020;--ink4:#204800;
-  --acc:#39FF14;--acc2:#80FF50;
-  --accbg:rgba(57,255,20,0.08);--accbg2:rgba(57,255,20,0.16);
-  --nowglow:rgba(57,255,20,0.4);
-  --bfbg:#0A1400;--bfbd:#306000;--bfink:#A0FF60;
-  --brbg:#001408;--brbd:#005020;--brink:#40FF90;
-  --bsbg:#000C18;--bsbd:#003060;--bsink:#60C0FF;
-  --blbg:#140A00;--blbd:#602800;--blink:#FFA040;
-  --bdbg:#0A0A00;--bdbd:#303010;--bdink:#B0B040;
-  --past:rgba(0,0,0,0.5);--nowstrip:rgba(57,255,20,0.05);
+/* ── UNLOCKABLE THEME: nebula (deep space, unlocks at 75 gems) ── */
+[data-mode="nebula"]{
+  --bg:#020210;--bg2:#060820;--bg3:#0C1030;
+  --surf:#040618;--surf2:#080A22;
+  --bd:rgba(120,80,255,0.12);--bd2:rgba(120,80,255,0.22);
+  --ink:#EEE8FF;--ink2:#B0A0FF;--ink3:#604898;--ink4:#1A1040;
+  --acc:#8B5CF6;--acc2:#A78BFA;
+  --accbg:rgba(139,92,246,0.1);--accbg2:rgba(139,92,246,0.2);
+  --nowglow:rgba(139,92,246,0.4);
+  --bfbg:#001830;--bfbd:#004090;--bfink:#60B8FF;
+  --brbg:#001A10;--brbd:#005530;--brink:#40E890;
+  --bsbg:#0C0028;--bsbd:#4000B0;--bsink:#B060FF;
+  --blbg:#1A0C00;--blbd:#602800;--blink:#F0A040;
+  --bdbg:#0A0820;--bdbd:#303060;--bdink:#9090C0;
+  --past:rgba(0,0,0,0.55);--nowstrip:rgba(139,92,246,0.07);
   --s1:0 2px 8px rgba(0,0,0,0.7);
   --s2:0 4px 20px rgba(0,0,0,0.8);
   --s3:0 16px 48px rgba(0,0,0,0.9);
@@ -163,6 +163,40 @@
 
 html,body{height:100%;overflow:hidden;-webkit-font-smoothing:antialiased}
 body{background:var(--bg);color:var(--ink);font-family:var(--font-u);font-size:14px}
+
+/* ── AURORA: animated shifting light bands ── */
+@keyframes auroraShift{
+  0%,100%{background-position:0% 50%,100% 50%,50% 0%}
+  33%{background-position:100% 50%,0% 50%,50% 100%}
+  66%{background-position:50% 0%,50% 100%,100% 50%}
+}
+body[data-mode="aurora"]{
+  background:
+    radial-gradient(ellipse 110% 60% at 0% 50%,rgba(255,50,160,0.22) 0%,transparent 65%),
+    radial-gradient(ellipse 90% 60% at 100% 50%,rgba(0,220,160,0.16) 0%,transparent 65%),
+    radial-gradient(ellipse 80% 80% at 50% 0%,rgba(120,50,255,0.18) 0%,transparent 65%),
+    #060408 !important;
+  background-size:220% 220%,220% 220%,220% 220%,auto !important;
+  animation:auroraShift 18s ease-in-out infinite !important;
+}
+[data-mode="aurora"] #app{background:transparent !important}
+
+/* ── NEBULA: animated deep-space star drift ── */
+@keyframes nebulaDrift{
+  from{background-position:0 0,60px 40px,120px 80px,0 0}
+  to{background-position:150px 200px,210px 240px,270px 280px,0 0}
+}
+body[data-mode="nebula"]{
+  background:
+    radial-gradient(circle,rgba(255,255,255,0.55) 1px,transparent 1px),
+    radial-gradient(circle,rgba(255,215,80,0.45) 1px,transparent 1px),
+    radial-gradient(circle,rgba(170,120,255,0.4) 1.5px,transparent 1.5px),
+    linear-gradient(160deg,#020210 0%,#06042A 50%,#020210 100%) !important;
+  background-size:130px 200px,200px 150px,310px 280px,auto !important;
+  background-repeat:repeat,repeat,repeat,no-repeat !important;
+  animation:nebulaDrift 90s linear infinite !important;
+}
+[data-mode="nebula"] #app{background:transparent !important}
 body.dragging{cursor:grabbing!important;user-select:none}
 
 /* ── GLOBAL ANIMATIONS ── */

@@ -1112,12 +1112,12 @@ export const useStore = create<Store>()(
             triggerAnimal = 'dragon'
             doConfetti = true
             popup = { type: 'animal', name: 'dragon', label: 'Dragon Celebration', description: 'A dragon will soar across your screen when you earn gems!', emoji: '🐉' }
-          } else if (gems === 75 && !newModes.includes('neon')) {
-            newModes.push('neon')
+          } else if (gems === 75 && !newModes.includes('nebula')) {
+            newModes.push('nebula')
             newCelebrations.push('rocket')
             triggerAnimal = 'rocket'
             doConfetti = true
-            popup = { type: 'theme', name: 'neon', label: 'Neon Theme + Rocket', description: 'An electric neon theme AND a rocket that blasts across your screen!', emoji: '🚀' }
+            popup = { type: 'theme', name: 'nebula', label: 'Nebula Theme + Rocket', description: 'A deep space nebula theme AND a rocket that blasts across your screen!', emoji: '🚀' }
           } else if (gems === 100) {
             toastMsg = '◆ ×100 — absolute focus master!'
             doConfetti = true
@@ -1219,7 +1219,7 @@ export const useStore = create<Store>()(
           if (gems >= 20) { grantMode('forest'); grantCel('fox') }
           if (gems >= 35) grantMode('aurora')
           if (gems >= 50) grantCel('dragon')
-          if (gems >= 75) { grantMode('neon'); grantCel('rocket') }
+          if (gems >= 75) { grantMode('nebula'); grantCel('rocket') }
           if (changed) {
             // Schedule microtask so the store is fully ready
             Promise.resolve().then(() =>

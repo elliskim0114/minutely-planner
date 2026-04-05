@@ -425,8 +425,8 @@ export default function Sidebar() {
               ? <path d="M7 1L4 6H2L5 9H3L7 13L11 9H9L12 6H10L7 1Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" fill="none"/>
               : mode === 'aurora'
               ? <><path d="M1 9 C3 5 5 3 7 5 C9 7 11 5 13 9" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" fill="none"/><path d="M2 12 C4 8 6 6 7 8 C8 10 10 8 12 12" stroke="var(--acc2)" strokeWidth="1" strokeLinecap="round" fill="none" opacity=".7"/></>
-              : mode === 'neon'
-              ? <><circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.3"/><circle cx="7" cy="7" r="2" fill="none" stroke="var(--acc)" strokeWidth="1"/><path d="M7 2V1M7 13v-1M2 7H1M13 7h-1" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></>
+              : mode === 'nebula'
+              ? <><circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.3" strokeDasharray="2 1.5"/><circle cx="7" cy="7" r="1.5" fill="var(--acc)"/><path d="M3 3l.5.5M10.5 3l-.5.5M3 11l.5-.5M10.5 11l-.5-.5" stroke="var(--acc2)" strokeWidth="1" strokeLinecap="round"/></>
               : <path d="M7 1v1M7 12v1M1 7H2M12 7h1M3.5 3.5l.7.7M9.8 9.8l.7.7M3.5 10.5l.7-.7M9.8 4.2l.7-.7M5 7a2 2 0 104 0 2 2 0 00-4 0z" stroke="var(--acc)" strokeWidth="1.3" strokeLinecap="round"/>
             }
           </svg>

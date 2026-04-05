@@ -248,7 +248,7 @@ export default function SettingsModal() {
     { gems: 20,  reward: 'forest theme + fox',  emoji: '🌿', type: 'theme',     unlocked: unlockedModes.includes('forest'), themeKey: 'forest' },
     { gems: 35,  reward: 'aurora theme',        emoji: '✨', type: 'theme',     unlocked: unlockedModes.includes('aurora'), themeKey: 'aurora' },
     { gems: 50,  reward: 'dragon',              emoji: '🐉', type: 'animal',    unlocked: (unlockedCelebrations || []).includes('dragon'), animalKey: 'dragon' },
-    { gems: 75,  reward: 'neon theme + rocket', emoji: '🚀', type: 'theme',     unlocked: unlockedModes.includes('neon'),   themeKey: 'neon' },
+    { gems: 75,  reward: 'nebula theme + rocket', emoji: '🚀', type: 'theme',     unlocked: unlockedModes.includes('nebula'), themeKey: 'nebula' },
     { gems: 100, reward: 'focus master',        emoji: '💎', type: 'legendary', unlocked: focusGems >= 100 },
   ]
 
