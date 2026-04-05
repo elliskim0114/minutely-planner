@@ -58,9 +58,9 @@ app.post('/api/perfect-day', async (req, res) => {
   const system = `You are an expert personal day planner. Generate a deeply personalized daily schedule as a JSON array. Each item: {name,type,start,end}. Types: focus (deep concentrated work), routine (habits/exercise/meals), study (learning), free (breaks/admin/buffer). Times in HH:MM 24hr format. Day runs ${dayStart} to ${dayEnd}. No overlaps. 6-10 blocks. Respect the user's energy pattern — schedule deep work when they're most productive. Account for their goals and lifestyle. If they have challenges like procrastination, build in accountability blocks. Make block names specific and personal, not generic (e.g. "morning run" not just "exercise"). Return ONLY the JSON array, nothing else.${contextSection}`
 
   try {
-    const client = getClient(apiKey)
+    const client = getClient()
     const msg = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 800,
       system,
       messages: [{ role: 'user', content: 'Create my perfect day schedule: ' + prompt }],
@@ -124,9 +124,9 @@ Use ** for bold, - for bullets. Be concise and warm. Max 200 words.`
       : `Week blocks:\n${blockText}`
 
   try {
-    const client = getClient(apiKey)
+    const client = getClient()
     const msg = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 500,
       system,
       messages: [{ role: 'user', content: prompt }],
@@ -188,9 +188,9 @@ Be warm and specific. Reference actual block names and goal names. No markdown, 
     ].join('')
 
     try {
-      const client = getClient(apiKey)
+      const client = getClient()
       const msg = await client.messages.create({
-        model: 'claude-haiku-4-5-20251001',
+        model: 'claude-3-5-haiku-20241022',
         max_tokens: 500,
         system,
         messages: [{ role: 'user', content: userContent }],
@@ -230,9 +230,9 @@ For "action": only include it when you recommend adding a SPECIFIC new block at 
   ].join('')
 
   try {
-    const client = getClient(apiKey)
+    const client = getClient()
     const msg = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 600,
       system,
       messages: [{ role: 'user', content: userContent }],
@@ -303,9 +303,9 @@ Return a JSON object:
 Return ONLY the JSON object.`
 
   try {
-    const client = getClient(apiKey)
+    const client = getClient()
     const msg = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 700,
       system,
       messages: [{ role: 'user', content: description }],
@@ -374,9 +374,9 @@ Return ONLY a JSON array of new blocks:
 [{"name": "block name", "start": "HH:MM", "end": "HH:MM", "type": "focus|routine|study|free"}]`
 
   try {
-    const client = getClient(apiKey)
+    const client = getClient()
     const msg = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 800,
       system,
       messages: [{ role: 'user', content: 'Design my day.' }],
@@ -429,9 +429,9 @@ Rules:
 Return ONLY a JSON array, nothing else.`
 
   try {
-    const client = getClient(apiKey)
+    const client = getClient()
     const msg = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 800,
       system,
       messages: [{ role: 'user', content: text }],
@@ -489,7 +489,7 @@ Return ONLY a JSON array, nothing else.`
   const safeMime = VALID_MIMES.includes(mimeType) ? mimeType : 'image/jpeg'
 
   try {
-    const client = getClient(apiKey)
+    const client = getClient()
     const msg = await client.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 1024,
@@ -586,9 +586,9 @@ Create 3–7 blocks that:
 Return ONLY a JSON array: [{name, start, end, type}]`
 
   try {
-    const client = getClient(apiKey)
+    const client = getClient()
     const msg = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 600,
       system,
       messages: [{ role: 'user', content: `Build my day for ${date}` }],
@@ -643,9 +643,9 @@ Return a JSON object with two fields:
 Return ONLY the JSON object.`
 
   try {
-    const client = getClient(apiKey)
+    const client = getClient()
     const msg = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 700,
       system,
       messages: [{ role: 'user', content: `Reschedule my remaining blocks from ${currentTime}` }],
@@ -707,9 +707,9 @@ Return a JSON object:
 Return ONLY the JSON object.`
 
   try {
-    const client = getClient(apiKey)
+    const client = getClient()
     const msg = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 800,
       system,
       messages: [{ role: 'user', content: `Break down: ${goal}` }],
@@ -778,9 +778,9 @@ Return a JSON object:
 Return ONLY the JSON object.`
 
   try {
-    const client = getClient(apiKey)
+    const client = getClient()
     const msg = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 1200,
       system,
       messages: [{ role: 'user', content: `Plan my week: ${weekStr}` }],
@@ -833,9 +833,9 @@ Return 2–4 habits as a JSON array:
 Return ONLY the JSON array. If no clear patterns exist, return [].`
 
   try {
-    const client = getClient(apiKey)
+    const client = getClient()
     const msg = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 500,
       system,
       messages: [{ role: 'user', content: 'Analyze my schedule for habit patterns' }],
@@ -895,9 +895,9 @@ Return a JSON object:
 Return ONLY the JSON object.`
 
   try {
-    const client = getClient(apiKey)
+    const client = getClient()
     const msg = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 300,
       system,
       messages: [{ role: 'user', content: `What should I do right now at ${currentTime}?` }],
@@ -964,9 +964,9 @@ Return a JSON object:
 Return ONLY the JSON object.`
 
   try {
-    const client = getClient(apiKey)
+    const client = getClient()
     const msg = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 800,
       system,
       messages: [{ role: 'user', content: instruction }],
@@ -1052,9 +1052,9 @@ Most rescheduled: ${movedSummary}
 Goals: ${goalsSummary}`
 
   try {
-    const client = getClient(apiKey)
+    const client = getClient()
     const msg = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 900,
       system,
       messages: [{ role: 'user', content: userMsg }],
@@ -1099,9 +1099,9 @@ Keep the total response under 160 words. Do not use markdown headers or bullet s
   const userMsg = `It is ${currentTime}. Here is today's schedule:\n${scheduleLines || 'No blocks scheduled today.'}${extraContext ? `\n\nUser says: "${extraContext}"` : ''}`
 
   try {
-    const client = getClient(apiKey)
+    const client = getClient()
     const msg = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 300,
       system: systemPrompt,
       messages: [{ role: 'user', content: userMsg }],
