@@ -12,7 +12,7 @@ app.use(express.json({ limit: '15mb' }))
 
 function getClient(reqKey?: string) {
   const key = reqKey?.trim() || process.env.ANTHROPIC_API_KEY
-  if (!key) throw new Error('No API key — add yours in Settings (gear icon in sidebar)')
+  if (!key) throw new Error('ANTHROPIC_API_KEY not configured on server — add it to Vercel environment variables')
   return new Anthropic({ apiKey: key })
 }
 
@@ -1112,6 +1112,16 @@ Keep the total response under 160 words. Do not use markdown headers or bullet s
     console.error('what-now error:', err)
     return res.status(500).json({ error: String(err) })
   }
+})
+
+// Health check — visit /api/health to diagnose server + key status
+app.get('/api/health', (_req, res) => {
+  const hasKey = !!process.env.ANTHROPIC_API_KEY
+  res.json({
+    ok: true,
+    keyConfigured: hasKey,
+    keyPrefix: hasKey ? process.env.ANTHROPIC_API_KEY!.slice(0, 10) + '…' : null,
+  })
 })
 
 // Only listen when running locally (not on Vercel serverless)
