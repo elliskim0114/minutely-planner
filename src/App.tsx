@@ -82,6 +82,19 @@ export default function App() {
           .maybeSingle()
 
         setProfile(data)
+
+        // Restore saved preferences if user has completed onboarding before
+        if (data?.onboarding_completed && data?.preferences && !useStore.getState().onboarded) {
+          const p = data.preferences
+          useStore.getState().finishOnboarding({
+            mode: p.mode ?? 'light',
+            cfg: p.cfg ?? { tf: '12', ds: '06:00', de: '23:00', ws: 0 },
+            userName: p.userName ?? session.user.email?.split('@')[0] ?? null,
+            userEmail: session.user.email ?? null,
+            perfectDay: [],
+            userProfile: p.userProfile ?? null,
+          })
+        }
       } else {
         setProfile(null)
       }
@@ -102,6 +115,19 @@ export default function App() {
           .maybeSingle()
 
         setProfile(data)
+
+        // Restore saved preferences on sign-in
+        if (data?.onboarding_completed && data?.preferences && !useStore.getState().onboarded) {
+          const p = data.preferences
+          useStore.getState().finishOnboarding({
+            mode: p.mode ?? 'light',
+            cfg: p.cfg ?? { tf: '12', ds: '06:00', de: '23:00', ws: 0 },
+            userName: p.userName ?? newSession.user.email?.split('@')[0] ?? null,
+            userEmail: newSession.user.email ?? null,
+            perfectDay: [],
+            userProfile: p.userProfile ?? null,
+          })
+        }
       } else {
         setProfile(null)
       }

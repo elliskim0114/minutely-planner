@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useStore } from '../store'
+import { supabase, supabaseConfigured } from '../supabase'
 import type { Config, UserProfile } from '../types'
 
 const TIMEZONES = [
@@ -514,11 +515,24 @@ export default function SettingsModal() {
               </button>
             </div>
             <div className="sm-danger-zone">
-              <button className="sm-signout-btn" onClick={() => { signOut(); closeSettings() }}>
+              <button className="sm-signout-btn" onClick={async () => {
+                if (supabaseConfigured) await supabase.auth.signOut()
+                signOut()
+                closeSettings()
+              }}>
                 sign out
               </button>
-              <button className="sm-delete-btn" onClick={() => {
-                if (window.confirm('Delete all your data? This cannot be undone.')) deleteAccount()
+              <button className="sm-delete-btn" onClick={async () => {
+                if (window.confirm('Delete all your data? This cannot be undone.')) {
+                  if (supabaseConfigured) {
+                    const { data: { session } } = await supabase.auth.getSession()
+                    if (session?.user) {
+                      await supabase.from('planner_profiles').delete().eq('user_id', session.user.id)
+                    }
+                    await supabase.auth.signOut()
+                  }
+                  deleteAccount()
+                }
               }}>
                 delete account
               </button>

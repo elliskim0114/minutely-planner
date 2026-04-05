@@ -1,41 +1,45 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0.2" y2="1">
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#FFFDF9"/>
-      <stop offset="100%" stop-color="#FAF0E5"/>
+      <stop offset="100%" stop-color="#F5EDE0"/>
     </linearGradient>
   </defs>
 
-  <!-- Background -->
+  <!-- App icon background -->
   <rect width="512" height="512" rx="110" fill="url(#bg)"/>
 
-  <!-- Constellation skeleton lines (thin, behind arcs) -->
-  <line x1="80" y1="352" x2="168" y2="162" stroke="#C8703A" stroke-width="2" opacity="0.3" stroke-linecap="round"/>
-  <line x1="168" y1="162" x2="256" y2="352" stroke="#C8703A" stroke-width="2" opacity="0.3" stroke-linecap="round"/>
-  <line x1="256" y1="352" x2="344" y2="162" stroke="#C8703A" stroke-width="2" opacity="0.3" stroke-linecap="round"/>
-  <line x1="344" y1="162" x2="432" y2="352" stroke="#C8703A" stroke-width="2" opacity="0.3" stroke-linecap="round"/>
+  <!-- Calendar card -->
+  <rect x="72" y="96" width="368" height="320" rx="28" fill="white"/>
 
-  <!-- Horizon line -->
-  <line x1="56" y1="352" x2="456" y2="352" stroke="#DEAD8A" stroke-width="2.5" opacity="0.5" stroke-linecap="round"/>
+  <!-- Calendar header strip -->
+  <rect x="72" y="96" width="368" height="88" rx="28" fill="#D9622B"/>
+  <!-- Square off bottom corners of header -->
+  <rect x="72" y="156" width="368" height="28" fill="#D9622B"/>
 
-  <!-- Left sunrise arc (ellipse center 168,352  rx=88 ry=190) -->
-  <path d="M 80 352 A 88 190 0 0 0 256 352"
-        fill="none" stroke="#E8581A" stroke-width="20" stroke-linecap="round"/>
+  <!-- Ring holes -->
+  <rect x="168" y="74" width="24" height="56" rx="12" fill="#B34F1E"/>
+  <rect x="320" y="74" width="24" height="56" rx="12" fill="#B34F1E"/>
 
-  <!-- Right sunrise arc (ellipse center 344,352  rx=88 ry=190) -->
-  <path d="M 256 352 A 88 190 0 0 0 432 352"
-        fill="none" stroke="#E8581A" stroke-width="20" stroke-linecap="round"/>
+  <!-- Month label -->
+  <text
+    x="256" y="157"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="36"
+    font-weight="400"
+    letter-spacing="6"
+    fill="rgba(255,255,255,0.85)"
+    text-anchor="middle"
+  >MINUTELY</text>
 
-  <!-- Constellation node dots -->
-  <!-- Feet / baseline nodes -->
-  <circle cx="80"  cy="352" r="8"  fill="#E8581A"/>
-  <circle cx="256" cy="352" r="8"  fill="#E8581A"/>
-  <circle cx="432" cy="352" r="8"  fill="#E8581A"/>
-  <!-- Peak nodes (slightly larger — the "bright stars") -->
-  <circle cx="168" cy="162" r="11" fill="#E8581A"/>
-  <circle cx="344" cy="162" r="11" fill="#E8581A"/>
-
-  <!-- Halo rings at peaks (AI / signal pulse feel) -->
-  <circle cx="168" cy="162" r="20" fill="none" stroke="#E8581A" stroke-width="1.5" opacity="0.22"/>
-  <circle cx="344" cy="162" r="20" fill="none" stroke="#E8581A" stroke-width="1.5" opacity="0.22"/>
+  <!-- Big date number — today's feel -->
+  <text
+    x="256" y="340"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="180"
+    font-weight="700"
+    fill="#1A1410"
+    text-anchor="middle"
+    dominant-baseline="auto"
+  >1</text>
 </svg>

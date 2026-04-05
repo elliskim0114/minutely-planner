@@ -758,10 +758,10 @@ export const useStore = create<Store>()(
       closeWhatNow: () => set({ whatNowOpen: false }),
       openSignIn: () => set({ signInOpen: true }),
       closeSignIn: () => set({ signInOpen: false }),
-      signOut: () => set({ onboarded: false }),
+      signOut: () => set({ onboarded: false, userName: null, userEmail: null }),
       deleteAccount: () => {
         localStorage.removeItem('mn-store')
-        window.location.reload()
+        set({ onboarded: false, userName: null, userEmail: null })
       },
       doLateSignIn: (email, name) => {
         set({

@@ -189,7 +189,7 @@ export default function Onboarding() {
     goTo('s2')
   }
 
-  const finishSetup = () => {
+  const finishSetup = async () => {
     const profile: UserProfile | null = (occupation.trim() || energyPattern || selectedLifestyle.size > 0 || selectedChallenges.size > 0 || profileBio.trim())
       ? {
           occupation: occupation.trim(),
@@ -200,7 +200,8 @@ export default function Onboarding() {
         }
       : null
 
-    finishOnboarding({ mode, cfg: { tf, ds, de, ws: wsVal }, userName, userEmail, perfectDay: [], userProfile: profile })
+    const cfg = { tf, ds, de, ws: wsVal }
+    finishOnboarding({ mode, cfg, userName, userEmail, perfectDay: [], userProfile: profile })
 
     selectedGoals.forEach(i => {
       const g = GOAL_PRESETS[i]
@@ -208,6 +209,18 @@ export default function Onboarding() {
     })
     if (customGoal.trim()) {
       addGoal({ name: customGoal.trim(), color: customGoalColor, targetHours: 10 })
+    }
+
+    // Save preferences to Supabase so they restore on next sign-in
+    if (supabaseConfigured) {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user) {
+        await supabase.from('planner_profiles').upsert({
+          user_id: session.user.id,
+          onboarding_completed: true,
+          preferences: { mode, cfg, userName, userProfile: profile },
+        }, { onConflict: 'user_id' })
+      }
     }
   }
 
