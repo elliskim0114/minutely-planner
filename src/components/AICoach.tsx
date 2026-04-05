@@ -791,9 +791,6 @@ export default function AICoach({ onClose }: { onClose: () => void }) {
           </div>
         )}
 
-        {!anthropicKey && (tab === 'analyze' || tab === 'design' || tab === 'plan' || tab === 'study' || tab === 'review') && (
-          <div className="coach-nokey">add your Anthropic API key in settings to use AI coach</div>
-        )}
       </div>
     </div>
   )
