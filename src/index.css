@@ -867,6 +867,21 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
   transition:all .12s;
 }
 .mpd-apply-day:hover{background:var(--accbg);color:var(--acc)}
+.mpd-tmpl-dropdown{
+  position:absolute;top:calc(100% + 6px);left:0;
+  background:var(--surf);border:1.5px solid var(--bd2);
+  border-radius:12px;padding:6px;min-width:180px;
+  box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:100;
+  animation:fadeIn .12s ease both;
+}
+.mpd-tmpl-item{
+  width:100%;padding:8px 12px;border:none;background:none;
+  border-radius:8px;text-align:left;cursor:pointer;
+  font-family:var(--font-u);font-size:12px;color:var(--ink2);
+  transition:all .12s;display:flex;align-items:center;justify-content:space-between;gap:8px;
+}
+.mpd-tmpl-item:hover{background:var(--accbg);color:var(--acc)}
+.mpd-tmpl-count{font-size:10px;opacity:.5;flex-shrink:0}
 
 .mpd-acts{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
 .mpd-sec{padding:10px 16px;background:none;border:1.5px solid var(--bd2);border-radius:var(--r);font-family:var(--font-u);font-size:13px;font-weight:500;color:var(--ink2);cursor:pointer;transition:all .15s}

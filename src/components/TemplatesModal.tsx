@@ -71,6 +71,7 @@ export default function TemplatesModal({ onClose }: { onClose: () => void }) {
         {/* ── DAY TAB ── */}
         {tab === 'day' && (
           <>
+            <div className="tmpl-sub">save a day as a reusable template · edit templates visually in the <strong>perfect day</strong> view</div>
             {todayBlocks.length > 0 && (
               <div className="tmpl-save-row">
                 {saving ? (

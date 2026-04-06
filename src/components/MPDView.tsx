@@ -26,7 +26,7 @@ export default function MPDView() {
     view, cfg, perfectDay, wOff, applyPDToday, applyPDTo,
     openBlockModalForPD, openBlockModalEditPD, setPerfectDay,
     openShare, showToast, pendingAIPrompt, setPendingAIPrompt,
-    userProfile, goals, intentions, blocks, saveAsTemplate,
+    userProfile, goals, intentions, blocks, saveAsTemplate, templates,
   } = useStore()
 
   const handleApplyToday = () => {
@@ -40,7 +40,24 @@ export default function MPDView() {
   const [wizardOpen, setWizardOpen] = useState(false)
   const [aiInput, setAiInput] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
+  const [loadTmplOpen, setLoadTmplOpen] = useState(false)
   const aiInputRef = useRef<HTMLTextAreaElement>(null)
+
+  const loadTemplate = (id: number) => {
+    const tmpl = templates.find(t => t.id === id)
+    if (!tmpl) return
+    const dsM = toM(cfg.ds)
+    let cursor = dsM
+    const pdBlocks = tmpl.blocks.map(b => {
+      const start = toT(cursor)
+      const end = toT(Math.min(toM(cfg.de), cursor + b.duration))
+      cursor += b.duration
+      return { name: b.name, type: b.type as any, start, end, cc: b.cc ?? null, customName: b.customName ?? null }
+    })
+    setPerfectDay(pdBlocks)
+    setLoadTmplOpen(false)
+    showToast(`loaded "${tmpl.name}" into canvas`)
+  }
 
   // Drag-to-move state
   const [dragPDIdx, setDragPDIdx] = useState<number | null>(null)
@@ -211,6 +228,27 @@ export default function MPDView() {
             <p>design your ideal daily rhythm — apply it to any day.</p>
           </div>
           <div className="mpd-hero-acts">
+            {templates.length > 0 && (
+              <div style={{ position: 'relative' }}>
+                <button className="mpd-wizard-btn" onClick={() => setLoadTmplOpen(v => !v)}>
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M2 10V4l4-2 4 2v6H2z" stroke="currentColor" strokeWidth="1.3" fill="none" strokeLinejoin="round"/>
+                    <path d="M4.5 10V7h3v3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+                  </svg>
+                  load template
+                </button>
+                {loadTmplOpen && (
+                  <div className="mpd-tmpl-dropdown">
+                    {templates.map(t => (
+                      <button key={t.id} className="mpd-tmpl-item" onClick={() => loadTemplate(t.id)}>
+                        {t.name}
+                        <span className="mpd-tmpl-count">{t.blocks.length} blocks</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
             {perfectDay.length > 0 && (
               <button className="mpd-wizard-btn" onClick={() => {
                 const name = window.prompt('Save as template:', 'My Perfect Day')
@@ -219,6 +257,7 @@ export default function MPDView() {
                   name: b.name, type: b.type,
                   duration: toM(b.end) - toM(b.start),
                   cc: b.cc ?? null,
+                  customName: b.customName ?? null,
                 }))
                 saveAsTemplate(name.trim(), tmplBlocks)
                 showToast(`saved "${name.trim()}" as template`)
@@ -227,7 +266,7 @@ export default function MPDView() {
                   <path d="M2 2h8v8H2z" stroke="currentColor" strokeWidth="1.3" fill="none"/>
                   <path d="M4 2v3h4V2M4 7h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
                 </svg>
-                add to templates
+                save as template
               </button>
             )}
             <div className="mpd-apply-wrap">

@@ -36,6 +36,10 @@ export default function AnalyticsView() {
   const [insightsLoading, setInsightsLoading] = useState(false)
   const [insightsError, setInsightsError] = useState('')
   const [appliedIdx, setAppliedIdx] = useState<number | null>(null)
+  const [habits, setHabits] = useState<Array<{ pattern: string; suggestion: string; confidence: string; type: string }>>([])
+  const [habitsLoading, setHabitsLoading] = useState(false)
+  const [habitsError, setHabitsError] = useState('')
+  const [habitsFetched, setHabitsFetched] = useState(false)
 
   // Build last 14 days
   const today = new Date()
@@ -173,6 +177,27 @@ export default function AnalyticsView() {
     } finally {
       setInsightsLoading(false)
     }
+  }
+
+  const fetchHabits = async () => {
+    setHabitsLoading(true); setHabitsError(''); setHabitsFetched(false)
+    try {
+      const since = new Date(); since.setDate(since.getDate() - 14)
+      const sinceStr = since.toISOString().slice(0, 10)
+      const recentBlocks = blocks
+        .filter(b => b.date >= sinceStr)
+        .map(b => ({ date: b.date, start: b.start, end: b.end, name: b.name, type: b.type }))
+      const res = await fetch('/api/habits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ blocks: recentBlocks }),
+      })
+      const data = await res.json()
+      if (data.error) throw new Error(data.error)
+      setHabits(data.habits || [])
+      setHabitsFetched(true)
+    } catch (e) { setHabitsError(String(e).replace('Error: ', '')) }
+    finally { setHabitsLoading(false) }
   }
 
   const applyInsightPrompt = (prompt: string, idx: number) => {
@@ -396,6 +421,55 @@ export default function AnalyticsView() {
             <div className="av-ins-placeholder">
               <div className="av-ins-ph-icon">✦</div>
               <div className="av-ins-ph-text">click "analyze my week" to get personalized suggestions based on your scheduling patterns, energy levels, and goals</div>
+            </div>
+          )}
+        </div>
+
+        {/* Habits section */}
+        <div className="av-insights-section" style={{ marginTop: 20 }}>
+          <div className="av-insights-hdr">
+            <div>
+              <div className="av-insights-title">◷ habit patterns</div>
+              <div className="av-insights-sub">AI scans your last 14 days to surface recurring patterns and suggestions</div>
+            </div>
+            <button
+              className={`av-insights-btn${habitsLoading ? ' loading' : ''}`}
+              onClick={fetchHabits}
+              disabled={habitsLoading}
+            >
+              {habitsLoading
+                ? <><div className="av-ins-dot" /><div className="av-ins-dot" /><div className="av-ins-dot" /><span>scanning…</span></>
+                : habitsFetched ? '↺ re-scan' : '◷ detect habits'
+              }
+            </button>
+          </div>
+          {habitsError && <div className="av-ins-error">{habitsError}</div>}
+          {habitsFetched && habits.length > 0 && (
+            <div className="av-insight-cards">
+              {habits.map((h, i) => (
+                <div key={i} className={`av-insight-card coach-habit-card coach-chip-${h.type}`}>
+                  <div className="av-ins-top">
+                    <span className="av-ins-icon">◷</span>
+                    <div className="av-ins-content">
+                      <div className="av-ins-title">{h.pattern}</div>
+                      <div className="av-ins-body">{h.suggestion}</div>
+                    </div>
+                    <span className={`chc-conf chc-conf-${h.confidence}`} style={{ flexShrink: 0, alignSelf: 'flex-start' }}>{h.confidence}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          {habitsFetched && habits.length === 0 && (
+            <div className="av-ins-placeholder">
+              <div className="av-ins-ph-icon">◷</div>
+              <div className="av-ins-ph-text">no clear patterns yet — add more blocks over the next few days and scan again</div>
+            </div>
+          )}
+          {!habitsFetched && !habitsLoading && !habitsError && (
+            <div className="av-ins-placeholder">
+              <div className="av-ins-ph-icon">◷</div>
+              <div className="av-ins-ph-text">click "detect habits" to find recurring patterns in your last 14 days of scheduling</div>
             </div>
           )}
         </div>

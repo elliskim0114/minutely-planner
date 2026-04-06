@@ -27,7 +27,7 @@ interface ProposedBlock {
   selected: boolean
 }
 
-type Tab = 'analyze' | 'design' | 'plan' | 'manage' | 'study' | 'review' | 'habits'
+type Tab = 'analyze' | 'design' | 'plan' | 'manage' | 'study' | 'review'
 
 function computeFreeSlots(
   blocks: Array<{ start: string; end: string }>,
@@ -101,12 +101,6 @@ export default function AICoach({ onClose }: { onClose: () => void }) {
   const [reviewError, setReviewError] = useState('')
   const [reviewText, setReviewText] = useState('')
   const [reviewFetched, setReviewFetched] = useState(false)
-
-  // Habits tab
-  const [habitsLoading, setHabitsLoading] = useState(false)
-  const [habitsError, setHabitsError] = useState('')
-  const [habits, setHabits] = useState<Array<{ pattern: string; suggestion: string; confidence: string; type: string }>>([])
-  const [habitsFetched, setHabitsFetched] = useState(false)
 
   // Manage tab
   const [aiEditInput, setAiEditInput] = useState('')
@@ -230,27 +224,6 @@ export default function AICoach({ onClose }: { onClose: () => void }) {
       setReviewFetched(true)
     } catch (e) { setReviewError(String(e).replace('Error: ', '')) }
     finally { setReviewLoading(false) }
-  }
-
-  const fetchHabits = async () => {
-    setHabitsLoading(true); setHabitsError(''); setHabitsFetched(false)
-    try {
-      const since = new Date(); since.setDate(since.getDate() - 14)
-      const sinceStr = since.toISOString().slice(0, 10)
-      const recentBlocks = blocks
-        .filter(b => b.date >= sinceStr)
-        .map(b => ({ date: b.date, start: b.start, end: b.end, name: b.name, type: b.type }))
-      const res = await fetch('/api/habits', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ blocks: recentBlocks }),
-      })
-      const data = await res.json()
-      if (data.error) throw new Error(data.error)
-      setHabits(data.habits || [])
-      setHabitsFetched(true)
-    } catch (e) { setHabitsError(String(e).replace('Error: ', '')) }
-    finally { setHabitsLoading(false) }
   }
 
   const applySuggestion = (i: number, action: SugAction) => {
@@ -444,7 +417,6 @@ export default function AICoach({ onClose }: { onClose: () => void }) {
     { id: 'manage',   icon: '✏',  label: 'edit schedule', desc: 'change things in plain english' },
     { id: 'study',    icon: '◈',  label: 'study prep',    desc: 'build a focused study plan' },
     { id: 'review',   icon: '◐',  label: 'day review',    desc: 'reflect on how it went' },
-    { id: 'habits',   icon: '◷',  label: 'habits',        desc: 'spot patterns in your schedule' },
   ]
 
   return (
@@ -817,32 +789,6 @@ export default function AICoach({ onClose }: { onClose: () => void }) {
                 )
               })}
             </div>
-          </div>
-        )}
-
-        {/* ── HABITS ── */}
-        {tab === 'habits' && (
-          <div className="coach-simple-body">
-            {habitsFetched && habits.length > 0 && (
-              <div className="coach-habits-list">
-                {habits.map((h, i) => (
-                  <div key={i} className={`coach-habit-card coach-chip-${h.type}`}>
-                    <div className="chc-top">
-                      <span className={`chc-conf chc-conf-${h.confidence}`}>{h.confidence}</span>
-                      <span className="chc-pattern">{h.pattern}</span>
-                    </div>
-                    <div className="chc-sug">{h.suggestion}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-            {habitsFetched && habits.length === 0 && (
-              <div className="coach-empty">no clear patterns yet — add more blocks over the next few days</div>
-            )}
-            {habitsError && <div className="coach-error">{habitsError}</div>}
-            <button className={`coach-analyze-btn${habitsLoading ? ' loading' : ''}`} onClick={fetchHabits} disabled={habitsLoading}>
-              {habitsLoading ? <><span className="coach-spin" />scanning patterns…</> : habitsFetched ? '↻ re-scan' : '◷ detect my habits'}
-            </button>
           </div>
         )}
 
