@@ -47,6 +47,7 @@ export interface PDBlock {
 export interface Intentions {
   e: number // energy 0-3
   p: [string, string, string] // priorities
+  note?: string // daily journal entry
 }
 
 export interface Config {

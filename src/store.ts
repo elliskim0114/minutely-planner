@@ -183,6 +183,7 @@ type Actions = {
   setFocus: (date: string, text: string) => void
   setEnergy: (date: string, e: number) => void
   setPriority: (date: string, idx: number, val: string) => void
+  setNote: (date: string, note: string) => void
   setPerfectDay: (pd: PDBlock[]) => void
   applyPDTo: (date: string) => void
   applyPDToday: () => void
@@ -563,6 +564,10 @@ export const useStore = create<Store>()(
         const p = [...int.p] as [string, string, string]
         p[idx] = val
         return { intentions: { ...s.intentions, [date]: { ...int, p } } }
+      }),
+      setNote: (date, note) => set(s => {
+        const int = s.intentions[date] || { e: 0, p: ['', '', ''] }
+        return { intentions: { ...s.intentions, [date]: { ...int, note } } }
       }),
       setPerfectDay: (pd) => set({ perfectDay: pd }),
       applyPDTo: (date) => {

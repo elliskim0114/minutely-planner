@@ -7,7 +7,7 @@ import { todayStr, plannedMinutes, totalDayMinutes, toM, nowMinutes } from '../u
 export default function Sidebar() {
   const {
     sbCol, toggleSidebar, toggleMode, mode, view, setView,
-    blocks, focuses, setFocus, cfg, intentions, setEnergy, setPriority,
+    blocks, focuses, setFocus, cfg, intentions, setEnergy, setPriority, setNote,
     userName, openNotif, openSignIn, openSettings,
     clearDay, addBlock, selDate,
     timeBlindn, setTimeBlindn, openReschedule, setRescheduleDelay,
@@ -18,6 +18,7 @@ export default function Sidebar() {
     focusStreak, focusStreakDate,
     focusGems,
   } = useStore()
+  const [notesOpen, setNotesOpen] = useState(false)
 
   const [lateMenuOpen, setLateMenuOpen] = useState(false)
 
@@ -247,6 +248,21 @@ export default function Sidebar() {
               </div>
             </div>
 
+            {/* Journal */}
+            <div id="sb-journal">
+              <div className="sb-journal-hdr">
+                <span className="sblbl">journal</span>
+                <button className="sb-notes-btn" onClick={() => setNotesOpen(true)}>all notes</button>
+              </div>
+              <textarea
+                className="sb-journal-inp"
+                placeholder="how's your day going…"
+                value={int.note || ''}
+                key={`note-${td}`}
+                onChange={e => setNote(td, e.target.value)}
+              />
+            </div>
+
             {/* Goals section */}
             {goals.length > 0 && (
               <div className="sb-goals-section">
@@ -430,5 +446,35 @@ export default function Sidebar() {
         </button>
       </div>
     </div>
+
+    {/* All Notes modal */}
+    {notesOpen && (
+      <div className="notes-overlay" onClick={() => setNotesOpen(false)}>
+        <div className="notes-modal" onClick={e => e.stopPropagation()}>
+          <div className="notes-hdr">
+            <span className="notes-title">📝 journal</span>
+            <button className="notes-close" onClick={() => setNotesOpen(false)}>×</button>
+          </div>
+          <div className="notes-list">
+            {Object.entries(intentions)
+              .filter(([, v]) => v.note?.trim())
+              .sort((a, b) => b[0].localeCompare(a[0]))
+              .map(([date, v]) => {
+                const d = new Date(date + 'T12:00')
+                const label = d.toLocaleDateString('en', { weekday: 'long', month: 'short', day: 'numeric' })
+                return (
+                  <div key={date} className="notes-entry">
+                    <div className="notes-date">{label}</div>
+                    <div className="notes-body">{v.note}</div>
+                  </div>
+                )
+              })}
+            {Object.values(intentions).every(v => !v.note?.trim()) && (
+              <div className="notes-empty">no journal entries yet — write something in today's journal</div>
+            )}
+          </div>
+        </div>
+      </div>
+    )}
   )
 }

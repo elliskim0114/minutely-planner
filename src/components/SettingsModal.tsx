@@ -196,7 +196,7 @@ export default function SettingsModal() {
     closeSettings, cfg, setCfg, userName, setUserName, mode,
     focusGems, unlockedModes, unlockedCelebrations,
     setMode, triggerCelebration, userProfile, setUserProfile,
-    signOut, deleteAccount, typeIcons, setTypeIcon,
+    signOut, deleteAccount, typeIcons, setTypeIcon, customLabels,
   } = useStore()
 
   const [tab, setTab] = useState<Tab>('profile')
@@ -339,16 +339,33 @@ export default function SettingsModal() {
             </div>
 
             <div className="sm-section">
-              <div className="sm-sec-label">block type icons</div>
+              <div className="sm-sec-label">
+                block type icons
+                <span className="sm-sec-hint">shown in analytics & stats</span>
+              </div>
               {(['focus', 'routine', 'study', 'free'] as const).map(type => (
                 <div key={type} className="sm-icon-row">
-                  <span className="sm-icon-type">{type}</span>
+                  <span className="sm-icon-type">{typeIcons[type] || '·'} {type}</span>
                   <div className="sm-icon-opts">
                     {TYPE_ICON_OPTIONS[type].map(emoji => (
                       <button
                         key={emoji}
                         className={`sm-icon-btn${typeIcons[type] === emoji ? ' active' : ''}`}
                         onClick={() => setTypeIcon(type, emoji)}
+                      >{emoji}</button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              {customLabels.map(label => (
+                <div key={label} className="sm-icon-row">
+                  <span className="sm-icon-type">{typeIcons[label] || '·'} {label}</span>
+                  <div className="sm-icon-opts">
+                    {['✨','🔷','🎪','🌀','💫','🎭','🔶','🌸'].map(emoji => (
+                      <button
+                        key={emoji}
+                        className={`sm-icon-btn${typeIcons[label] === emoji ? ' active' : ''}`}
+                        onClick={() => setTypeIcon(label, emoji)}
                       >{emoji}</button>
                     ))}
                   </div>
