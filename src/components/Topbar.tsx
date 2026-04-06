@@ -56,8 +56,8 @@ export default function Topbar() {
       <div className="tsp" />
 
       {/* Undo / Redo */}
-      <button className="tnb tnb-ur" onClick={undo} title="undo (⌘Z)" disabled={blockHistory.length === 0}>↺</button>
-      <button className="tnb tnb-ur" onClick={redo} title="redo (⌘⇧Z)" disabled={blockFuture.length === 0}>↻</button>
+      <button className="tnb tnb-ur" onClick={undo} title="undo (⌘Z)" disabled={blockHistory.length === 0}>←</button>
+      <button className="tnb tnb-ur" onClick={redo} title="redo (⌘⇧Z)" disabled={blockFuture.length === 0}>→</button>
 
       {/* ── STAR FEATURE BUTTONS ── */}
       <div className="tb-stars">
