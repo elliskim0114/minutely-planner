@@ -988,7 +988,10 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .ai-personal-use:hover{background:var(--accbg);border-color:var(--acc)}
 #mpd-stats{flex:1;overflow-y:auto;padding:16px 20px;scrollbar-width:none}
 #mpd-stats::-webkit-scrollbar{display:none}
-.st-ttl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--ink4);margin-bottom:12px}
+.st-ttl-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.st-ttl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--ink4)}
+.st-save-tmpl{font-size:10px;color:var(--acc);background:none;border:none;cursor:pointer;padding:0;opacity:.8}
+.st-save-tmpl:hover{opacity:1}
 .st-tot{font-family:var(--font-d);font-size:24px;font-weight:700;color:var(--ink);margin-bottom:3px}
 .st-sub{font-size:11px;color:var(--ink3);margin-bottom:14px}
 .st-row{margin-bottom:11px;animation:fadeUp .25s both}

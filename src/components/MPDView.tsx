@@ -26,7 +26,7 @@ export default function MPDView() {
     view, cfg, perfectDay, wOff, applyPDToday, applyPDTo,
     openBlockModalForPD, openBlockModalEditPD, setPerfectDay,
     openShare, showToast, pendingAIPrompt, setPendingAIPrompt,
-    userProfile, goals, intentions, blocks,
+    userProfile, goals, intentions, blocks, saveAsTemplate,
   } = useStore()
   const [wizardOpen, setWizardOpen] = useState(false)
   const [aiInput, setAiInput] = useState('')
@@ -122,14 +122,15 @@ export default function MPDView() {
   }
 
   const runAI = async () => {
-    if (!aiInput.trim()) { aiInputRef.current?.focus(); return }
+    const prompt = aiInput.trim() || personalizedPrompt
+    if (!prompt) { aiInputRef.current?.focus(); return }
     setAiLoading(true)
     const sys = `You are a day planning assistant for minutely. Generate a daily schedule as a JSON array. Each item must have: name (string), type (one of: focus, routine, study, free), start (HH:MM), end (HH:MM). Day runs ${cfg.ds} to ${cfg.de}. No overlaps. 6-10 blocks. Return ONLY the JSON array, nothing else, no markdown.`
     try {
       const res = await fetch('/api/perfect-day', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: aiInput, dayStart: cfg.ds, dayEnd: cfg.de }),
+        body: JSON.stringify({ prompt, dayStart: cfg.ds, dayEnd: cfg.de }),
       })
       const raw = await res.text()
       let data: any
@@ -362,7 +363,29 @@ export default function MPDView() {
 
           {/* Stats */}
           <div id="mpd-stats">
-            <div className="st-ttl">blueprint stats</div>
+            <div className="st-ttl-row">
+              <div className="st-ttl">blueprint stats</div>
+              {perfectDay.length > 0 && (
+                <button
+                  className="st-save-tmpl"
+                  title="save as template"
+                  onClick={() => {
+                    const name = window.prompt('Template name:', 'My Perfect Day')
+                    if (!name?.trim()) return
+                    const tmplBlocks = perfectDay.map(b => ({
+                      name: b.name,
+                      type: b.type,
+                      duration: toM(b.end) - toM(b.start),
+                      cc: b.cc ?? null,
+                    }))
+                    saveAsTemplate(name.trim(), tmplBlocks)
+                    showToast(`saved "${name.trim()}" as template`)
+                  }}
+                >
+                  save as template
+                </button>
+              )}
+            </div>
             <div className="st-tot">{totalH}h{totalMin ? ` ${totalMin}m` : ''}</div>
             <div className="st-sub">total planned time</div>
             {Object.entries(by)
