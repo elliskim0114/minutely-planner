@@ -30,7 +30,16 @@
       "Bash(ls /usr/local/bin/npm*)",
       "Bash(PATH=/usr/local/bin:$PATH npm --version)",
       "Bash(/usr/local/bin/node scripts/gen-icons.mjs)",
-      "Bash(/usr/local/bin/node -e \":*)"
+      "Bash(/usr/local/bin/node -e \":*)",
+      "Bash(find /Users/charming/Documents/minutely -name *.sql -o -name schema* -o -name migration*)",
+      "Bash(sed -n '138,157p' /Users/charming/Documents/minutely/src/components/AICoach.tsx)",
+      "Bash(sed -n '205,230p' /Users/charming/Documents/minutely/src/components/AICoach.tsx)",
+      "Bash(sed -n '237,280p' /Users/charming/Documents/minutely/src/components/AICoach.tsx)",
+      "Bash(sed -i '' 's/date, apiKey: anthropicKey || undefined,/date,/g' /Users/charming/Documents/minutely/src/components/AICoach.tsx)",
+      "Bash(sed -i '' 's/apiKey: anthropicKey || undefined,//g' /Users/charming/Documents/minutely/src/components/AICoach.tsx)",
+      "Bash(/usr/local/bin/node /usr/local/bin/npm install --save-dev @vercel/node)",
+      "Bash(sed -n '325,395p' /Users/charming/Documents/minutely/server/index.ts)",
+      "Bash(sed -n '19,85p' /Users/charming/Documents/minutely/server/index.ts)"
     ]
   }
 }
