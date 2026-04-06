@@ -1114,14 +1114,29 @@ Keep the total response under 160 words. Do not use markdown headers or bullet s
   }
 })
 
-// Health check — visit /api/health to diagnose server + key status
+// Diagnostic — visits /api/ping to test key + live Anthropic call
+app.get('/api/ping', async (_req, res) => {
+  const hasKey = !!process.env.ANTHROPIC_API_KEY
+  const keyPrefix = hasKey ? process.env.ANTHROPIC_API_KEY!.slice(0, 12) + '…' : null
+  if (!hasKey) return res.json({ ok: false, reason: 'ANTHROPIC_API_KEY not set', keyPrefix: null })
+  try {
+    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+    const msg = await client.messages.create({
+      model: 'claude-3-5-haiku-20241022',
+      max_tokens: 10,
+      messages: [{ role: 'user', content: 'Say "ok"' }],
+    })
+    const text = (msg.content[0] as any).text
+    return res.json({ ok: true, keyPrefix, anthropicResponse: text })
+  } catch (err: any) {
+    return res.json({ ok: false, keyPrefix, anthropicError: String(err) })
+  }
+})
+
+// Health check
 app.get('/api/health', (_req, res) => {
   const hasKey = !!process.env.ANTHROPIC_API_KEY
-  res.json({
-    ok: true,
-    keyConfigured: hasKey,
-    keyPrefix: hasKey ? process.env.ANTHROPIC_API_KEY!.slice(0, 10) + '…' : null,
-  })
+  res.json({ ok: true, keyConfigured: hasKey, keyPrefix: hasKey ? process.env.ANTHROPIC_API_KEY!.slice(0, 10) + '…' : null })
 })
 
 // Only listen when running locally (not on Vercel serverless)
