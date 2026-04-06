@@ -2573,6 +2573,20 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .ob-name-inp{font-size:18px;text-align:center;font-weight:600;letter-spacing:.01em}
 .ob-goals-card{max-width:480px}
 
+/* ── Onboarding: PWA tip screen (s6) ── */
+.ob-pwa-card{max-width:400px;text-align:center}
+.ob-pwa-icon{font-size:48px;margin-bottom:12px}
+.ob-pwa-card .ob-qh{text-align:center}
+.ob-pwa-card .ob-qs{text-align:center;margin-bottom:20px}
+.ob-pwa-demo{background:var(--bg2);border:1.5px solid var(--bd2);border-radius:14px;padding:14px 16px;margin-bottom:18px;text-align:left}
+.ob-pwa-bar{display:flex;align-items:center;gap:8px;background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:7px 10px;margin-bottom:8px}
+.ob-pwa-url{flex:1;font-family:var(--font-m);font-size:12px;color:var(--ink3)}
+.ob-pwa-install-btn{display:flex;align-items:center;gap:5px;padding:4px 9px;background:var(--acc);color:#fff;border-radius:6px;font-family:var(--font-u);font-size:11px;font-weight:700;animation:ob-pwa-pulse 2s ease-in-out infinite}
+@keyframes ob-pwa-pulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--acc) 40%,transparent)}50%{box-shadow:0 0 0 5px color-mix(in srgb,var(--acc) 0%,transparent)}}
+.ob-pwa-hint{font-size:11px;color:var(--ink3);font-family:var(--font-u);text-align:center}
+.ob-pwa-perks{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;width:100%}
+.ob-pwa-perk{font-size:13px;color:var(--ink2);text-align:left;padding:8px 12px;background:var(--bg2);border-radius:9px;border:1px solid var(--bd)}
+
 /* ── Onboarding: coach profile screen (s5b) ── */
 .ob-profile-card{max-width:520px;overflow-y:auto;max-height:88vh}
 .ob-profile-section{margin-bottom:20px;width:100%}

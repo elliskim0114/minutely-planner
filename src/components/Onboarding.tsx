@@ -3,10 +3,10 @@ import { useStore } from '../store'
 import { supabase, supabaseConfigured } from '../supabase'
 import type { Mode, UserProfile } from '../types'
 
-type Screen = 's0' | 's1' | 's1b' | 's1c' | 's2' | 's3' | 's4' | 's5' | 's5b'
+type Screen = 's0' | 's1' | 's1b' | 's1c' | 's2' | 's3' | 's4' | 's5' | 's5b' | 's6'
 
 const DOTS: Record<Screen, number> = {
-  s0: 0, s1: 1, s1b: 1, s1c: 1, s2: 2, s3: 3, s4: 4, s5: 5, s5b: 6,
+  s0: 0, s1: 1, s1b: 1, s1c: 1, s2: 2, s3: 3, s4: 4, s5: 5, s5b: 6, s6: 7,
 }
 
 const OCCUPATION_PRESETS = [
@@ -240,7 +240,7 @@ export default function Onboarding() {
   }
 
   const dot = DOTS[screen]
-  const totalDots = 7
+  const totalDots = 8
 
   return (
     <div className="ob-root" data-mode={screen === 's0' ? undefined : mode}>
@@ -662,10 +662,40 @@ export default function Onboarding() {
             />
           </div>
 
-          <button className="ob-p" onClick={finishSetup}>
+          <button className="ob-p" onClick={() => goTo('s6')}>
             {occupation || energyPattern || selectedLifestyle.size > 0 ? `build my perfect day →` : `skip →`}
           </button>
           <button className="ob-back" onClick={() => goTo('s5')}>← back</button>
+        </div>
+      </div>
+
+      {/* ─────────────────────────────────────────────
+          S6 — PWA install tip
+      ───────────────────────────────────────────── */}
+      <div className={scrCls('s6')}>
+        <div className="ob-card ob-pwa-card">
+          <div className="ob-pwa-icon">📲</div>
+          <div className="ob-qh">one last thing — install the app</div>
+          <div className="ob-qs">minutely works best as an app on your home screen. look for the install button in your browser's address bar.</div>
+          <div className="ob-pwa-demo">
+            <div className="ob-pwa-bar">
+              <div className="ob-pwa-url">minutely.app</div>
+              <div className="ob-pwa-install-btn">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <rect x="2" y="2" width="12" height="12" rx="3" stroke="currentColor" strokeWidth="1.5"/>
+                  <path d="M8 5v5M5.5 7.5L8 10l2.5-2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                install
+              </div>
+            </div>
+            <div className="ob-pwa-hint">↑ tap this button to add minutely to your home screen</div>
+          </div>
+          <div className="ob-pwa-perks">
+            <div className="ob-pwa-perk">⚡ opens instantly, no browser chrome</div>
+            <div className="ob-pwa-perk">📴 works offline</div>
+            <div className="ob-pwa-perk">🔔 get hourly check-in reminders</div>
+          </div>
+          <button className="ob-p" onClick={finishSetup}>let's go →</button>
         </div>
       </div>
 
