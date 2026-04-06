@@ -68,7 +68,7 @@ async function handlePerfectDay(body: any, res: ServerResponse) {
   const system = `You are an expert personal day planner. Generate a deeply personalized daily schedule as a JSON array. Each item: {name,type,start,end}. Types: focus (deep concentrated work), routine (habits/exercise/meals), study (learning), free (breaks/admin/buffer). Times in HH:MM 24hr format. Day runs ${dayStart} to ${dayEnd}. No overlaps. 6-10 blocks. Respect the user's energy pattern — schedule deep work when they're most productive. Make block names specific and personal. Return ONLY the JSON array, nothing else.${contextSection}`
 
   const client = getClient()
-  const msg = await client.messages.create({ model: 'claude-3-5-haiku-20241022', max_tokens: 800, system, messages: [{ role: 'user', content: 'Create my perfect day schedule: ' + prompt }] })
+  const msg = await client.messages.create({ model: 'claude-haiku-4-5-20251001', max_tokens: 800, system, messages: [{ role: 'user', content: 'Create my perfect day schedule: ' + prompt }] })
   json(res, 200, parseJsonArray((msg.content[0] as any).text ?? ''))
 }
 
@@ -86,13 +86,13 @@ async function handleCoach(body: any, res: ServerResponse) {
   if (mode === 'review') {
     const system = `You are a warm, honest productivity coach. Write a personal, conversational day review (3–5 short paragraphs) that acknowledges accomplishments, compares against goals, reflects on priorities, and gives 1–2 suggestions for tomorrow. Be warm and specific. No markdown headers — just flowing text.`
     const userContent = [`Today (${date}) schedule:\n${schedule}`, `\nGoals progress:\n${goalsText}`, contextText ? `\n${contextText}` : '', focusHours != null ? `\nTotal focus time: ${focusHours}h` : ''].join('')
-    const msg = await client.messages.create({ model: 'claude-3-5-haiku-20241022', max_tokens: 500, system, messages: [{ role: 'user', content: userContent }] })
+    const msg = await client.messages.create({ model: 'claude-haiku-4-5-20251001', max_tokens: 500, system, messages: [{ role: 'user', content: userContent }] })
     return json(res, 200, { review: (msg.content[0] as any).text ?? '' })
   }
 
   const system = `You are a thoughtful productivity coach for minutely. Analyze the user's schedule and goals, then return a JSON array of 3–5 specific, actionable suggestions.\n\nReturn ONLY a JSON array where each item has:\n{\n  "text": "short suggestion (max 25 words, no markdown)",\n  "icon": "one symbol: ● ◎ ◈ ◐ ✦",\n  "action": { "type": "add_block", "name": "block name", "start": "HH:MM", "end": "HH:MM", "blockType": "routine" }\n}\n\nOnly include "action" when you recommend adding a SPECIFIC new block.`
   const userContent = [`My schedule for ${date}:\n${schedule}`, goals?.length ? `\nMy goals:\n${goalsText}` : '', contextText ? `\n${contextText}` : ''].join('')
-  const msg = await client.messages.create({ model: 'claude-3-5-haiku-20241022', max_tokens: 600, system, messages: [{ role: 'user', content: userContent }] })
+  const msg = await client.messages.create({ model: 'claude-haiku-4-5-20251001', max_tokens: 600, system, messages: [{ role: 'user', content: userContent }] })
   json(res, 200, { suggestions: parseJsonArray((msg.content[0] as any).text ?? '') })
 }
 
@@ -108,7 +108,7 @@ async function handleBuildDay(body: any, res: ServerResponse) {
   const system = `You are a smart day-design assistant for minutely.\n\nRules:\n- Only schedule into the FREE SLOTS listed — never overlap existing blocks\n- Energy: ${energyTxt} — ${energyTxt === 'low' ? 'keep it light' : energyTxt === 'high' ? 'front-load deep work' : 'mix focus and lighter tasks'}\n- Priorities must appear as blocks\n- Add 1–2 short break blocks (15–30min)\n- Each block: minimum 20min, maximum 120min. Round to nearest 15min.\n- Return 4–8 new blocks total\n\nDay: ${date}, ${dayStart}–${dayEnd}\nPriorities: ${prioritiesTxt}\nGoals: ${goalsTxt}\nExisting: ${existingTxt}\nFree slots: ${slotsTxt}${extraContext ? `\nExtra context: ${extraContext}` : ''}\n\nReturn ONLY a JSON array:\n[{"name":"block name","start":"HH:MM","end":"HH:MM","type":"focus|routine|study|free"}]`
 
   const client = getClient()
-  const msg = await client.messages.create({ model: 'claude-3-5-haiku-20241022', max_tokens: 800, system, messages: [{ role: 'user', content: 'Design my day.' }] })
+  const msg = await client.messages.create({ model: 'claude-haiku-4-5-20251001', max_tokens: 800, system, messages: [{ role: 'user', content: 'Design my day.' }] })
   json(res, 200, parseJsonArray((msg.content[0] as any).text ?? ''))
 }
 
@@ -119,7 +119,7 @@ async function handleFillSlots(body: any, res: ServerResponse) {
   const slotsText = freeSlots?.length ? freeSlots.map((s: any) => `${s.start}–${s.end} (${s.duration}min free)`).join('\n') : 'No free slots'
   const system = `You are a warm scheduling assistant for minutely.\n\nDate: ${date}\nDay hours: ${dayStart}–${dayEnd}\n\nExisting schedule (DO NOT overlap):\n${existingText}\n\nFree slots:\n${slotsText}\n\nThe user wants to do: "${description}"\n\nReturn a JSON object:\n{\n  "blocks": [{"name":"task name","start":"HH:MM","end":"HH:MM","type":"focus|routine|study|free"}],\n  "message": "warm 1-2 sentence summary"\n}\n\nReturn ONLY the JSON object.`
   const client = getClient()
-  const msg = await client.messages.create({ model: 'claude-3-5-haiku-20241022', max_tokens: 700, system, messages: [{ role: 'user', content: description }] })
+  const msg = await client.messages.create({ model: 'claude-haiku-4-5-20251001', max_tokens: 700, system, messages: [{ role: 'user', content: description }] })
   json(res, 200, parseJsonObject((msg.content[0] as any).text ?? ''))
 }
 
@@ -129,7 +129,7 @@ async function handleBreakdown(body: any, res: ServerResponse) {
   const existingText = existingWeekBlocks?.length ? existingWeekBlocks.map((b: any) => `${b.date} ${b.start}–${b.end}: ${b.name}`).join('\n') : 'None yet'
   const system = `You are a warm planning assistant for minutely. Break down a goal into 3–6 specific focused work sessions.\n\nGoal: "${goal}"\n${totalHours ? `Total estimated hours: ${totalHours}h` : ''}\n${deadline ? `Deadline: ${deadline}` : ''}\nStarting from: ${date}\nDay hours: ${dayStart}–${dayEnd}\n\nExisting blocks (avoid conflicts):\n${existingText}\n\nReturn a JSON object:\n{\n  "blocks": [{"name":"specific session","start":"HH:MM","end":"HH:MM","date":"YYYY-MM-DD","type":"focus","note":"brief note"}],\n  "plan": "warm 2-3 sentence overview"\n}\n\nReturn ONLY the JSON object.`
   const client = getClient()
-  const msg = await client.messages.create({ model: 'claude-3-5-haiku-20241022', max_tokens: 800, system, messages: [{ role: 'user', content: `Break down: ${goal}` }] })
+  const msg = await client.messages.create({ model: 'claude-haiku-4-5-20251001', max_tokens: 800, system, messages: [{ role: 'user', content: `Break down: ${goal}` }] })
   json(res, 200, parseJsonObject((msg.content[0] as any).text ?? ''))
 }
 
@@ -140,7 +140,7 @@ async function handleSummary(body: any, res: ServerResponse) {
   const system = `You are a thoughtful daily planner assistant for "minutely". Analyse the user's schedule and respond in structured markdown. Use:\n\n## [One punchy headline]\n\n**Stats**\n- [totals]\n\n**Highlights**\n- [2-3 bullets]\n\n**Watch out**\n- [1-2 bullets, omit if none]\n\n**Tip**\n[One short actionable sentence]\n\nBe concise and warm. Max 200 words.`
   const prompt = mode === 'day' ? `Today's focus: ${focus ?? '(none set)'}\nBlocks:\n${blockText}` : `Week blocks:\n${blockText}`
   const client = getClient()
-  const msg = await client.messages.create({ model: 'claude-3-5-haiku-20241022', max_tokens: 500, system, messages: [{ role: 'user', content: prompt }] })
+  const msg = await client.messages.create({ model: 'claude-haiku-4-5-20251001', max_tokens: 500, system, messages: [{ role: 'user', content: prompt }] })
   json(res, 200, { text: (msg.content[0] as any).text ?? '' })
 }
 
@@ -149,7 +149,7 @@ async function handleCapture(body: any, res: ServerResponse) {
   if (!text?.trim()) return json(res, 400, { error: 'text required' })
   const system = `You are a scheduling assistant for minutely. Extract all events, meetings, tasks, and deadlines from the text. Today is ${today}.\n\nReturn a JSON array. Each item:\n{\n  "name":"event name",\n  "date":"YYYY-MM-DD",\n  "start":"HH:MM",\n  "end":"HH:MM",\n  "type":"focus|routine|study|free",\n  "confidence":"high|medium|low"\n}\n\nRules: resolve relative dates, estimate end times, set null for unknown times. Return ONLY the JSON array.`
   const client = getClient()
-  const msg = await client.messages.create({ model: 'claude-3-5-haiku-20241022', max_tokens: 800, system, messages: [{ role: 'user', content: text }] })
+  const msg = await client.messages.create({ model: 'claude-haiku-4-5-20251001', max_tokens: 800, system, messages: [{ role: 'user', content: text }] })
   json(res, 200, parseJsonArray((msg.content[0] as any).text ?? ''))
 }
 
@@ -175,7 +175,7 @@ async function handleReschedule(body: any, res: ServerResponse) {
   const blockText = blocks.map((b: any) => `${b.start}–${b.end}: ${b.name} (${b.type})`).join('\n')
   const system = `You are a warm schedule assistant for minutely. Reschedule remaining blocks from ${currentTime} with 5-min gaps. Keep order and similar durations. Don't go past midnight.\n\nCurrent time: ${currentTime}\nDate: ${date}\n\nBlocks:\n${blockText}\n\nReturn ONLY a JSON object:\n{\n  "blocks":[{"name":"...","start":"HH:MM","end":"HH:MM","type":"..."}],\n  "reasoning":"warm 1-2 sentence explanation"\n}`
   const client = getClient()
-  const msg = await client.messages.create({ model: 'claude-3-5-haiku-20241022', max_tokens: 700, system, messages: [{ role: 'user', content: `Reschedule from ${currentTime}` }] })
+  const msg = await client.messages.create({ model: 'claude-haiku-4-5-20251001', max_tokens: 700, system, messages: [{ role: 'user', content: `Reschedule from ${currentTime}` }] })
   json(res, 200, parseJsonObject((msg.content[0] as any).text ?? ''))
 }
 
@@ -186,7 +186,7 @@ async function handleWeeklyPlan(body: any, res: ServerResponse) {
   const existingText = existingBlocks?.length ? existingBlocks.map((b: any) => `${b.date} ${b.start}–${b.end}: ${b.name} (${b.type})`).join('\n') : 'None yet'
   const system = `You are a warm weekly planning coach for minutely.\n\nWeek: ${weekStr}\nEnergy: ${energy}\nPriorities: ${priorities?.filter(Boolean).join(', ') || 'None set'}\n\nLast week:\n${lastWeekText}\n\nExisting this week:\n${existingText}\n\nReturn ONLY a JSON object:\n{\n  "reflection":"warm 2-sentence reflection on last week",\n  "plan":[{"date":"YYYY-MM-DD","name":"...","start":"HH:MM","end":"HH:MM","type":"focus|routine|study|free","reason":"one sentence"}],\n  "summary":"warm 2-sentence week overview"\n}`
   const client = getClient()
-  const msg = await client.messages.create({ model: 'claude-3-5-haiku-20241022', max_tokens: 1200, system, messages: [{ role: 'user', content: `Plan my week: ${weekStr}` }] })
+  const msg = await client.messages.create({ model: 'claude-haiku-4-5-20251001', max_tokens: 1200, system, messages: [{ role: 'user', content: `Plan my week: ${weekStr}` }] })
   json(res, 200, parseJsonObject((msg.content[0] as any).text ?? ''))
 }
 
@@ -196,7 +196,7 @@ async function handleHabits(body: any, res: ServerResponse) {
   const blockText = blocks.map((b: any) => `${b.date} ${b.start}–${b.end}: ${b.name} (${b.type})`).join('\n')
   const system = `You are a habit-detection assistant for minutely. Analyze the past 14 days and find patterns (same/similar names 3+ times, similar time slots).\n\nSchedule:\n${blockText}\n\nReturn 2–4 habits as a JSON array:\n[{"pattern":"what observed","suggestion":"warm suggestion","confidence":"high|medium","type":"focus|routine|study|free"}]\n\nReturn ONLY the JSON array. If no patterns, return [].`
   const client = getClient()
-  const msg = await client.messages.create({ model: 'claude-3-5-haiku-20241022', max_tokens: 500, system, messages: [{ role: 'user', content: 'Analyze my schedule for habits' }] })
+  const msg = await client.messages.create({ model: 'claude-haiku-4-5-20251001', max_tokens: 500, system, messages: [{ role: 'user', content: 'Analyze my schedule for habits' }] })
   const txt = (msg.content[0] as any).text ?? ''
   const a = txt.indexOf('['), b = txt.lastIndexOf(']')
   if (a < 0 || b <= a) return json(res, 200, { habits: [] })
@@ -211,7 +211,7 @@ async function handleManage(body: any, res: ServerResponse) {
   const blockText = blocks.map((b: any) => `[id:${b.id}] ${b.date} ${b.start}–${b.end}: ${b.name} (${b.type})`).join('\n')
   const system = `You are a schedule editor for minutely.\n\nToday: ${date}\nDay hours: ${dayStart}–${dayEnd}\n\nCurrent blocks:\n${blockText}\n\nUser instruction: "${instruction}"\n\nReturn the COMPLETE modified block list. Keep ids unchanged. No overlaps — cascade-shift if needed. New blocks get id > 100000.\n\nReturn ONLY a JSON object:\n{\n  "blocks":[{"id":number,"name":"...","start":"HH:MM","end":"HH:MM","date":"YYYY-MM-DD","type":"..."}],\n  "summary":"one warm sentence explaining changes"\n}`
   const client = getClient()
-  const msg = await client.messages.create({ model: 'claude-3-5-haiku-20241022', max_tokens: 800, system, messages: [{ role: 'user', content: instruction }] })
+  const msg = await client.messages.create({ model: 'claude-haiku-4-5-20251001', max_tokens: 800, system, messages: [{ role: 'user', content: instruction }] })
   json(res, 200, parseJsonObject((msg.content[0] as any).text ?? ''))
 }
 
@@ -227,7 +227,7 @@ async function handleAnalyticsInsights(body: any, res: ServerResponse) {
   const system = `You are a scheduling coach for minutely. Provide 4-5 sharp, specific, actionable insights grounded in the user's actual numbers.\n\nReturn ONLY a JSON object:\n{\n  "insights":[{\n    "icon":"emoji",\n    "title":"short punchy title (5-7 words)",\n    "body":"2-3 sentences with specific data. End with one concrete recommendation.",\n    "prompt":"ready-to-use AI day builder prompt"\n  }]\n}`
   const userMsg = `Focus by day: ${focusSummary}\nTotal focus: ${analytics.weekFocusH}h\nBy type: ${typeSummary}\nHealth: ${healthSummary} (avg: ${grade})\nStreak: ${analytics.currentStreak} days\nMost rescheduled: ${movedSummary}\nGoals: ${goalsSummary}`
   const client = getClient()
-  const msg = await client.messages.create({ model: 'claude-3-5-haiku-20241022', max_tokens: 900, system, messages: [{ role: 'user', content: userMsg }] })
+  const msg = await client.messages.create({ model: 'claude-haiku-4-5-20251001', max_tokens: 900, system, messages: [{ role: 'user', content: userMsg }] })
   json(res, 200, parseJsonObject((msg.content[0] as any).text ?? ''))
 }
 
@@ -237,7 +237,7 @@ async function handleWhatNow(body: any, res: ServerResponse) {
   const system = `You are an in-the-moment productivity coach. The user is asking what to do RIGHT NOW at ${currentTime}.\n\nBe direct, warm, specific. Give:\n1. One sentence acknowledging their current situation\n2. 2–3 concrete actions for the next 30–60 minutes\n3. One short encouraging line\n\nUnder 160 words. No markdown headers or bullet symbols — just natural line breaks.${profileContext ? `\n\nUser profile: ${profileContext}` : ''}`
   const userMsg = `It is ${currentTime}. Today's schedule:\n${scheduleLines || 'No blocks scheduled today.'}${extraContext ? `\n\nUser says: "${extraContext}"` : ''}`
   const client = getClient()
-  const msg = await client.messages.create({ model: 'claude-3-5-haiku-20241022', max_tokens: 300, system, messages: [{ role: 'user', content: userMsg }] })
+  const msg = await client.messages.create({ model: 'claude-haiku-4-5-20251001', max_tokens: 300, system, messages: [{ role: 'user', content: userMsg }] })
   json(res, 200, { message: (msg.content[0] as any).text?.trim() ?? '' })
 }
 
