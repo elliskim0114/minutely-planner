@@ -28,6 +28,15 @@ export default function MPDView() {
     openShare, showToast, pendingAIPrompt, setPendingAIPrompt,
     userProfile, goals, intentions, blocks, saveAsTemplate,
   } = useStore()
+
+  const handleApplyToday = () => {
+    const today = new Date().toISOString().slice(0, 10)
+    const todayHasBlocks = blocks.some(b => b.date === today)
+    if (todayHasBlocks) {
+      if (!window.confirm("Today already has blocks — applying your perfect day will replace them. Continue?")) return
+    }
+    applyPDToday()
+  }
   const [wizardOpen, setWizardOpen] = useState(false)
   const [aiInput, setAiInput] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
@@ -222,7 +231,7 @@ export default function MPDView() {
               </button>
             )}
             <div className="mpd-apply-wrap">
-              <button className="mpd-apply" onClick={applyPDToday}>
+              <button className="mpd-apply" onClick={handleApplyToday}>
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                   <path d="M2 6l3 3 5-5" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
@@ -359,6 +368,11 @@ export default function MPDView() {
               </div>
             )}
 
+            {!personalizedPrompt && perfectDay.length === 0 && (
+              <div className="ai-ready-hint">
+                ✦ your AI is ready — describe your ideal day and hit the button below
+              </div>
+            )}
             <textarea
               id="ai-inp"
               ref={aiInputRef}

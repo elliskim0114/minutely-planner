@@ -981,6 +981,7 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .ald:nth-child(2){animation-delay:.2s}.ald:nth-child(3){animation-delay:.4s}
 @keyframes aiP{0%,100%{transform:scale(1);opacity:.4}50%{transform:scale(1.6);opacity:1}}
 /* personalized card in MPD right panel */
+.ai-ready-hint{font-size:11.5px;color:var(--acc);background:color-mix(in srgb,var(--acc) 6%,var(--bg2));border:1.5px dashed color-mix(in srgb,var(--acc) 30%,var(--bd));border-radius:var(--r);padding:10px 13px;margin-bottom:10px;line-height:1.5}
 .ai-personal-card{background:color-mix(in srgb,var(--acc) 6%,var(--bg2));border:1.5px solid color-mix(in srgb,var(--acc) 25%,var(--bd));border-radius:var(--r);padding:11px 13px;margin-bottom:12px}
 .ai-personal-hdr{display:flex;align-items:center;gap:6px;font-family:var(--font-u);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--acc);margin-bottom:7px}
 .ai-personal-body{font-size:11.5px;line-height:1.55;color:var(--ink2);margin:0 0 9px}
@@ -1935,10 +1936,10 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .mc2-day.today:hover{background:var(--accbg2)}
 .mc2-day.sel{background:var(--acc);color:#fff;font-weight:700}
 .mc2-day.sel:hover{background:var(--acc2)}
-.mc2-day.sel .mc2-dot{background:#fff}
-.mc2-dot{width:3px;height:3px;border-radius:50%;background:var(--acc);flex-shrink:0}
-.mc2-day.today .mc2-dot{background:var(--acc)}
-.mc2-day.has-blocks:not(.today):not(.sel) .mc2-dot{background:var(--ink4)}
+.mc2-day.sel .mc2-dot{background:#fff;color:#fff}
+.mc2-dot{display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;min-width:13px;height:13px;padding:0 3px;border-radius:10px;background:color-mix(in srgb,var(--acc) 20%,var(--bg2));color:var(--acc);flex-shrink:0;line-height:1}
+.mc2-day.today .mc2-dot{background:color-mix(in srgb,var(--acc) 30%,transparent);color:var(--acc)}
+.mc2-day.has-blocks:not(.today):not(.sel) .mc2-dot{background:color-mix(in srgb,var(--ink4) 15%,var(--bg2));color:var(--ink3)}
 
 /* ── Plan health grade ── */
 .plan-grade{font-weight:700;font-size:12px;letter-spacing:.02em;transition:color .3s}

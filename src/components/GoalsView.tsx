@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useStore } from '../store'
 import { toM } from '../utils'
 
@@ -22,7 +22,7 @@ function ProgressRing({ pct, color, size = 80, stroke = 7 }: { pct: number; colo
 }
 
 export default function GoalsView() {
-  const { view, goals, blocks, addGoal, openGoals } = useStore()
+  const { view, goals, blocks, addGoal, openGoals, rewardedGoals, rewardGoal } = useStore()
   const [adding, setAdding] = useState(false)
   const [name, setName] = useState('')
   const [color, setColor] = useState(COLORS[1])
@@ -55,6 +55,26 @@ export default function GoalsView() {
       .sort((a, b) => b.date.localeCompare(a.date) || toM(a.start) - toM(b.start))
       .slice(0, 5)
   }
+
+  // Fire reward when a goal hits 100% for the first time in its period
+  useEffect(() => {
+    const now = new Date()
+    const weekKey = `${now.getFullYear()}-W${Math.ceil(now.getDate() / 7)}`
+    const monthKey = `${now.getFullYear()}-${now.getMonth()}`
+    const dayKey = now.toISOString().slice(0, 10)
+    goals.forEach(g => {
+      const unit = g.targetUnit || 'hours'
+      const period = g.targetPeriod || 'weekly'
+      const actual = goalActual(g.id, unit, period)
+      const pct = Math.round((actual / g.targetHours) * 100)
+      if (pct < 100) return
+      const periodKey = period === 'daily' ? dayKey : period === 'monthly' ? monthKey : weekKey
+      const rewardKey = `${g.id}-${period}-${periodKey}`
+      if (!rewardedGoals[rewardKey]) {
+        rewardGoal(rewardKey, g.name)
+      }
+    })
+  }, [blocks, goals]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const saveGoal = () => {
     if (!name.trim()) return

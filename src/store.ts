@@ -119,6 +119,7 @@ interface PersistedState {
   hiddenBuiltinTypes: string[]  // e.g. ['focus','routine'] — preset types hidden from picker
   lockedDays: Record<string, boolean>      // date → true when user has committed to that plan
   blockMoveCounts: Record<string, number>  // block name → times moved this week (pattern detection)
+  rewardedGoals: Record<string, boolean>   // "goalId-period-periodKey" → true when reward already given
   goals: Goal[]
   gid: number
   userProfile: UserProfile | null
@@ -335,6 +336,7 @@ type Actions = {
   addGoal: (goal: Omit<Goal, 'id'>) => void
   updateGoal: (id: number, patch: Partial<Goal>) => void
   deleteGoal: (id: number) => void
+  rewardGoal: (key: string, goalName: string) => void
   openGoals: () => void
   closeGoals: () => void
   showGreeting: (type: 'morning' | 'evening' | 'eodcheck') => void
@@ -383,6 +385,7 @@ export const useStore = create<Store>()(
       hiddenBuiltinTypes: [],
       lockedDays: {},
       blockMoveCounts: {},
+      rewardedGoals: {},
       goals: [],
       gid: 1,
       userProfile: null,
@@ -917,6 +920,12 @@ export const useStore = create<Store>()(
       addGoal: (goal) => set(s => ({ goals: [...s.goals, { ...goal, id: s.gid }], gid: s.gid + 1 })),
       updateGoal: (id, patch) => set(s => ({ goals: s.goals.map(g => g.id === id ? { ...g, ...patch } : g) })),
       deleteGoal: (id) => set(s => ({ goals: s.goals.filter(g => g.id !== id) })),
+      rewardGoal: (key: string, goalName: string) => {
+        set(s => ({ rewardedGoals: { ...s.rewardedGoals, [key]: true } }))
+        setTimeout(() => useStore.setState(s => ({ confettiKey: s.confettiKey + 1 })), 100)
+        setTimeout(() => useStore.getState().showToast(`🏆 goal complete — "${goalName}"! gem earned`), 200)
+        setTimeout(() => useStore.getState().earnGem(), 400)
+      },
       openGoals: () => set({ goalsOpen: true }),
       closeGoals: () => set({ goalsOpen: false }),
       lockDay: (date) => set(s => ({ lockedDays: { ...s.lockedDays, [date]: true } })),
@@ -1202,6 +1211,7 @@ export const useStore = create<Store>()(
         tourDone: state.tourDone,
         lockedDays: state.lockedDays,
         blockMoveCounts: state.blockMoveCounts,
+        rewardedGoals: state.rewardedGoals,
         goals: state.goals,
         gid: state.gid,
         userProfile: state.userProfile,

@@ -27,6 +27,9 @@ export default function Sidebar() {
   const miniCalFirst = new Date(miniCalMonth.getFullYear(), miniCalMonth.getMonth(), 1).getDay()
   const miniCalDays = new Date(miniCalMonth.getFullYear(), miniCalMonth.getMonth() + 1, 0).getDate()
   const blockDates = new Set(blocks.map(b => b.date))
+  const blockCountByDate = blocks.reduce<Record<string, number>>((acc, b) => {
+    acc[b.date] = (acc[b.date] || 0) + 1; return acc
+  }, {})
   const todayDate = new Date()
 
   const goToMiniCalDate = (day: number) => {
@@ -367,7 +370,7 @@ export default function Sidebar() {
                 return (
                   <button key={day} className={`mc2-day${isToday ? ' today' : ''}${isSel ? ' sel' : ''}${hasBlocks ? ' has-blocks' : ''}`} onClick={() => goToMiniCalDate(day)} title={ds}>
                     {day}
-                    {hasBlocks && <span className="mc2-dot" />}
+                    {hasBlocks && <span className="mc2-dot" title={`${blockCountByDate[ds]} blocks`}>{blockCountByDate[ds]}</span>}
                   </button>
                 )
               })}
