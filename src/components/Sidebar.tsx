@@ -106,6 +106,7 @@ export default function Sidebar() {
   const liveBlock = blocks.filter(b => b.date === td && toM(b.start) <= nowM && toM(b.end) > nowM)[0]
 
   return (
+    <>
     <div id="sb" className={sbCol ? 'col' : ''}>
       {/* Header */}
       <div id="sb-hdr">
@@ -476,5 +477,6 @@ export default function Sidebar() {
         </div>
       </div>
     )}
+    </>
   )
 }
