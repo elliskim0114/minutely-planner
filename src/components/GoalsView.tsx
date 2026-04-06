@@ -22,7 +22,7 @@ function ProgressRing({ pct, color, size = 80, stroke = 7 }: { pct: number; colo
 }
 
 export default function GoalsView() {
-  const { view, goals, blocks, addGoal, openGoals, rewardedGoals, rewardGoal } = useStore()
+  const { view, goals, blocks, addGoal, openGoals, rewardedGoals, rewardGoal, typeIcons } = useStore()
   const [adding, setAdding] = useState(false)
   const [name, setName] = useState('')
   const [color, setColor] = useState(COLORS[1])
@@ -168,6 +168,9 @@ export default function GoalsView() {
                           <div className="gv-ring-pct" style={{ color: g.color }}>{pct}%</div>
                           {isComplete && <div className="gv-ring-done">✓</div>}
                         </div>
+                        {typeIcons[g.name?.toLowerCase()] && (
+                          <div className="gv-ring-icon">{typeIcons[g.name?.toLowerCase()]}</div>
+                        )}
                       </div>
                       <div className="gv-card-info">
                         <div className="gv-card-name">{g.name}</div>

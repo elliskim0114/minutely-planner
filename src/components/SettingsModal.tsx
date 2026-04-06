@@ -184,12 +184,19 @@ function CoachStep(p: CoachStepProps) {
 // ── Main modal ──────────────────────────────────────────────────
 type Tab = 'profile' | 'coach' | 'rewards'
 
+const TYPE_ICON_OPTIONS: Record<string, string[]> = {
+  focus:   ['🎯','💻','🔥','⚡','🧠','✍️','🏋️','🔬'],
+  routine: ['⚡','🌅','☕','🏃','🍎','🚿','🧘','💊'],
+  study:   ['📖','📚','🎓','✏️','🔭','💡','🗒️','🧩'],
+  free:    ['☁️','🌿','🎮','🎵','☕','🌙','🛋️','🌊'],
+}
+
 export default function SettingsModal() {
   const {
     closeSettings, cfg, setCfg, userName, setUserName, mode,
     focusGems, unlockedModes, unlockedCelebrations,
     setMode, triggerCelebration, userProfile, setUserProfile,
-    signOut, deleteAccount,
+    signOut, deleteAccount, typeIcons, setTypeIcon,
   } = useStore()
 
   const [tab, setTab] = useState<Tab>('profile')
@@ -329,6 +336,24 @@ export default function SettingsModal() {
                   {TIMEZONES.map(tz => <option key={tz.value} value={tz.value}>{tz.label}</option>)}
                 </select>
               </div>
+            </div>
+
+            <div className="sm-section">
+              <div className="sm-sec-label">block type icons</div>
+              {(['focus', 'routine', 'study', 'free'] as const).map(type => (
+                <div key={type} className="sm-icon-row">
+                  <span className="sm-icon-type">{type}</span>
+                  <div className="sm-icon-opts">
+                    {TYPE_ICON_OPTIONS[type].map(emoji => (
+                      <button
+                        key={emoji}
+                        className={`sm-icon-btn${typeIcons[type] === emoji ? ' active' : ''}`}
+                        onClick={() => setTypeIcon(type, emoji)}
+                      >{emoji}</button>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
 
             <div className="sm-section">

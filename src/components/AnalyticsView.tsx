@@ -31,7 +31,7 @@ function getDateStr(d: Date) {
 }
 
 export default function AnalyticsView() {
-  const { view, blocks, goals, intentions, blockMoveCounts, openGoals, anthropicKey, setView, setPendingAIPrompt } = useStore()
+  const { view, blocks, goals, intentions, blockMoveCounts, openGoals, anthropicKey, setView, setPendingAIPrompt, typeIcons } = useStore()
   const [insights, setInsights] = useState<Insight[]>([])
   const [insightsLoading, setInsightsLoading] = useState(false)
   const [insightsError, setInsightsError] = useState('')
@@ -276,7 +276,7 @@ export default function AnalyticsView() {
                       return (
                         <div key={type} className="av-type-row">
                           <div className="av-type-hdr">
-                            <div className="av-type-dot" style={{ background: TYPE_COLORS[type] || 'var(--bd2)' }} />
+                            <span className="av-type-icon">{typeIcons[type] || ''}</span>
                             <span className="av-type-name">{type}</span>
                             <span className="av-type-val">{h}h{m ? ` ${m}m` : ''} · {pct}%</span>
                           </div>

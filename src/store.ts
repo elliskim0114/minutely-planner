@@ -117,6 +117,7 @@ interface PersistedState {
   blockMoods: Record<number, string>
   hideBuiltinCustom: boolean
   hiddenBuiltinTypes: string[]  // e.g. ['focus','routine'] — preset types hidden from picker
+  typeIcons: Record<string, string>  // type → emoji icon
   lockedDays: Record<string, boolean>      // date → true when user has committed to that plan
   blockMoveCounts: Record<string, number>  // block name → times moved this week (pattern detection)
   rewardedGoals: Record<string, boolean>   // "goalId-period-periodKey" → true when reward already given
@@ -324,6 +325,7 @@ type Actions = {
   setHideBuiltinCustom: (hide: boolean) => void
   hideBuiltinType: (t: string) => void
   showBuiltinType: (t: string) => void
+  setTypeIcon: (type: string, icon: string) => void
 
   // Commitment / lock tomorrow
   lockDay: (date: string) => void
@@ -383,6 +385,7 @@ export const useStore = create<Store>()(
       blockMoods: {},
       hideBuiltinCustom: false,
       hiddenBuiltinTypes: [],
+      typeIcons: { focus: '🎯', routine: '⚡', study: '📖', free: '☁️' },
       lockedDays: {},
       blockMoveCounts: {},
       rewardedGoals: {},
@@ -910,6 +913,7 @@ export const useStore = create<Store>()(
       closeReschedule: () => set({ rescheduleOpen: false, rescheduleDelay: 0 }),
       setRescheduleDelay: (delay) => set({ rescheduleDelay: delay }),
       setHideBuiltinCustom: (hide) => set({ hideBuiltinCustom: hide }),
+      setTypeIcon: (type, icon) => set(s => ({ typeIcons: { ...s.typeIcons, [type]: icon } })),
       hideBuiltinType: (t) => set(s => ({ hiddenBuiltinTypes: [...(s.hiddenBuiltinTypes || []), t] })),
       showBuiltinType: (t) => set(s => ({ hiddenBuiltinTypes: (s.hiddenBuiltinTypes || []).filter(x => x !== t) })),
       completeTour: () => set({ tourDone: true }),
@@ -1208,6 +1212,7 @@ export const useStore = create<Store>()(
         blockMoods: state.blockMoods,
         hideBuiltinCustom: state.hideBuiltinCustom,
         hiddenBuiltinTypes: state.hiddenBuiltinTypes,
+        typeIcons: state.typeIcons,
         tourDone: state.tourDone,
         lockedDays: state.lockedDays,
         blockMoveCounts: state.blockMoveCounts,

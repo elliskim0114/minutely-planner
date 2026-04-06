@@ -1567,6 +1567,12 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
   color:var(--ink3);margin-bottom:10px;
 }
 .sm-gems-count{font-size:13px;letter-spacing:0;font-weight:700;color:var(--acc);text-transform:none}
+.sm-icon-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.sm-icon-type{font-family:var(--font-u);font-size:11px;font-weight:600;color:var(--ink3);width:52px;flex-shrink:0;text-transform:capitalize}
+.sm-icon-opts{display:flex;gap:4px;flex-wrap:wrap}
+.sm-icon-btn{font-size:16px;width:30px;height:30px;border-radius:8px;border:1.5px solid transparent;background:var(--bg2);cursor:pointer;transition:all .12s;display:flex;align-items:center;justify-content:center}
+.sm-icon-btn:hover{border-color:var(--bd2);background:var(--surf)}
+.sm-icon-btn.active{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 10%,var(--bg2))}
 .sm-field{display:flex;flex-direction:column;gap:5px;flex:1}
 .sm-lbl{font-family:var(--font-u);font-size:11px;font-weight:600;color:var(--ink3)}
 .sm-lbl-hint{font-weight:400;color:var(--ink4)}
@@ -2076,7 +2082,7 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .av-cols{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start}
 .av-col-main{display:flex;flex-direction:column;gap:16px}
 .av-col-side{display:flex;flex-direction:column;gap:16px}
-.av-card{background:var(--surf);border:1px solid var(--bd);border-radius:14px;padding:20px}
+.av-card{background:var(--surf);border:1.5px solid var(--bd);border-radius:18px;padding:20px}
 .av-card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .av-card-ttl{font-family:var(--font-u);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin-bottom:14px}
 .av-card-hdr .av-card-ttl{margin-bottom:0}
@@ -2109,7 +2115,8 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .av-type-row{display:flex;flex-direction:column;gap:4px}
 .av-type-hdr{display:flex;align-items:center;gap:7px}
 .av-type-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.av-type-name{font-family:var(--font-u);font-size:12px;color:var(--ink2);flex:1;font-weight:500}
+.av-type-icon{font-size:14px;flex-shrink:0;line-height:1}
+.av-type-name{font-family:var(--font-u);font-size:12px;color:var(--ink2);flex:1;font-weight:500;text-transform:capitalize}
 .av-type-val{font-family:var(--font-u);font-size:11px;color:var(--ink3)}
 .av-type-bar{height:4px;background:var(--bg2);border-radius:2px;overflow:hidden}
 .av-type-fill{height:100%;border-radius:2px;transition:width .4s cubic-bezier(.22,1,.36,1)}
@@ -2120,6 +2127,8 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .av-goal-hdr{display:flex;align-items:center;gap:7px}
 .av-goal-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .av-goal-name{font-family:var(--font-u);font-size:12px;color:var(--ink2);flex:1;font-weight:500}
+.av-goal-bar{height:6px;background:var(--bg2);border-radius:3px;overflow:hidden}
+.av-goal-fill{height:100%;border-radius:3px;transition:width .4s cubic-bezier(.22,1,.36,1)}
 .av-goal-val{font-family:var(--font-u);font-size:11px;color:var(--ink3)}
 .av-goal-bar{height:5px;background:var(--bg2);border-radius:3px;overflow:hidden}
 .av-goal-fill{height:100%;border-radius:3px;transition:width .4s cubic-bezier(.22,1,.36,1)}
