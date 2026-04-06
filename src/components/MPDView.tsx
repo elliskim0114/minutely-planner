@@ -202,12 +202,25 @@ export default function MPDView() {
             <p>design your ideal daily rhythm — apply it to any day.</p>
           </div>
           <div className="mpd-hero-acts">
-            <button className="mpd-wizard-btn" onClick={() => setWizardOpen(true)}>
-              <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-                <path d="M7 1l1.5 4H13l-3.5 2.5 1.5 4L7 9.5l-4 2 1.5-4L1 5h4.5L7 1z" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinejoin="round"/>
-              </svg>
-              design with AI
-            </button>
+            {perfectDay.length > 0 && (
+              <button className="mpd-wizard-btn" onClick={() => {
+                const name = window.prompt('Save as template:', 'My Perfect Day')
+                if (!name?.trim()) return
+                const tmplBlocks = perfectDay.map(b => ({
+                  name: b.name, type: b.type,
+                  duration: toM(b.end) - toM(b.start),
+                  cc: b.cc ?? null,
+                }))
+                saveAsTemplate(name.trim(), tmplBlocks)
+                showToast(`saved "${name.trim()}" as template`)
+              }}>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 2h8v8H2z" stroke="currentColor" strokeWidth="1.3" fill="none"/>
+                  <path d="M4 2v3h4V2M4 7h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+                </svg>
+                add to templates
+              </button>
+            )}
             <div className="mpd-apply-wrap">
               <button className="mpd-apply" onClick={applyPDToday}>
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -363,29 +376,7 @@ export default function MPDView() {
 
           {/* Stats */}
           <div id="mpd-stats">
-            <div className="st-ttl-row">
-              <div className="st-ttl">blueprint stats</div>
-              {perfectDay.length > 0 && (
-                <button
-                  className="st-save-tmpl"
-                  title="save as template"
-                  onClick={() => {
-                    const name = window.prompt('Template name:', 'My Perfect Day')
-                    if (!name?.trim()) return
-                    const tmplBlocks = perfectDay.map(b => ({
-                      name: b.name,
-                      type: b.type,
-                      duration: toM(b.end) - toM(b.start),
-                      cc: b.cc ?? null,
-                    }))
-                    saveAsTemplate(name.trim(), tmplBlocks)
-                    showToast(`saved "${name.trim()}" as template`)
-                  }}
-                >
-                  save as template
-                </button>
-              )}
-            </div>
+            <div className="st-ttl">blueprint stats</div>
             <div className="st-tot">{totalH}h{totalMin ? ` ${totalMin}m` : ''}</div>
             <div className="st-sub">total planned time</div>
             {Object.entries(by)
