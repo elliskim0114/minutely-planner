@@ -262,6 +262,20 @@ export default function BlockModal() {
           </button>
         )}
 
+        {/* Note */}
+        {!isForPD && (
+          <>
+            <span className="mlbl">note <span className="mlbl-opt">(optional)</span></span>
+            <textarea
+              className="minp block-note-inp"
+              placeholder="reflections, blockers, what happened…"
+              value={note}
+              onChange={e => setNote(e.target.value)}
+              rows={2}
+            />
+          </>
+        )}
+
         <span className="mlbl">time</span>
         <div className="mrow">
           <input className="minp" type="time" value={start} onChange={e => setStart(e.target.value)} />
@@ -486,20 +500,6 @@ export default function BlockModal() {
             </button>
           )}
         </div>
-
-        {/* Note */}
-        {!isForPD && (
-          <>
-            <span className="mlbl">note <span className="mlbl-opt">(optional)</span></span>
-            <textarea
-              className="minp block-note-inp"
-              placeholder="what happened, blockers, reflections…"
-              value={note}
-              onChange={e => setNote(e.target.value)}
-              rows={2}
-            />
-          </>
-        )}
 
         {/* Actual vs planned — show when timer data exists */}
         {!isNew && !isForPD && block && (block.totalTracked || 0) > 0 && (

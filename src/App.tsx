@@ -198,7 +198,7 @@ export default function App() {
       else if (k === 'd') setView('day')
       else if (k === 'p') setView('mpd')
       else if (k === 'a') setView('analytics')
-      else if (k === 't') goToday()
+      else if (k === 't') { goToday(); setView('day') }
       else if (k === 'n') setQuickAddOpen(true)
       else if (k === 'i') openCapture()
       else if (k === 'f') openFocus()
