@@ -2253,9 +2253,19 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
   /* Main takes full width */
   #main{margin-left:0!important;width:100%}
   /* Topbar condensed */
-  #topbar{padding:0 8px;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  #topbar{padding:0 12px;gap:6px}
   .tsb{display:none}
   .tsb.tsb-ai,.tsb.tsb-capture{display:flex}
+  /* Hide sidebar toggle on mobile (no sidebar) */
+  #sb-main-tog{display:none}
+  /* Hide undo/redo on mobile */
+  .tnb-ur{display:none}
+  /* Star buttons: icon-only on mobile */
+  .tb-star{padding:8px!important;border-radius:50%!important;gap:0!important}
+  .tb-star span{display:none}
+  .tb-stars{gap:8px}
+  /* Slightly larger nav arrows */
+  .tnb-nav{width:32px!important;height:32px!important;font-size:18px!important}
   /* Analytics */
   .av-kpis{grid-template-columns:repeat(2,1fr)}
   .av-cols{grid-template-columns:1fr}
@@ -2263,10 +2273,37 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
   /* Goals modal */
   .goals-overlay{padding:0;align-items:flex-end}
   .goals-box{border-radius:20px 20px 0 0;max-height:90vh}
-  /* Block modal */
-  .mb-inner{max-width:100%;border-radius:20px 20px 0 0;position:fixed;bottom:0;left:0;right:0}
-  /* General modal overlays */
-  .tmpl-overlay,.tmpl-box{border-radius:20px 20px 0 0}
+  /* Block modal — bottom sheet */
+  .mb{align-items:flex-end!important;padding:0!important}
+  .mbox{border-radius:20px 20px 0 0!important;max-width:100%!important;width:100%!important;transform:translateY(20px)!important;padding-top:32px!important}
+  .mb.on .mbox{transform:translateY(0)!important}
+  /* Drag handle indicator */
+  .mbox::before{content:'';display:block;position:absolute;top:10px;left:50%;transform:translateX(-50%);width:36px;height:4px;background:var(--bd2);border-radius:2px}
+  .mbox{position:relative}
+  /* AI Coach — bottom sheet */
+  .coach-overlay{align-items:flex-end!important}
+  .coach-box{width:100%!important;max-width:100%!important;border-radius:24px 24px 0 0!important;max-height:88vh!important;padding-top:32px!important;position:relative}
+  .coach-box::before{content:'';display:block;position:absolute;top:10px;left:50%;transform:translateX(-50%);width:36px;height:4px;background:var(--bd2);border-radius:2px}
+  /* Templates modal — bottom sheet */
+  .tmpl-overlay{align-items:flex-end!important;padding:0!important}
+  .tmpl-box{border-radius:20px 20px 0 0!important;max-width:100%!important;width:100%!important;margin:0!important;max-height:88vh!important;overflow-y:auto!important;padding-top:32px!important;position:relative}
+  .tmpl-box::before{content:'';display:block;position:absolute;top:10px;left:50%;transform:translateX(-50%);width:36px;height:4px;background:var(--bd2);border-radius:2px}
+  /* Focus mode full width */
+  .fm-box{width:100%!important;max-width:100%!important;border-radius:24px 24px 0 0!important}
+  /* Always show play/timer btn — no hover on touch */
+  .blk-play-btn{opacity:1!important}
+  /* Slightly larger touch target for block buttons */
+  .blk-play-btn{width:22px!important;height:22px!important;font-size:10px!important}
+  /* Bottom nav larger */
+  .mob-nav{height:60px!important}
+  .mob-nav-tab{padding:0 4px!important}
+  .mob-nav-icon svg{width:20px!important;height:20px!important}
+  /* Week view smooth scroll */
+  .cg-wrap{-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+  /* Day view scroll */
+  .dv-scroll{-webkit-overflow-scrolling:touch}
+  /* Give content breathing room from nav */
+  #main{padding-bottom:68px!important}
 }
 
 @media (max-width: 480px) {
@@ -2561,12 +2598,14 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
   .av-inner{padding:16px !important}
   .av-grid{grid-template-columns:1fr !important}
   .av-insight-cards{grid-template-columns:1fr !important}
-  .fm-overlay{left:0 !important}
+  .fm-overlay{left:0;top:0;align-items:flex-end !important}
+  .fm-box{border-radius:24px 24px 0 0 !important;width:100% !important;max-width:100% !important;max-height:90vh !important}
   #main{margin-left:0 !important;width:100% !important}
-  .cg-wrap{overflow-x:auto}
-  .cg-grid{min-width:600px}
-  [class*="modal-overlay"]{align-items:flex-end !important}
-  [class*="modal-box"],[class*="-modal"]{border-radius:20px 20px 0 0 !important;width:100% !important;max-width:100% !important;margin:0 !important}
+  .cg-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+  .cg-grid{min-width:560px}
+  /* Smart capture bottom sheet */
+  .sc-overlay{align-items:flex-end !important;padding:0 !important}
+  .sc-box{border-radius:20px 20px 0 0 !important;max-width:100% !important;width:100% !important;max-height:88vh !important;margin:0 !important}
 }
 
 /* ── Onboarding: name step + goals step ── */

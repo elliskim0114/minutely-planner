@@ -1,4 +1,5 @@
 import { useStore } from '../store'
+import { todayStr } from '../utils'
 
 // SVG icons matching the app's geometric style
 const ICONS: Record<string, React.ReactNode> = {
@@ -47,19 +48,28 @@ const TABS = [
 ] as const
 
 export default function MobileNav() {
-  const { view, setView, blockModal, captureOpen, focusOpen, coachOpen, kbdOpen, whatNowOpen } = useStore()
+  const { view, setView, selDate, goToday, blockModal, captureOpen, focusOpen, coachOpen, kbdOpen, whatNowOpen } = useStore()
   const anyModalOpen = blockModal.open || captureOpen || focusOpen || coachOpen || kbdOpen || whatNowOpen
   if (anyModalOpen) return null
+  const isToday = selDate === todayStr()
   return (
     <nav className="mob-nav">
       {TABS.map(t => (
         <button
           key={t.id}
           className={`mob-nav-tab${view === t.id ? ' on' : ''}`}
-          onClick={() => setView(t.id)}
+          onClick={() => {
+            if (t.id === 'day' && view === 'day' && !isToday) {
+              goToday()
+            } else {
+              setView(t.id)
+            }
+          }}
         >
           <span className="mob-nav-icon">{ICONS[t.id]}</span>
-          <span className="mob-nav-lbl">{t.label}</span>
+          <span className="mob-nav-lbl">
+            {t.id === 'day' && view === 'day' && !isToday ? 'go today' : t.label}
+          </span>
         </button>
       ))}
     </nav>
