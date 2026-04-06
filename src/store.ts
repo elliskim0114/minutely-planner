@@ -79,6 +79,7 @@ interface UIState {
   goalsOpen: boolean
   greetingOpen: boolean
   greetingType: 'morning' | 'evening' | 'eodcheck'
+  checkinOpen: boolean
 }
 
 // ── Persisted state ──
@@ -344,6 +345,8 @@ type Actions = {
   closeGoals: () => void
   showGreeting: (type: 'morning' | 'evening' | 'eodcheck') => void
   closeGreeting: () => void
+  openCheckin: () => void
+  closeCheckin: () => void
 }
 
 type Store = PersistedState & UIState & Actions
@@ -436,6 +439,7 @@ export const useStore = create<Store>()(
       goalsOpen: false,
       greetingOpen: false,
       greetingType: 'morning' as const,
+      checkinOpen: false,
 
       // ── Actions ──
       finishOnboarding: ({ mode, cfg, userName, userEmail, perfectDay, userProfile }) => {
@@ -925,6 +929,8 @@ export const useStore = create<Store>()(
 
       showGreeting: (type) => set({ greetingOpen: true, greetingType: type }),
       closeGreeting: () => set({ greetingOpen: false }),
+      openCheckin: () => set({ checkinOpen: true }),
+      closeCheckin: () => set({ checkinOpen: false }),
 
       addGoal: (goal) => set(s => ({ goals: [...s.goals, { ...goal, id: s.gid }], gid: s.gid + 1 })),
       updateGoal: (id, patch) => set(s => ({ goals: s.goals.map(g => g.id === id ? { ...g, ...patch } : g) })),

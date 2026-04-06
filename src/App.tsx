@@ -34,6 +34,7 @@ import SettingsModal from './components/SettingsModal'
 import MobileNav from './components/MobileNav'
 import CelebrationAnimal from './components/CelebrationAnimal'
 import UnlockCelebration from './components/UnlockCelebration'
+import CoachCheckin from './components/CoachCheckin'
 
 export default function App() {
   const {
@@ -60,6 +61,7 @@ export default function App() {
     settingsOpen, closeSettings,
     showGreeting, cfg,
     seedRecurring, wOff,
+    checkinOpen, openCheckin, closeCheckin,
   } = useStore()
 
   const [quickAddOpen, setQuickAddOpen] = useState(false)
@@ -422,6 +424,29 @@ export default function App() {
     return () => clearInterval(iv)
   }, [cfg.ds, cfg.de])
 
+  // Hourly coach check-in
+  const checkinFiredRef = useRef<string | null>(null)
+  useEffect(() => {
+    const check = () => {
+      const now = new Date()
+      const m = now.getMinutes()
+      const h = now.getHours()
+      const [dsH] = cfg.ds.split(':').map(Number)
+      const [deH] = cfg.de.split(':').map(Number)
+      // Only fire during the day, on the hour (minutes 0-2), not when coach is already open
+      if (h < dsH || h >= deH) return
+      if (m > 2) return
+      const key = `${now.toISOString().slice(0, 13)}` // YYYY-MM-DDTHH
+      if (checkinFiredRef.current === key) return
+      if (useStore.getState().coachOpen) return
+      checkinFiredRef.current = key
+      openCheckin()
+    }
+    check()
+    const iv = setInterval(check, 60000)
+    return () => clearInterval(iv)
+  }, [cfg.ds, cfg.de])
+
   if (authLoading) return null
   if (!onboarded && !session) return <Onboarding />
   if (!onboarded && session && !profile?.onboarding_completed) return <Onboarding />
@@ -485,6 +510,7 @@ export default function App() {
           </div>
         </div>
       )}
+      {checkinOpen && <CoachCheckin />}
       <Confetti />
       <MobileNav />
     </div>
