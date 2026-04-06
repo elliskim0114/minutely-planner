@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type {
   Mode, View, Block, PDBlock, Config, Intentions,
-  BlockModalState, CtxMenuState, NotifSettings, QueueItem, BlockTemplate, Goal, UserProfile,
+  BlockModalState, CtxMenuState, NotifSettings, QueueItem, BlockTemplate, WeeklyTemplate, Goal, UserProfile,
 } from './types'
 import { todayStr, weekStart, dateStr, toM, toT, snap, setAppTz } from './utils'
 import { CCOLS } from './constants'
@@ -107,6 +107,8 @@ interface PersistedState {
   typeColorOverrides: Record<string, number>  // type name → ccIdx override
   templates: BlockTemplate[]
   tid: number
+  weeklyTemplates: WeeklyTemplate[]
+  wtid: number
   anthropicKey: string  // user's Anthropic API key, stored locally
   gcalClientId: string
   gcalAccessToken: string
@@ -198,7 +200,7 @@ type Actions = {
   saveBlockModal: (params: {
     name: string; start: string; end: string
     type: Block['type']; ccIdx: number | null; customName: string | null
-    repeat?: Block['repeat']; goalId?: number | null
+    repeat?: Block['repeat']; goalId?: number | null; note?: string | null
   }) => void
   deleteFromBlockModal: () => void
 
@@ -261,6 +263,10 @@ type Actions = {
   saveAsTemplate: (name: string, selectedBlocks: BlockTemplate['blocks']) => void
   deleteTemplate: (id: number) => void
   applyTemplate: (id: number, date: string, startMins: number) => void
+  // Weekly templates
+  saveAsWeeklyTemplate: (name: string, weekBlocks: Block[], weekStartDate: string) => void
+  applyWeeklyTemplate: (id: number, targetWeekStart: string) => void
+  deleteWeeklyTemplate: (id: number) => void
 
   // Time tracking
   trackTime: (id: number) => void
@@ -378,6 +384,8 @@ export const useStore = create<Store>()(
       typeColorOverrides: {},
       templates: [],
       tid: 1,
+      weeklyTemplates: [],
+      wtid: 1,
       anthropicKey: '',
       gcalClientId: '',
       gcalAccessToken: '',
@@ -614,7 +622,7 @@ export const useStore = create<Store>()(
         })
       },
       closeBlockModal: () => set({ blockModal: { ...get().blockModal, open: false } }),
-      saveBlockModal: ({ name, start, end, type, ccIdx, customName, repeat, goalId }) => {
+      saveBlockModal: ({ name, start, end, type, ccIdx, customName, repeat, goalId, note }) => {
         const { blockModal, blocks, perfectDay, nid } = get()
         const cc = type === 'custom' && ccIdx !== null ? { ...CCOLS[ccIdx] } : null
         const actualType = type === 'custom' ? 'custom' : type
@@ -635,7 +643,7 @@ export const useStore = create<Store>()(
         const MEETING_KEYWORDS = ['meeting', 'call', 'sync', 'standup', 'interview', 'demo', 'review', 'presentation', '1:1', 'one-on-one', 'oneon-one']
 
         if (blockModal.isNew) {
-          const newBlocks: Block[] = [{ id: nid, date: blockModal.date!, name, type: actualType, start, end, cc, customName, repeat: repeat || 'none', goalId: goalId ?? null }]
+          const newBlocks: Block[] = [{ id: nid, date: blockModal.date!, name, type: actualType, start, end, cc, customName, repeat: repeat || 'none', goalId: goalId ?? null, note: note || null }]
           let nextNid = nid + 1
 
           // Meeting Prep Auto-block: if it's a routine block with a meeting keyword, add a 10-min prep before it
@@ -664,7 +672,7 @@ export const useStore = create<Store>()(
         } else if (blockModal.block) {
           set({
             blocks: blocks.map(b => b.id === blockModal.block!.id
-              ? { ...b, name, type: actualType, start, end, cc, customName, repeat: repeat || b.repeat || 'none', goalId: goalId !== undefined ? goalId : b.goalId }
+              ? { ...b, name, type: actualType, start, end, cc, customName, repeat: repeat || b.repeat || 'none', goalId: goalId !== undefined ? goalId : b.goalId, note: note !== undefined ? note : b.note }
               : b
             ),
           })
@@ -860,6 +868,39 @@ export const useStore = create<Store>()(
         tid: s.tid + 1,
       })),
       deleteTemplate: (id) => set(s => ({ templates: s.templates.filter(t => t.id !== id) })),
+
+      saveAsWeeklyTemplate: (name, weekBlocks, weekStartDate) => {
+        const wsDate = new Date(weekStartDate + 'T00:00:00')
+        const templateBlocks = weekBlocks.map(b => {
+          const bDate = new Date(b.date + 'T00:00:00')
+          const weekday = Math.round((bDate.getTime() - wsDate.getTime()) / (1000 * 60 * 60 * 24))
+          return {
+            name: b.name, type: b.type, weekday: Math.max(0, Math.min(6, weekday)),
+            start: b.start, duration: toM(b.end) - toM(b.start),
+            cc: b.cc || null, customName: b.customName || null,
+          }
+        })
+        set(s => ({ weeklyTemplates: [...s.weeklyTemplates, { id: s.wtid, name, blocks: templateBlocks }], wtid: s.wtid + 1 }))
+        get().showToast(`weekly template "${name}" saved`)
+      },
+      applyWeeklyTemplate: (id, targetWeekStart) => {
+        const { weeklyTemplates, blocks, nid, cfg } = get()
+        const tmpl = weeklyTemplates.find(t => t.id === id)
+        if (!tmpl) return
+        const wsDate = new Date(targetWeekStart + 'T00:00:00')
+        let nextId = nid
+        const newBlocks: Block[] = tmpl.blocks.map(tb => {
+          const d = new Date(wsDate)
+          d.setDate(d.getDate() + tb.weekday)
+          const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+          const end = toT(Math.min(toM(cfg.de), toM(tb.start) + tb.duration))
+          return { id: nextId++, date, name: tb.name, type: tb.type as Block['type'], start: tb.start, end, cc: tb.cc || null, customName: tb.customName || null }
+        })
+        set({ blocks: [...blocks, ...newBlocks], nid: nextId })
+        get().showToast(`weekly template "${tmpl.name}" applied`)
+      },
+      deleteWeeklyTemplate: (id) => set(s => ({ weeklyTemplates: s.weeklyTemplates.filter(t => t.id !== id) })),
+
       applyTemplate: (id, date, startMins) => {
         const { templates, blocks, nid, cfg } = get()
         const tmpl = templates.find(t => t.id === id)
@@ -1212,6 +1253,8 @@ export const useStore = create<Store>()(
         typeColorOverrides: state.typeColorOverrides,
         templates: state.templates,
         tid: state.tid,
+        weeklyTemplates: state.weeklyTemplates,
+        wtid: state.wtid,
         anthropicKey: state.anthropicKey,
         gcalClientId: state.gcalClientId,
         gcalAccessToken: state.gcalAccessToken,

@@ -426,9 +426,15 @@ export default function CalendarGrid({ scrollId, numDays, getDate }: Props) {
                   <div className="bt">{fmt(b.start, cfg.tf)} – {fmt(b.end, cfg.tf)}</div>
                 )}
                 {blockMoods[b.id] && <span className="blk-mood">{blockMoods[b.id]}</span>}
+                {b.note && !isCompact && <span className="blk-note-dot" title={b.note}>·</span>}
                 {b.timerStart && !isCompact && (
                   <div className="bt blk-timer">
                     {fmtElapsed(Math.floor((Date.now() - b.timerStart) / 1000) + (b.totalTracked || 0))}
+                  </div>
+                )}
+                {!b.timerStart && (b.totalTracked || 0) > 0 && !isCompact && (
+                  <div className="bt blk-tracked">
+                    {Math.round((b.totalTracked! / 60))}m tracked
                   </div>
                 )}
               </div>

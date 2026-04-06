@@ -782,6 +782,8 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .blk:hover .blk-play-btn{opacity:1}
 .blk-play-btn.active{opacity:1;background:rgba(0,0,0,.25)}
 .blk-timer{font-family:var(--font-m);font-size:8px;opacity:.85}
+.blk-tracked{font-family:var(--font-m);font-size:8px;opacity:.7}
+.blk-note-dot{font-size:14px;line-height:1;opacity:.5;margin-left:2px}
 .blk.tracking{box-shadow:0 0 0 2px currentColor,var(--s1);animation:none}
 
 /* ── CONTEXT MENU ── */
@@ -1122,6 +1124,14 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .free-slot-btn:hover{border-color:var(--acc);color:var(--acc);background:var(--accbg)}
 .fsd{font-size:10px;color:var(--ink4);font-family:var(--font-u)}
 .free-slot-btn:hover .fsd{color:var(--acc)}
+.block-note-inp{resize:none;min-height:52px;font-size:12px}
+.mlbl-opt{font-weight:400;opacity:.55}
+.blk-tracked-row{display:flex;align-items:center;gap:6px;margin-top:10px;padding:7px 10px;background:var(--bg2);border-radius:8px;font-family:var(--font-u)}
+.btr-lbl{font-size:10px;color:var(--ink4)}
+.btr-val{font-size:12px;font-weight:700;color:var(--ink)}
+.btr-sep{font-size:10px;color:var(--ink4)}
+.btr-planned{font-size:11px;color:var(--ink3)}
+.btr-hint{margin-left:auto;font-size:10px;color:var(--acc);font-weight:600}
 .macts{display:flex;gap:6px;align-items:center;margin-top:16px}
 .mact-btn{min-width:72px;padding:7px 12px;border-radius:var(--r-sm);font-family:var(--font-u);font-size:11px;cursor:pointer;transition:all .15s var(--spring);text-align:center;white-space:nowrap}
 .mdel{background:none;border:1.5px solid #FF4D1C;color:#FF4D1C}
@@ -1254,6 +1264,10 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .tmpl-apply-btn:hover{background:var(--acc2);transform:translateY(-1px)}
 .tmpl-del-btn{width:24px;height:24px;background:none;border:1.5px solid var(--bd);border-radius:50%;font-size:14px;color:var(--ink4);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s}
 .tmpl-del-btn:hover{border-color:#FF4D1C;color:#FF4D1C;background:rgba(255,77,28,0.08)}
+.tmpl-tabs{display:flex;gap:4px;margin-bottom:14px;background:var(--bg2);border-radius:8px;padding:3px}
+.tmpl-tab{flex:1;padding:5px 0;background:none;border:none;border-radius:6px;font-family:var(--font-u);font-size:12px;font-weight:600;color:var(--ink3);cursor:pointer;transition:all .15s}
+.tmpl-tab.on{background:var(--surf);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.tmpl-apply-lbl{font-size:11px;color:var(--ink3);font-family:var(--font-u);white-space:nowrap}
 
 /* ── FOCUS MODE ── */
 .fm-overlay{position:fixed;inset:0;z-index:400;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.75);backdrop-filter:blur(16px);animation:fadeIn .2s both}
@@ -1379,6 +1393,15 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .coach-analyze-btn.loading{background:var(--bg2);color:var(--ink3);box-shadow:none;border:1.5px solid var(--bd)}
 .coach-spin{width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
 @keyframes spin{to{transform:rotate(360deg)}}
+.coach-empty{margin:16px 20px;font-size:13px;color:var(--ink4);font-style:italic;text-align:center}
+.coach-habits-list{padding:12px 20px 0;display:flex;flex-direction:column;gap:8px}
+.coach-habit-card{padding:10px 12px;border-radius:10px;border:1px solid var(--bd);background:var(--bg2);animation:floatUp .2s both}
+.chc-top{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.chc-conf{padding:1px 7px;border-radius:10px;font-family:var(--font-u);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.chc-conf-high{background:rgba(76,175,90,.15);color:#2e7d32}
+.chc-conf-medium{background:rgba(255,152,0,.15);color:#e65100}
+.chc-pattern{font-size:12px;font-weight:600;color:var(--ink)}
+.chc-sug{font-size:12px;color:var(--ink3);line-height:1.5}
 .coach-nokey{margin:0 20px 16px;font-size:11px;color:var(--ink4);text-align:center;padding:8px 12px;background:var(--bg2);border-radius:8px;border:1px solid var(--bd)}
 .coach-tabs{display:flex;gap:2px;padding:10px 16px 0;border-bottom:1px solid var(--bd)}
 .coach-tab{flex:1;padding:7px 8px;background:none;border:none;border-radius:8px 8px 0 0;font-family:var(--font-u);font-size:11px;font-weight:600;color:var(--ink3);cursor:pointer;transition:all .15s;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}

@@ -39,7 +39,12 @@
       "Bash(sed -i '' 's/apiKey: anthropicKey || undefined,//g' /Users/charming/Documents/minutely/src/components/AICoach.tsx)",
       "Bash(/usr/local/bin/node /usr/local/bin/npm install --save-dev @vercel/node)",
       "Bash(sed -n '325,395p' /Users/charming/Documents/minutely/server/index.ts)",
-      "Bash(sed -n '19,85p' /Users/charming/Documents/minutely/server/index.ts)"
+      "Bash(sed -n '19,85p' /Users/charming/Documents/minutely/server/index.ts)",
+      "Bash(vercel --prod)",
+      "Bash(npx vercel:*)",
+      "Bash(npm run:*)",
+      "Bash(/usr/local/bin/node_modules/.bin/tsc --noEmit)",
+      "Bash(node_modules/.bin/tsc --noEmit)"
     ]
   }
 }

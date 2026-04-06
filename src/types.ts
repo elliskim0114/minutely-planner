@@ -33,6 +33,7 @@ export interface Block {
   repeat?: 'none' | 'daily' | 'weekdays' | 'weekly'
   goalId?: number | null
   completed?: 'done' | 'skipped' | null
+  note?: string | null
 }
 
 export interface PDBlock {
@@ -106,4 +107,11 @@ export interface BlockTemplate {
   id: number
   name: string
   blocks: Array<{ name: string; type: string; duration: number; cc?: CustomColor | null; customName?: string | null }>
+}
+
+export interface WeeklyTemplate {
+  id: number
+  name: string
+  // each block stores weekday 0–6 (0=Sun) + start time + duration
+  blocks: Array<{ name: string; type: string; weekday: number; start: string; duration: number; cc?: CustomColor | null; customName?: string | null }>
 }

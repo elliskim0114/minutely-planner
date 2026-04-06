@@ -95,6 +95,7 @@ export default function BlockModal() {
   const [customName, setCustomName] = useState(block?.customName || '')
   const [repeat, setRepeat] = useState<Block['repeat']>(block?.repeat || 'none')
   const [goalId, setGoalId] = useState<number | null>(block?.goalId ?? null)
+  const [note, setNote] = useState(block?.note || '')
   const [savedTmpl, setSavedTmpl] = useState(false)
   const [showNewLabelInput, setShowNewLabelInput] = useState(false)
   const [newLabelVal, setNewLabelVal] = useState('')
@@ -207,6 +208,7 @@ export default function BlockModal() {
       customName: type === 'custom' ? customName || null : null,
       repeat,
       goalId,
+      note: note.trim() || null,
     })
   }
 
@@ -484,6 +486,36 @@ export default function BlockModal() {
             </button>
           )}
         </div>
+
+        {/* Note */}
+        {!isForPD && (
+          <>
+            <span className="mlbl">note <span className="mlbl-opt">(optional)</span></span>
+            <textarea
+              className="minp block-note-inp"
+              placeholder="what happened, blockers, reflections…"
+              value={note}
+              onChange={e => setNote(e.target.value)}
+              rows={2}
+            />
+          </>
+        )}
+
+        {/* Actual vs planned — show when timer data exists */}
+        {!isNew && !isForPD && block && (block.totalTracked || 0) > 0 && (
+          <div className="blk-tracked-row">
+            <span className="btr-lbl">tracked</span>
+            <span className="btr-val">{Math.round((block.totalTracked! / 60))}m</span>
+            <span className="btr-sep">vs</span>
+            <span className="btr-planned">{toM(block.end) - toM(block.start)}m planned</span>
+            {(block.totalTracked! / 60) < (toM(block.end) - toM(block.start)) * 0.8 && (
+              <span className="btr-hint">came up short</span>
+            )}
+            {(block.totalTracked! / 60) > (toM(block.end) - toM(block.start)) * 1.1 && (
+              <span className="btr-hint">ran over</span>
+            )}
+          </div>
+        )}
 
         <div className="macts">
           {!isNew && (
