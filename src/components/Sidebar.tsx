@@ -7,7 +7,7 @@ import { todayStr, plannedMinutes, totalDayMinutes, toM, nowMinutes } from '../u
 export default function Sidebar() {
   const {
     sbCol, toggleSidebar, toggleMode, mode, view, setView,
-    blocks, focuses, setFocus, cfg, intentions, setEnergy, setPriority, setNote, lockIntentions, unlockIntentions, togglePriorityDone,
+    blocks, focuses, setFocus, cfg, intentions, setEnergy, setPriority, setNote, lockIntentions, unlockIntentions, deleteDayPriorities, deleteDayNote, togglePriorityDone,
     userName, openNotif, openSignIn, openSettings,
     clearDay, addBlock, selDate,
     timeBlindn, setTimeBlindn, openReschedule, setRescheduleDelay,
@@ -170,13 +170,6 @@ export default function Sidebar() {
                       </div>
                     ) : null
                   })()}
-                  {focusGems > 0 && (
-                    <div className={`sb-gem-badge${focusGems >= 100 ? ' master' : ''}`} title={`${focusGems} focus gems earned`}>
-                      <span className="sb-gem-icon">◆</span>
-                      <span className="sb-gem-n">{focusGems}</span>
-                      {focusGems >= 100 && <span className="sb-gem-lbl">master</span>}
-                    </div>
-                  )}
                 </div>
                 <button className="clear-day-btn" title="clear all blocks for today (C)" onClick={() => clearDay(td)}>clear</button>
               </div>
@@ -239,7 +232,7 @@ export default function Sidebar() {
                   {int.locked && (
                     <button
                       className="sb-prio-unlock"
-                      onClick={() => { if (window.confirm('unlock priorities for today?')) unlockIntentions(td) }}
+                      onClick={() => unlockIntentions(td)}
                     >unlock</button>
                   )}
                 </div>
@@ -460,6 +453,13 @@ export default function Sidebar() {
 
       {/* Bottom bar */}
       <div id="sb-btm">
+        {focusGems > 0 && (
+          <div className={`sb-gem-badge${focusGems >= 100 ? ' master' : ''}`} title={`${focusGems} focus gems earned`}>
+            <span className="sb-gem-icon">◆</span>
+            <span className="sb-gem-n">{focusGems}</span>
+            {focusGems >= 100 && <span className="sb-gem-lbl">master</span>}
+          </div>
+        )}
         <div style={{ flex: 1 }} />
         <button className="sbb" onClick={openNotif} title="notifications">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -515,6 +515,7 @@ export default function Sidebar() {
                           {doneCount === filledCount ? '💎 all done' : `${doneCount}/${filledCount}`}
                         </span>
                       )}
+                      <button className="notes-del" onClick={() => deleteDayPriorities(date)} title="delete priorities for this day">×</button>
                     </div>
                     <div className="pa-plist">
                       {v.p.map((p, i) => p.trim() ? (
@@ -552,7 +553,10 @@ export default function Sidebar() {
                 const label = d.toLocaleDateString('en', { weekday: 'long', month: 'short', day: 'numeric' })
                 return (
                   <div key={date} className="notes-entry">
-                    <div className="notes-date">{label}</div>
+                    <div className="notes-date" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {label}
+                      <button className="notes-del" onClick={() => deleteDayNote(date)} title="delete this note">×</button>
+                    </div>
                     <div className="notes-body">{v.note}</div>
                   </div>
                 )

@@ -679,7 +679,7 @@ export default function Onboarding() {
           <div className="ob-qs">minutely works best as an app on your home screen. look for the install button in your browser's address bar.</div>
           <div className="ob-pwa-demo">
             <div className="ob-pwa-bar">
-              <div className="ob-pwa-url">minutely.app</div>
+              <div className="ob-pwa-url">https://minutely-planner.vercel.app/</div>
               <div className="ob-pwa-install-btn">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <rect x="2" y="2" width="12" height="12" rx="3" stroke="currentColor" strokeWidth="1.5"/>
@@ -691,7 +691,7 @@ export default function Onboarding() {
             <div className="ob-pwa-hint">↑ tap this button to add minutely to your home screen</div>
           </div>
           <div className="ob-pwa-perks">
-            <div className="ob-pwa-perk">⚡ opens instantly, no browser chrome</div>
+            <div className="ob-pwa-perk">⚡ opens instantly, no chrome browser</div>
             <div className="ob-pwa-perk">📴 works offline</div>
             <div className="ob-pwa-perk">🔔 get hourly check-in reminders</div>
           </div>

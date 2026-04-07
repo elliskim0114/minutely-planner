@@ -189,6 +189,8 @@ type Actions = {
   setNote: (date: string, note: string) => void
   lockIntentions: (date: string) => void
   unlockIntentions: (date: string) => void
+  deleteDayPriorities: (date: string) => void
+  deleteDayNote: (date: string) => void
   togglePriorityDone: (date: string, idx: number) => void
   setPerfectDay: (pd: PDBlock[]) => void
   applyPDTo: (date: string) => void
@@ -592,6 +594,14 @@ export const useStore = create<Store>()(
       unlockIntentions: (date) => set(s => {
         const int = s.intentions[date] || { e: 0, p: ['', '', ''] }
         return { intentions: { ...s.intentions, [date]: { ...int, locked: false } } }
+      }),
+      deleteDayPriorities: (date) => set(s => {
+        const int = s.intentions[date] || { e: 0, p: ['', '', ''] }
+        return { intentions: { ...s.intentions, [date]: { ...int, p: ['', '', ''], locked: false, done: [false, false, false] } } }
+      }),
+      deleteDayNote: (date) => set(s => {
+        const int = s.intentions[date] || { e: 0, p: ['', '', ''] }
+        return { intentions: { ...s.intentions, [date]: { ...int, note: '' } } }
       }),
       togglePriorityDone: (date, idx) => {
         const s = get()

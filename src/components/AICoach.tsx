@@ -54,7 +54,7 @@ function nextDayStr(fromDate: string): string {
 }
 
 export default function AICoach({ onClose }: { onClose: () => void }) {
-  const { blocks, cfg, selDate, addBlock, updateBlock, deleteBlock, showToast, goals, intentions } = useStore()
+  const { blocks, cfg, selDate, addBlock, updateBlock, deleteBlock, showToast, goals, intentions, anthropicKey } = useStore()
   const coachDefaultTab = useStore(s => s.coachDefaultTab) as Tab
   const date = selDate || todayStr()
   const todayBlocks = blocks
@@ -145,6 +145,7 @@ export default function AICoach({ onClose }: { onClose: () => void }) {
           goals: goalsContext,
           priorities: int.p.filter(Boolean),
           energy: energyLabels[int.e],
+          apiKey: anthropicKey || undefined,
           date,
         }),
       })
@@ -170,6 +171,7 @@ export default function AICoach({ onClose }: { onClose: () => void }) {
           existingBlocks: todayBlocks.map(b => ({ start: b.start, end: b.end, name: b.name, type: b.type })),
           freeSlots,
           extraContext: designContext.trim() || undefined,
+          apiKey: anthropicKey || undefined,
         }),
       })
       const raw = await res.text()
@@ -216,6 +218,7 @@ export default function AICoach({ onClose }: { onClose: () => void }) {
           goals: goalsContext,
           focusHours: Math.round(focusMins / 60 * 10) / 10,
           date,
+          apiKey: anthropicKey || undefined,
         }),
       })
       const data = await res.json()
@@ -243,7 +246,8 @@ export default function AICoach({ onClose }: { onClose: () => void }) {
         body: JSON.stringify({
           description: planDesc, freeSlots,
           existingBlocks: todayBlocks.map(b => ({ start: b.start, end: b.end, name: b.name, type: b.type })),
-          date, dayStart: cfg.ds, dayEnd: cfg.de, 
+          date, dayStart: cfg.ds, dayEnd: cfg.de,
+          apiKey: anthropicKey || undefined,
         }),
       })
       const data = await res.json()
@@ -269,7 +273,7 @@ export default function AICoach({ onClose }: { onClose: () => void }) {
           goal: studyGoal, totalHours: parseFloat(studyHours) || undefined,
           deadline: studyDeadline || undefined, date, dayStart: cfg.ds, dayEnd: cfg.de,
           existingWeekBlocks: weekBlocks.map(b => ({ date: b.date, start: b.start, end: b.end, name: b.name, type: b.type })),
-          
+          apiKey: anthropicKey || undefined,
         }),
       })
       const data = await res.json()
@@ -372,7 +376,7 @@ export default function AICoach({ onClose }: { onClose: () => void }) {
         body: JSON.stringify({
           blocks: todayBlocks.map(b => ({ id: b.id, name: b.name, start: b.start, end: b.end, date: b.date, type: b.type })),
           instruction: aiEditInput, date, dayStart: cfg.ds, dayEnd: cfg.de,
-          
+          apiKey: anthropicKey || undefined,
         }),
       })
       const data = await res.json()

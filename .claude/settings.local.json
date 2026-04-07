@@ -44,7 +44,16 @@
       "Bash(npx vercel:*)",
       "Bash(npm run:*)",
       "Bash(/usr/local/bin/node_modules/.bin/tsc --noEmit)",
-      "Bash(node_modules/.bin/tsc --noEmit)"
+      "Bash(node_modules/.bin/tsc --noEmit)",
+      "Bash(/Users/charming/.nvm/versions/node/v22.14.0/bin/npm run:*)",
+      "Bash(/usr/local/bin/node /usr/local/bin/npx vite build)",
+      "Bash(source ~/.zshrc)",
+      "Bash(npm --version)",
+      "Bash(source ~/.nvm/nvm.sh)",
+      "Bash(nvm use:*)",
+      "Bash(PATH=\"/usr/local/bin:$PATH\" node --version)",
+      "Bash(PATH=\"/usr/local/bin:$PATH\" node /Users/charming/Documents/minutely/node_modules/.bin/tsc --noEmit)",
+      "Bash(PATH=\"/usr/local/bin:$PATH\" node node_modules/.bin/tsc --noEmit)"
     ]
   }
 }
