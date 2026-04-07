@@ -51,24 +51,7 @@ export default function Sidebar() {
   const circumference = 2 * Math.PI * 17
   const strokeDash = circumference - (pct / 100) * circumference
 
-  // Plan health score
-  const todayBlocks = blocks.filter(b => b.date === td)
-  const hasFocus = todayBlocks.some(b => b.type === 'focus')
-  const hasFreeBuffer = todayBlocks.some(b => (b.type === 'free' || b.type === 'routine') && (toM(b.end) - toM(b.start)) >= 15)
-  let healthScore = 50
-  if (pct >= 60 && pct <= 85) healthScore += 20
-  else if (pct > 85 && pct <= 95) healthScore += 5
-  else if (pct > 95) healthScore -= 15
-  else if (pct >= 40) healthScore += 10
-  if (hasFocus) healthScore += 15
-  if (hasFreeBuffer) healthScore += 15
-  if (int.p.filter(Boolean).length > 0 && todayBlocks.length > 0) healthScore += 10
-  if (todayBlocks.length >= 3) healthScore += 5
-  if (int.e > 0) healthScore += 5
-  healthScore = Math.max(0, Math.min(100, healthScore))
-  const grade = healthScore >= 90 ? 'A' : healthScore >= 75 ? 'B' : healthScore >= 60 ? 'C' : healthScore >= 45 ? 'D' : 'F'
-  const gradeColor = healthScore >= 90 ? '#4CAF8A' : healthScore >= 75 ? '#7BB3FF' : healthScore >= 60 ? '#E8C24A' : '#FF7070'
-  const gradeTip = healthScore >= 90 ? 'solid plan' : healthScore >= 75 ? 'good shape' : healthScore >= 60 ? 'could use buffer' : 'overloaded or sparse'
+
 
   // Tomorrow lock
   const tomorrowStr = (() => {
@@ -155,10 +138,7 @@ export default function Sidebar() {
                 </div>
                 <div className="fill-lbl">
                   <div id="fl-main" className="flm">{h}h{m ? ` ${m}m` : ''} planned</div>
-                  <div id="fl-sub" className="fls">
-                    plan health:&nbsp;
-                    <span className="plan-grade" style={{ color: gradeColor }} title={gradeTip}>{grade}</span>
-                  </div>
+
                   {(() => {
                     const today2 = new Date().toISOString().slice(0, 10)
                     const yesterday2 = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10)
