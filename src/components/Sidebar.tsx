@@ -7,7 +7,7 @@ import { todayStr, plannedMinutes, totalDayMinutes, toM, nowMinutes } from '../u
 export default function Sidebar() {
   const {
     sbCol, toggleSidebar, toggleMode, mode, view, setView,
-    blocks, focuses, setFocus, cfg, intentions, setEnergy, setPriority, setNote,
+    blocks, focuses, setFocus, cfg, intentions, setEnergy, setPriority, setNote, lockIntentions, unlockIntentions,
     userName, openNotif, openSignIn, openSettings,
     clearDay, addBlock, selDate,
     timeBlindn, setTimeBlindn, openReschedule, setRescheduleDelay,
@@ -231,22 +231,46 @@ export default function Sidebar() {
 
             {/* Priorities */}
             <div id="sb-prio">
-              <span className="sblbl">priorities</span>
-              <div className="plist">
+              <div className="sb-prio-hdr">
+                <span className="sblbl">priorities</span>
+                {int.locked && (
+                  <button
+                    className="sb-prio-unlock"
+                    onClick={() => { if (window.confirm('unlock priorities for today?')) unlockIntentions(td) }}
+                    title="unlock priorities"
+                  >🔓 unlock</button>
+                )}
+              </div>
+              <div className={`plist${int.locked ? ' locked' : ''}`}>
                 {[0, 1, 2].map(i => (
                   <div key={i} className="prow">
                     <span className="pnum">{i + 1}</span>
-                    <input
-                      className="pinp"
-                      placeholder={`priority ${i + 1}`}
-                      defaultValue={int.p[i] || ''}
-                      key={`${td}-${i}`}
-                      onChange={e => setPriority(td, i, e.target.value)}
-                      onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur() }}
-                    />
+                    {int.locked ? (
+                      <span className="pinp-locked">{int.p[i] || <em className="pinp-empty">—</em>}</span>
+                    ) : (
+                      <input
+                        className="pinp"
+                        placeholder={`priority ${i + 1}`}
+                        defaultValue={int.p[i] || ''}
+                        key={`${td}-${i}`}
+                        onChange={e => setPriority(td, i, e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur() }}
+                      />
+                    )}
                   </div>
                 ))}
               </div>
+              {!int.locked && int.p.some(p => p.trim()) && (
+                <button className="sb-prio-lock" onClick={() => lockIntentions(td)}>
+                  🔒 lock in for today
+                </button>
+              )}
+              {int.locked && (
+                <div className="sb-prio-committed">
+                  <span className="sb-prio-committed-dot" />
+                  committed for today
+                </div>
+              )}
             </div>
 
             {/* Journal */}

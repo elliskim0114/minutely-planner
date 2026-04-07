@@ -187,6 +187,8 @@ type Actions = {
   setEnergy: (date: string, e: number) => void
   setPriority: (date: string, idx: number, val: string) => void
   setNote: (date: string, note: string) => void
+  lockIntentions: (date: string) => void
+  unlockIntentions: (date: string) => void
   setPerfectDay: (pd: PDBlock[]) => void
   applyPDTo: (date: string) => void
   applyPDToday: () => void
@@ -573,6 +575,7 @@ export const useStore = create<Store>()(
       }),
       setPriority: (date, idx, val) => set(s => {
         const int = s.intentions[date] || { e: 0, p: ['', '', ''] }
+        if (int.locked) return {}
         const p = [...int.p] as [string, string, string]
         p[idx] = val
         return { intentions: { ...s.intentions, [date]: { ...int, p } } }
@@ -580,6 +583,14 @@ export const useStore = create<Store>()(
       setNote: (date, note) => set(s => {
         const int = s.intentions[date] || { e: 0, p: ['', '', ''] }
         return { intentions: { ...s.intentions, [date]: { ...int, note } } }
+      }),
+      lockIntentions: (date) => set(s => {
+        const int = s.intentions[date] || { e: 0, p: ['', '', ''] }
+        return { intentions: { ...s.intentions, [date]: { ...int, locked: true } } }
+      }),
+      unlockIntentions: (date) => set(s => {
+        const int = s.intentions[date] || { e: 0, p: ['', '', ''] }
+        return { intentions: { ...s.intentions, [date]: { ...int, locked: false } } }
       }),
       setPerfectDay: (pd) => set({ perfectDay: pd }),
       applyPDTo: (date) => {

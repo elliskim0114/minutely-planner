@@ -49,6 +49,7 @@ export interface Intentions {
   e: number // energy 0-3
   p: [string, string, string] // priorities
   note?: string // daily journal entry
+  locked?: boolean // true once priorities are committed for the day
 }
 
 export interface Config {

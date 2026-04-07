@@ -496,12 +496,35 @@ body.dragging{cursor:grabbing!important;user-select:none}
 .e-ai-btn.show{display:block;animation:floatUp .2s both}
 
 #sb-prio{padding:14px 16px 12px;border-bottom:1px solid var(--bd);flex-shrink:0}
-.plist{display:flex;flex-direction:column;gap:7px}
+.sb-prio-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:0}
+.sb-prio-hdr .sblbl{margin-bottom:0}
+.sb-prio-unlock{background:none;border:none;cursor:pointer;font-family:var(--font-u);font-size:10px;color:var(--ink4);padding:0;transition:color .13s}
+.sb-prio-unlock:hover{color:var(--ink2)}
+.plist{display:flex;flex-direction:column;gap:7px;margin-top:8px}
+.plist.locked .prow{opacity:.85}
 .prow{display:flex;align-items:center;gap:8px}
 .pnum{font-family:var(--font-m);font-size:11px;color:var(--acc);font-weight:500;width:12px;flex-shrink:0}
 .pinp{flex:1;background:none;border:none;border-bottom:1.5px solid var(--bd);padding:5px 0;font-family:var(--font-u);font-size:13px;color:var(--ink);outline:none;transition:border-color .15s;min-width:0}
 .pinp:focus{border-color:var(--acc)}
 .pinp::placeholder{color:var(--ink4)}
+.pinp-locked{flex:1;font-family:var(--font-u);font-size:13px;color:var(--ink);padding:5px 0;border-bottom:1.5px solid transparent;min-width:0;display:block}
+.pinp-empty{font-style:normal;color:var(--ink4)}
+.sb-prio-lock{
+  margin-top:10px;width:100%;
+  padding:8px 12px;border:1.5px dashed var(--acc);border-radius:9px;
+  background:none;cursor:pointer;
+  font-family:var(--font-u);font-size:11px;font-weight:600;color:var(--acc);
+  transition:all .15s;letter-spacing:.01em;
+}
+.sb-prio-lock:hover{background:var(--accbg);border-style:solid}
+.sb-prio-committed{
+  margin-top:10px;display:flex;align-items:center;gap:6px;
+  font-family:var(--font-u);font-size:11px;color:#4CAF8A;font-weight:600;
+}
+.sb-prio-committed-dot{
+  width:6px;height:6px;border-radius:50%;background:#4CAF8A;flex-shrink:0;
+  box-shadow:0 0 0 2px rgba(76,175,138,.25);
+}
 
 /* ── STREAKS ── */
 #sb-streaks{padding:12px 16px;border-bottom:1px solid var(--bd);flex-shrink:0}
