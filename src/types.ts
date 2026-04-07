@@ -48,6 +48,7 @@ export interface PDBlock {
 export interface Intentions {
   e: number // energy 0-3
   p: [string, string, string] // priorities
+  done?: [boolean, boolean, boolean] // which priorities are checked off
   note?: string // daily journal entry
   locked?: boolean // true once priorities are committed for the day
 }

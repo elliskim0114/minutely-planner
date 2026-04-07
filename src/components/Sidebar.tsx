@@ -7,7 +7,7 @@ import { todayStr, plannedMinutes, totalDayMinutes, toM, nowMinutes } from '../u
 export default function Sidebar() {
   const {
     sbCol, toggleSidebar, toggleMode, mode, view, setView,
-    blocks, focuses, setFocus, cfg, intentions, setEnergy, setPriority, setNote, lockIntentions, unlockIntentions,
+    blocks, focuses, setFocus, cfg, intentions, setEnergy, setPriority, setNote, lockIntentions, unlockIntentions, togglePriorityDone,
     userName, openNotif, openSignIn, openSettings,
     clearDay, addBlock, selDate,
     timeBlindn, setTimeBlindn, openReschedule, setRescheduleDelay,
@@ -19,6 +19,7 @@ export default function Sidebar() {
     focusGems,
   } = useStore()
   const [notesOpen, setNotesOpen] = useState(false)
+  const [prioArchiveOpen, setPrioArchiveOpen] = useState(false)
 
   const [lateMenuOpen, setLateMenuOpen] = useState(false)
 
@@ -233,20 +234,34 @@ export default function Sidebar() {
             <div id="sb-prio">
               <div className="sb-prio-hdr">
                 <span className="sblbl">priorities</span>
-                {int.locked && (
-                  <button
-                    className="sb-prio-unlock"
-                    onClick={() => { if (window.confirm('unlock priorities for today?')) unlockIntentions(td) }}
-                    title="unlock priorities"
-                  >🔓 unlock</button>
-                )}
+                <div className="sb-prio-hdr-acts">
+                  <button className="sb-prio-archive-btn" onClick={() => setPrioArchiveOpen(true)}>history</button>
+                  {int.locked && (
+                    <button
+                      className="sb-prio-unlock"
+                      onClick={() => { if (window.confirm('unlock priorities for today?')) unlockIntentions(td) }}
+                    >unlock</button>
+                  )}
+                </div>
               </div>
               <div className={`plist${int.locked ? ' locked' : ''}`}>
                 {[0, 1, 2].map(i => (
                   <div key={i} className="prow">
-                    <span className="pnum">{i + 1}</span>
                     {int.locked ? (
-                      <span className="pinp-locked">{int.p[i] || <em className="pinp-empty">—</em>}</span>
+                      <button
+                        className={`pcheck${(int.done?.[i]) ? ' done' : ''}`}
+                        onClick={() => togglePriorityDone(td, i)}
+                        title={int.done?.[i] ? 'mark incomplete' : 'mark done'}
+                      >
+                        {int.done?.[i] ? '✓' : ''}
+                      </button>
+                    ) : (
+                      <span className="pnum">{i + 1}</span>
+                    )}
+                    {int.locked ? (
+                      <span className={`pinp-locked${int.done?.[i] ? ' done' : ''}`}>
+                        {int.p[i] || <em className="pinp-empty">—</em>}
+                      </span>
                     ) : (
                       <input
                         className="pinp"
@@ -268,7 +283,9 @@ export default function Sidebar() {
               {int.locked && (
                 <div className="sb-prio-committed">
                   <span className="sb-prio-committed-dot" />
-                  committed for today
+                  {(int.done || []).filter(Boolean).length === 3
+                    ? 'all done 💎'
+                    : `${(int.done || []).filter(Boolean).length}/3 done`}
                 </div>
               )}
             </div>
@@ -471,6 +488,52 @@ export default function Sidebar() {
         </button>
       </div>
     </div>
+
+    {/* Priority Archive modal */}
+    {prioArchiveOpen && (
+      <div className="notes-overlay" onClick={() => setPrioArchiveOpen(false)}>
+        <div className="notes-modal" onClick={e => e.stopPropagation()}>
+          <div className="notes-hdr">
+            <span className="notes-title">🎯 priority history</span>
+            <button className="notes-close" onClick={() => setPrioArchiveOpen(false)}>×</button>
+          </div>
+          <div className="notes-list">
+            {Object.entries(intentions)
+              .filter(([, v]) => v.p.some(p => p.trim()))
+              .sort((a, b) => b[0].localeCompare(a[0]))
+              .map(([date, v]) => {
+                const d = new Date(date + 'T12:00')
+                const label = d.toLocaleDateString('en', { weekday: 'long', month: 'short', day: 'numeric' })
+                const doneCount = (v.done || []).filter(Boolean).length
+                const filledCount = v.p.filter(p => p.trim()).length
+                return (
+                  <div key={date} className="notes-entry">
+                    <div className="notes-date" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {label}
+                      {v.locked && filledCount > 0 && (
+                        <span className={`pa-badge${doneCount === filledCount ? ' all' : ''}`}>
+                          {doneCount === filledCount ? '💎 all done' : `${doneCount}/${filledCount}`}
+                        </span>
+                      )}
+                    </div>
+                    <div className="pa-plist">
+                      {v.p.map((p, i) => p.trim() ? (
+                        <div key={i} className={`pa-prow${v.done?.[i] ? ' done' : ''}`}>
+                          <span className="pa-check">{v.done?.[i] ? '✓' : '·'}</span>
+                          <span className="pa-text">{p}</span>
+                        </div>
+                      ) : null)}
+                    </div>
+                  </div>
+                )
+              })}
+            {Object.values(intentions).every(v => !v.p.some(p => p.trim())) && (
+              <div className="notes-empty">no priorities logged yet — add some today</div>
+            )}
+          </div>
+        </div>
+      </div>
+    )}
 
     {/* All Notes modal */}
     {notesOpen && (

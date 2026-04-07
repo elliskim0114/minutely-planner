@@ -498,6 +498,9 @@ body.dragging{cursor:grabbing!important;user-select:none}
 #sb-prio{padding:14px 16px 12px;border-bottom:1px solid var(--bd);flex-shrink:0}
 .sb-prio-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:0}
 .sb-prio-hdr .sblbl{margin-bottom:0}
+.sb-prio-hdr-acts{display:flex;align-items:center;gap:8px}
+.sb-prio-archive-btn{background:none;border:none;cursor:pointer;font-family:var(--font-u);font-size:10px;color:var(--ink4);padding:0;transition:color .13s}
+.sb-prio-archive-btn:hover{color:var(--ink2)}
 .sb-prio-unlock{background:none;border:none;cursor:pointer;font-family:var(--font-u);font-size:10px;color:var(--ink4);padding:0;transition:color .13s}
 .sb-prio-unlock:hover{color:var(--ink2)}
 .plist{display:flex;flex-direction:column;gap:7px;margin-top:8px}
@@ -507,8 +510,29 @@ body.dragging{cursor:grabbing!important;user-select:none}
 .pinp{flex:1;background:none;border:none;border-bottom:1.5px solid var(--bd);padding:5px 0;font-family:var(--font-u);font-size:13px;color:var(--ink);outline:none;transition:border-color .15s;min-width:0}
 .pinp:focus{border-color:var(--acc)}
 .pinp::placeholder{color:var(--ink4)}
-.pinp-locked{flex:1;font-family:var(--font-u);font-size:13px;color:var(--ink);padding:5px 0;border-bottom:1.5px solid transparent;min-width:0;display:block}
+.pinp-locked{flex:1;font-family:var(--font-u);font-size:13px;color:var(--ink);padding:5px 0;border-bottom:1.5px solid transparent;min-width:0;display:block;transition:all .15s}
+.pinp-locked.done{text-decoration:line-through;color:var(--ink4)}
 .pinp-empty{font-style:normal;color:var(--ink4)}
+/* Priority checkbox */
+.pcheck{
+  width:16px;height:16px;border-radius:50%;flex-shrink:0;
+  border:1.5px solid var(--bd2);background:none;cursor:pointer;
+  font-size:9px;font-weight:700;color:var(--acc);
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;padding:0;
+}
+.pcheck:hover{border-color:var(--acc);background:var(--accbg)}
+.pcheck.done{background:var(--acc);border-color:var(--acc);color:#fff}
+/* Priority archive entries */
+.pa-plist{display:flex;flex-direction:column;gap:4px;margin-top:4px}
+.pa-prow{display:flex;align-items:center;gap:7px;font-family:var(--font-u);font-size:12px;color:var(--ink2)}
+.pa-prow.done{color:var(--ink4)}
+.pa-check{font-size:10px;width:14px;text-align:center;color:var(--acc);flex-shrink:0}
+.pa-prow.done .pa-check{color:#4CAF8A}
+.pa-text{flex:1}
+.pa-prow.done .pa-text{text-decoration:line-through;color:var(--ink4)}
+.pa-badge{font-family:var(--font-u);font-size:10px;font-weight:700;color:var(--ink3);background:var(--bg3);padding:1px 7px;border-radius:10px}
+.pa-badge.all{color:#4CAF8A;background:rgba(76,175,138,.1)}
 .sb-prio-lock{
   margin-top:10px;width:100%;
   padding:8px 12px;border:1.5px dashed var(--acc);border-radius:9px;

@@ -189,6 +189,7 @@ type Actions = {
   setNote: (date: string, note: string) => void
   lockIntentions: (date: string) => void
   unlockIntentions: (date: string) => void
+  togglePriorityDone: (date: string, idx: number) => void
   setPerfectDay: (pd: PDBlock[]) => void
   applyPDTo: (date: string) => void
   applyPDToday: () => void
@@ -592,6 +593,19 @@ export const useStore = create<Store>()(
         const int = s.intentions[date] || { e: 0, p: ['', '', ''] }
         return { intentions: { ...s.intentions, [date]: { ...int, locked: false } } }
       }),
+      togglePriorityDone: (date, idx) => {
+        const s = get()
+        const int = s.intentions[date] || { e: 0, p: ['', '', ''] }
+        const done = [...(int.done || [false, false, false])] as [boolean, boolean, boolean]
+        done[idx] = !done[idx]
+        const allDone = done.every(Boolean) && int.p.every(p => p.trim())
+        const wasAllDone = (int.done || []).every(Boolean) && int.p.every(p => p.trim())
+        set(s2 => ({ intentions: { ...s2.intentions, [date]: { ...int, done } } }))
+        if (allDone && !wasAllDone) {
+          s.earnGem()
+          s.showToast('💎 all 3 priorities done — gem earned!')
+        }
+      },
       setPerfectDay: (pd) => set({ perfectDay: pd }),
       applyPDTo: (date) => {
         const { blocks, perfectDay, nid } = get()
