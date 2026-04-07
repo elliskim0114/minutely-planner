@@ -2746,9 +2746,11 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .gv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
 
 /* Goal card */
-.gv-card{background:var(--surf);border:1.5px solid var(--bd);border-radius:18px;overflow:hidden;transition:border-color .15s,box-shadow .15s;position:relative}
+.gv-card{background:var(--surf);border:1.5px solid var(--bd);border-radius:18px;overflow:hidden;transition:border-color .15s,box-shadow .15s,opacity .15s;position:relative;cursor:grab}
 .gv-card:hover{border-color:var(--bd2);box-shadow:var(--s1)}
 .gv-card.complete{box-shadow:0 0 0 1.5px var(--gv-col,var(--acc))}
+.gv-card[draggable]:active{cursor:grabbing;opacity:.7}
+.gv-card.drag-over{border-color:var(--gv-col,var(--acc));box-shadow:0 0 0 2px var(--gv-col,var(--acc))}
 .gv-card-accent{height:3px;width:100%}
 .gv-card-body{padding:18px 18px 16px}
 .gv-card-top{display:flex;align-items:flex-start;gap:14px;margin-bottom:16px}

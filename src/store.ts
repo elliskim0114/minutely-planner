@@ -351,6 +351,7 @@ type Actions = {
   addGoal: (goal: Omit<Goal, 'id'>) => void
   updateGoal: (id: number, patch: Partial<Goal>) => void
   deleteGoal: (id: number) => void
+  reorderGoals: (orderedIds: number[]) => void
   rewardGoal: (key: string, goalName: string) => void
   openGoals: () => void
   closeGoals: () => void
@@ -1011,6 +1012,10 @@ export const useStore = create<Store>()(
       addGoal: (goal) => set(s => ({ goals: [...s.goals, { ...goal, id: s.gid }], gid: s.gid + 1 })),
       updateGoal: (id, patch) => set(s => ({ goals: s.goals.map(g => g.id === id ? { ...g, ...patch } : g) })),
       deleteGoal: (id) => set(s => ({ goals: s.goals.filter(g => g.id !== id) })),
+      reorderGoals: (orderedIds) => set(s => {
+        const map = new Map(s.goals.map(g => [g.id, g]))
+        return { goals: orderedIds.map(id => map.get(id)!).filter(Boolean) }
+      }),
       rewardGoal: (key: string, goalName: string) => {
         set(s => ({ rewardedGoals: { ...s.rewardedGoals, [key]: true } }))
         setTimeout(() => useStore.setState(s => ({ confettiKey: s.confettiKey + 1 })), 100)

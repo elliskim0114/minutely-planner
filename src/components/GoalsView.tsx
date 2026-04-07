@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useStore } from '../store'
 import { toM } from '../utils'
 
@@ -22,8 +22,10 @@ function ProgressRing({ pct, color, size = 80, stroke = 7 }: { pct: number; colo
 }
 
 export default function GoalsView() {
-  const { view, goals, blocks, addGoal, openGoals, rewardedGoals, rewardGoal, typeIcons } = useStore()
+  const { view, goals, blocks, addGoal, openGoals, rewardedGoals, rewardGoal, typeIcons, reorderGoals } = useStore()
   const [adding, setAdding] = useState(false)
+  const dragId = useRef<number | null>(null)
+  const [dragOverId, setDragOverId] = useState<number | null>(null)
   const [name, setName] = useState('')
   const [color, setColor] = useState(COLORS[1])
   const [targetHours, setTargetHours] = useState(10)
@@ -155,8 +157,26 @@ export default function GoalsView() {
               const periodLabel = period === 'daily' ? 'today' : period === 'monthly' ? 'this month' : 'this week'
 
               return (
-                <div key={g.id} className={`gv-card${isComplete ? ' complete' : ''}`}
-                  style={{ '--gv-col': g.color } as React.CSSProperties}>
+                <div key={g.id}
+                  className={`gv-card${isComplete ? ' complete' : ''}${dragOverId === g.id ? ' drag-over' : ''}`}
+                  style={{ '--gv-col': g.color } as React.CSSProperties}
+                  draggable
+                  onDragStart={() => { dragId.current = g.id }}
+                  onDragOver={e => { e.preventDefault(); setDragOverId(g.id) }}
+                  onDragLeave={() => setDragOverId(null)}
+                  onDrop={() => {
+                    if (dragId.current == null || dragId.current === g.id) { setDragOverId(null); return }
+                    const ids = goals.map(x => x.id)
+                    const from = ids.indexOf(dragId.current)
+                    const to = ids.indexOf(g.id)
+                    ids.splice(from, 1)
+                    ids.splice(to, 0, dragId.current)
+                    reorderGoals(ids)
+                    dragId.current = null
+                    setDragOverId(null)
+                  }}
+                  onDragEnd={() => { dragId.current = null; setDragOverId(null) }}
+                >
 
                   <div className="gv-card-accent" style={{ background: g.color }} />
 
