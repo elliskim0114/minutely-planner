@@ -168,12 +168,52 @@ function Meteor() {
   )
 }
 
+function GoldenGoose() {
+  return (
+    <svg width="84" height="64" viewBox="0 0 84 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Body */}
+      <ellipse cx="40" cy="42" rx="24" ry="15" fill="#FFD700" stroke="#B8860B" strokeWidth="1.5"/>
+      {/* Wing highlight */}
+      <ellipse cx="44" cy="40" rx="16" ry="9" fill="#FFE84D" opacity=".6"/>
+      {/* Neck */}
+      <path d="M50 30 C52 22 56 18 54 13 C52 9 46 11 46 17 L44 28 Z" fill="#FFD700" stroke="#B8860B" strokeWidth="1.5"/>
+      {/* Head */}
+      <ellipse cx="54" cy="12" rx="9" ry="7" fill="#FFD700" stroke="#B8860B" strokeWidth="1.5"/>
+      {/* Bill */}
+      <path d="M61 13 L70 12 L61 15 Z" fill="#FF8C00" stroke="#B8600B" strokeWidth="1"/>
+      {/* Eye */}
+      <circle cx="57" cy="10" r="2" fill="#1A1A1A"/>
+      <circle cx="57.7" cy="9.4" r=".7" fill="white"/>
+      {/* Crown */}
+      <path d="M50 7 L52 2 L54 6 L56 1 L58 5 L60 2 L61 7" stroke="#FFD700" strokeWidth="2" fill="none" strokeLinejoin="round"/>
+      <path d="M50 7 L61 7" stroke="#B8860B" strokeWidth="1.2"/>
+      {/* Golden egg under wing */}
+      <ellipse cx="28" cy="48" rx="7" ry="5" fill="#FFD700" stroke="#B8860B" strokeWidth="1.2"/>
+      <ellipse cx="27" cy="47" rx="3" ry="2" fill="#FFE84D" opacity=".7"/>
+      {/* Tail feathers */}
+      <path d="M17 38 C10 30 8 24 14 18" stroke="#B8860B" strokeWidth="2.5" strokeLinecap="round"/>
+      <path d="M19 40 C10 34 6 28 10 22" stroke="#FFD700" strokeWidth="2" strokeLinecap="round"/>
+      {/* Legs */}
+      <rect x="44" y="54" width="5" height="10" rx="2.5" fill="#FF8C00" stroke="#B8600B" strokeWidth="1"/>
+      <rect x="50" y="54" width="5" height="10" rx="2.5" fill="#FF8C00" stroke="#B8600B" strokeWidth="1"/>
+      {/* Feet */}
+      <path d="M44 64 L40 68 M46 64 L43 68 M48 64 L50 68" stroke="#FF8C00" strokeWidth="1.5" strokeLinecap="round"/>
+      <path d="M50 64 L46 68 M52 64 L49 68 M54 64 L56 68" stroke="#FF8C00" strokeWidth="1.5" strokeLinecap="round"/>
+      {/* Sparkles */}
+      <text x="0" y="20" fontSize="10">✨</text>
+      <text x="66" y="32" fontSize="8">⭐</text>
+      <text x="72" y="16" fontSize="7">✦</text>
+    </svg>
+  )
+}
+
 const ANIMALS: Record<string, { component: React.ReactNode; label: string; speed: number; y: number }> = {
-  unicorn: { component: <Unicorn />, label: '🦄', speed: 3.5, y: 0 },
-  fox:     { component: <Fox />,     label: '🦊', speed: 4.2, y: 4 },
-  meteor:  { component: <Meteor />,  label: '🌠', speed: 2.8, y: -30 },
-  dragon:  { component: <Dragon />,  label: '🐉', speed: 5.0, y: -8 },
-  rocket:  { component: <Rocket />,  label: '🚀', speed: 6.5, y: -20 },
+  unicorn:     { component: <Unicorn />,     label: '🦄', speed: 3.5, y: 0 },
+  fox:         { component: <Fox />,         label: '🦊', speed: 4.2, y: 4 },
+  meteor:      { component: <Meteor />,      label: '🌠', speed: 2.8, y: -30 },
+  dragon:      { component: <Dragon />,      label: '🐉', speed: 5.0, y: -8 },
+  rocket:      { component: <Rocket />,      label: '🚀', speed: 6.5, y: -20 },
+  goldengoose: { component: <GoldenGoose />, label: '🪿', speed: 3.8, y: 2 },
 }
 
 export default function CelebrationAnimal() {

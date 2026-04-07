@@ -1228,13 +1228,11 @@ export const useStore = create<Store>()(
             popup = { type: 'theme', name: 'nebula', label: 'Nebula Theme + Rocket', description: 'A deep space nebula theme AND a rocket that blasts across your screen!', emoji: '🚀' }
           } else if (gems === 100 && !newModes.includes('gold')) {
             newModes.push('gold')
-            const allModes = ['ember','ocean','forest','aurora','crimson','nebula','gold']
-            const allCels = ['unicorn','fox','meteor','dragon','rocket']
-            allModes.forEach(m => { if (!newModes.includes(m)) newModes.push(m) })
-            allCels.forEach(c => { if (!newCelebrations.includes(c)) newCelebrations.push(c) })
-            toastMsg = '◆ ×100 — focus master! all themes unlocked!'
+            newCelebrations.push('goldengoose')
+            triggerAnimal = 'goldengoose'
+            toastMsg = '◆ ×100 — focus master! gold theme + golden goose unlocked! 🪿'
             doConfetti = true
-            popup = { type: 'legendary', name: 'master', label: 'Focus Master 💎', description: '100 gems. Gold theme + every theme ever unlocked. You are legendary.', emoji: '💎' }
+            popup = { type: 'theme', name: 'gold', label: 'Focus Master 🪿', description: 'Gold theme unlocked AND a golden goose joins your celebrations. Legendary.', emoji: '🪿' }
           }
 
           setTimeout(() => useStore.getState().showToast(toastMsg), 50)

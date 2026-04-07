@@ -273,11 +273,15 @@ export default function FocusMode({ onClose }: { onClose: () => void }) {
           {gemFlash && <span className="fm-gem-earned" style={{ color: modeColor }}>+1 ◆</span>}
         </div>
         <div className="fm-gem-hint">
-          {focusGems < 5
-            ? `${5 - focusGems} more to unlock ember theme 🔥`
-            : focusGems < 12
-            ? `${12 - focusGems} more to unlock ocean theme 🌊`
-            : '✓ all themes unlocked — keep the streak going!'}
+          {focusGems < 5   ? `${5   - focusGems} more to unlock ember theme 🔥`
+          : focusGems < 10  ? `${10  - focusGems} more to unlock unicorn 🦄`
+          : focusGems < 12  ? `${12  - focusGems} more to unlock ocean theme 🌊`
+          : focusGems < 20  ? `${20  - focusGems} more to unlock forest theme + fox 🌿`
+          : focusGems < 35  ? `${35  - focusGems} more to unlock aurora theme + meteor 🌠`
+          : focusGems < 50  ? `${50  - focusGems} more to unlock dragon + crimson theme 🐉`
+          : focusGems < 75  ? `${75  - focusGems} more to unlock nebula theme + rocket 🚀`
+          : focusGems < 100 ? `${100 - focusGems} more to unlock gold theme + golden goose 🪿`
+          : '✓ focus master — all rewards unlocked!'}
         </div>
 
         <div className="fm-minimize-hint">click outside to minimize</div>
