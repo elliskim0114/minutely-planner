@@ -103,10 +103,12 @@ export default function BlockModal() {
   const suggestTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // ── Drag-to-reorder: pure ref/DOM approach — zero React re-renders during drag ──
-  const dragFromIdx = useRef<number | null>(null)
-  const dragOverEl  = useRef<HTMLElement | null>(null)
+  const dragFromIdx  = useRef<number | null>(null)
+  const dragOverEl   = useRef<HTMLElement | null>(null)
+  const dragAllowed  = useRef(false)
 
-  const onLblDragStart = useCallback((i: number) => {
+  const onLblDragStart = useCallback((e: React.DragEvent<HTMLElement>, i: number) => {
+    if (!dragAllowed.current) { e.preventDefault(); return }
     dragFromIdx.current = i
   }, [])
 
@@ -339,12 +341,17 @@ export default function BlockModal() {
                 className={`mtyp saved-lbl-btn${isActive ? ' ad' : ''}`}
                 style={savedColor && isActive ? { background: savedColor.bg, color: savedColor.ink } : {}}
                 draggable
-                onDragStart={() => onLblDragStart(i)}
+                onDragStart={e => onLblDragStart(e, i)}
                 onDragOver={e => onLblDragOver(e, i)}
                 onDrop={e => onLblDrop(e, i)}
                 onDragEnd={onLblDragEnd}
               >
-                <span className="slb-drag" title="drag to reorder">
+                <span
+                  className="slb-drag"
+                  title="drag to reorder"
+                  onMouseDown={() => { dragAllowed.current = true }}
+                  onMouseUp={() => { dragAllowed.current = false }}
+                >
                   <svg width="8" height="12" viewBox="0 0 8 12" fill="none">
                     <circle cx="2" cy="2" r="1.2" fill="currentColor" opacity=".5"/>
                     <circle cx="6" cy="2" r="1.2" fill="currentColor" opacity=".5"/>
