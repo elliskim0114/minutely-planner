@@ -191,6 +191,33 @@ const TYPE_ICON_OPTIONS: Record<string, string[]> = {
   free:    ['☁️','🌿','🎮','🎵','☕','🌙','🛋️','🌊'],
 }
 
+const LABEL_EMOJI_KEYWORD_SETS: Array<{ keywords: string[]; emojis: string[] }> = [
+  { keywords: ['school','class','homework','lesson','lecture','course','teacher','grade','campus'], emojis: ['🏫','📚','✏️','🎒','📐','🖊️','🎓','📝','🔬','💡','📏','🗒️','🖍️','📌'] },
+  { keywords: ['club','team','sport','soccer','basket','football','swim','gym','practice','match','game'], emojis: ['🏆','⚽','🏀','🏈','🎽','🥊','🏊','🧗','🛹','🎾','🏐','🥋','🤸','🎯'] },
+  { keywords: ['meal','eat','food','lunch','dinner','breakfast','cook','snack','coffee','boba','cafe','kitchen'], emojis: ['🍽️','🥗','🍜','🍕','🥘','🫕','🍱','☕','🧁','🥐','🍳','🫙','🫖','🥑'] },
+  { keywords: ['hang','friend','social','chill','vibe','chat','meet','call','date','catch'], emojis: ['🧑‍🤝‍🧑','💬','🎉','🫂','🤙','🍹','🎲','🪄','😄','🪩','🤳','🛋️','🥂','🌟'] },
+  { keywords: ['work','job','office','meeting','client','professional','career','business','email'], emojis: ['💼','🖥️','📊','📋','🤝','📞','🗂️','✅','📧','💡','🗓️','🏢','📎','🖨️'] },
+  { keywords: ['event','special','celebration','party','birthday','occasion','wedding','holiday','festival'], emojis: ['🎉','🎊','🎂','🥂','✨','🎁','🪅','🎆','🎗️','🌟','🪄','🎈','🍾','🎀'] },
+  { keywords: ['brain','rot','scroll','doom','meme','tiktok','youtube','show','tv','series','movie','watch','netflix'], emojis: ['📱','🤳','😵‍💫','🎮','🛌','🍿','😂','🌀','📺','🧸','🛁','😅','🌚','💀'] },
+  { keywords: ['health','gym','workout','fitness','exercise','run','swim','walk','yoga','meditat'], emojis: ['💪','🏃','🧘','❤️‍🔥','🥊','🏊','🚴','🩺','🥗','🫀','🩹','🏋️','🌿','💦'] },
+  { keywords: ['music','song','listen','band','concert','piano','guitar','sing','record','drum'], emojis: ['🎵','🎸','🎹','🎤','🥁','🎻','🎺','🎧','🎼','🎙️','🎶','🎷','🪗','🪘'] },
+  { keywords: ['read','book','write','journal','blog','story','author','novel','poetry','essay'], emojis: ['📖','✍️','📝','🖊️','📰','📓','🗒️','📜','🖋️','📚','🔖','📕','🪶','📰'] },
+  { keywords: ['art','draw','paint','design','sketch','create','craft','photo','film','video'], emojis: ['🎨','✏️','🖌️','🖼️','📸','🎬','🪡','✂️','🖍️','🪆','🎭','🪴','🗿','🧵'] },
+  { keywords: ['travel','trip','fly','drive','commute','walk','bike','hike','camp','road'], emojis: ['✈️','🚗','🚂','🚲','🏕️','🗺️','🧭','🎒','🌍','⛰️','🏖️','🚢','🛤️','🌄'] },
+  { keywords: ['volunteer','charity','help','community','church','mosque','temple','service','donate'], emojis: ['🤝','❤️','🌱','🕊️','⭐','🏘️','🫶','💛','🌻','🕌','⛪','🙏','🌈','💝'] },
+  { keywords: ['project','build','code','dev','app','software','hack','program','tech','ai'], emojis: ['💻','🛠️','⚙️','🔧','🧩','🚀','🤖','💾','🖥️','📡','🧬','🔌','🪛','💡'] },
+]
+
+const LABEL_EMOJI_FALLBACK = ['⭐','🌈','💫','🔮','🌊','🌸','🌀','🎯','🦋','🌙','🔑','🌟','🎪','🫧','🪬','✨']
+
+function getCustomLabelEmojis(label: string): string[] {
+  const lower = label.toLowerCase()
+  for (const set of LABEL_EMOJI_KEYWORD_SETS) {
+    if (set.keywords.some(k => lower.includes(k))) return set.emojis
+  }
+  return LABEL_EMOJI_FALLBACK
+}
+
 export default function SettingsModal() {
   const {
     closeSettings, cfg, setCfg, userName, setUserName, mode,
@@ -361,7 +388,7 @@ export default function SettingsModal() {
                 <div key={label} className="sm-icon-row">
                   <span className="sm-icon-type">{typeIcons[label] || '·'} {label}</span>
                   <div className="sm-icon-opts">
-                    {['✨','🔷','🎪','🌀','💫','🎭','🔶','🌸'].map(emoji => (
+                    {getCustomLabelEmojis(label).map(emoji => (
                       <button
                         key={emoji}
                         className={`sm-icon-btn${typeIcons[label] === emoji ? ' active' : ''}`}
