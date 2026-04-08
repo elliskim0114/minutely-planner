@@ -127,7 +127,7 @@
   --bg:rgba(0,6,18,0.0);--bg2:rgba(0,10,24,0.0);--bg3:rgba(0,14,30,0.0);
   --surf:rgba(0,6,18,0.62);--surf2:rgba(0,10,24,0.68);
   --bd:rgba(120,255,240,0.22);--bd2:rgba(120,255,240,0.38);
-  --ink:#FFFFFF;--ink2:#AAFFEE;--ink3:#60C8B8;--ink4:rgba(0,20,30,0.8);
+  --ink:#FFFFFF;--ink2:#AAFFEE;--ink3:#60C8B8;--ink4:rgba(180,255,245,0.32);
   --acc:#20E8D0;--acc2:#80F0E8;
   --accbg:rgba(32,232,208,0.14);--accbg2:rgba(32,232,208,0.28);
   --nowglow:rgba(32,232,208,0.5);
@@ -146,7 +146,7 @@
   --bg:rgba(4,0,8,0.0);--bg2:rgba(8,0,14,0.0);--bg3:rgba(14,0,22,0.0);
   --surf:rgba(6,0,12,0.62);--surf2:rgba(10,0,18,0.68);
   --bd:rgba(230,120,255,0.22);--bd2:rgba(230,120,255,0.38);
-  --ink:#FFFFFF;--ink2:#F0B8FF;--ink3:#B070C8;--ink4:rgba(24,0,32,0.8);
+  --ink:#FFFFFF;--ink2:#F0B8FF;--ink3:#B070C8;--ink4:rgba(240,180,255,0.32);
   --acc:#D946EF;--acc2:#F080FF;
   --accbg:rgba(217,70,239,0.14);--accbg2:rgba(217,70,239,0.28);
   --nowglow:rgba(217,70,239,0.6);
@@ -166,7 +166,7 @@
   --bg:rgba(8,0,2,0.0);--bg2:rgba(14,0,4,0.0);--bg3:rgba(22,0,6,0.0);
   --surf:rgba(10,0,2,0.64);--surf2:rgba(16,0,4,0.70);
   --bd:rgba(255,80,70,0.24);--bd2:rgba(255,80,70,0.40);
-  --ink:#FFFFFF;--ink2:#FFBBBB;--ink3:#D07070;--ink4:rgba(28,0,4,0.8);
+  --ink:#FFFFFF;--ink2:#FFBBBB;--ink3:#D07070;--ink4:rgba(255,180,180,0.32);
   --acc:#FF3030;--acc2:#FF7070;
   --accbg:rgba(220,38,38,0.14);--accbg2:rgba(220,38,38,0.28);
   --nowglow:rgba(255,50,50,0.6);
@@ -185,7 +185,7 @@
   --bg:rgba(4,3,0,0.0);--bg2:rgba(10,8,0,0.0);--bg3:rgba(16,12,0,0.0);
   --surf:rgba(8,5,0,0.62);--surf2:rgba(12,9,0,0.68);
   --bd:rgba(255,200,60,0.24);--bd2:rgba(255,200,60,0.40);
-  --ink:#FFFFFF;--ink2:#FFE090;--ink3:#C09040;--ink4:rgba(28,16,0,0.8);
+  --ink:#FFFFFF;--ink2:#FFE090;--ink3:#C09040;--ink4:rgba(255,220,140,0.32);
   --acc:#F59E0B;--acc2:#FFDD55;
   --accbg:rgba(245,158,11,0.14);--accbg2:rgba(245,158,11,0.28);
   --nowglow:rgba(255,180,20,0.65);
@@ -1558,6 +1558,10 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 [data-mode="night"] .coach-chip-routine .coach-chip-time,[data-mode="night"] .coach-chip-routine .coach-chip-name{color:#A0E0A8}
 [data-mode="night"] .coach-chip-study .coach-chip-time,[data-mode="night"] .coach-chip-study .coach-chip-name{color:#C0B8FF}
 [data-mode="night"] .coach-chip-free .coach-chip-time,[data-mode="night"] .coach-chip-free .coach-chip-name{color:#F5D870}
+[data-mode="aurora"] .coach-chip-focus .coach-chip-time,[data-mode="aurora"] .coach-chip-focus .coach-chip-name,[data-mode="nebula"] .coach-chip-focus .coach-chip-time,[data-mode="nebula"] .coach-chip-focus .coach-chip-name,[data-mode="crimson"] .coach-chip-focus .coach-chip-time,[data-mode="crimson"] .coach-chip-focus .coach-chip-name,[data-mode="gold"] .coach-chip-focus .coach-chip-time,[data-mode="gold"] .coach-chip-focus .coach-chip-name{color:var(--bfink)}
+[data-mode="aurora"] .coach-chip-routine .coach-chip-time,[data-mode="aurora"] .coach-chip-routine .coach-chip-name,[data-mode="nebula"] .coach-chip-routine .coach-chip-time,[data-mode="nebula"] .coach-chip-routine .coach-chip-name,[data-mode="crimson"] .coach-chip-routine .coach-chip-time,[data-mode="crimson"] .coach-chip-routine .coach-chip-name,[data-mode="gold"] .coach-chip-routine .coach-chip-time,[data-mode="gold"] .coach-chip-routine .coach-chip-name{color:var(--brink)}
+[data-mode="aurora"] .coach-chip-study .coach-chip-time,[data-mode="aurora"] .coach-chip-study .coach-chip-name,[data-mode="nebula"] .coach-chip-study .coach-chip-time,[data-mode="nebula"] .coach-chip-study .coach-chip-name,[data-mode="crimson"] .coach-chip-study .coach-chip-time,[data-mode="crimson"] .coach-chip-study .coach-chip-name,[data-mode="gold"] .coach-chip-study .coach-chip-time,[data-mode="gold"] .coach-chip-study .coach-chip-name{color:var(--bsink)}
+[data-mode="aurora"] .coach-chip-free .coach-chip-time,[data-mode="aurora"] .coach-chip-free .coach-chip-name,[data-mode="nebula"] .coach-chip-free .coach-chip-time,[data-mode="nebula"] .coach-chip-free .coach-chip-name,[data-mode="crimson"] .coach-chip-free .coach-chip-time,[data-mode="crimson"] .coach-chip-free .coach-chip-name,[data-mode="gold"] .coach-chip-free .coach-chip-time,[data-mode="gold"] .coach-chip-free .coach-chip-name{color:var(--blink)}
 .coach-results{padding:16px 20px;border-bottom:1px solid var(--bd)}
 .coach-results-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--ink4);margin-bottom:10px}
 .coach-suggestion{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--bg2);border-radius:10px;border:1px solid var(--bd);margin-bottom:7px;animation:floatUp .2s both}
