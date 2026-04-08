@@ -1254,18 +1254,22 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 }
 .mtyp-restore:hover{border-color:var(--acc);color:var(--acc)}
 
-.saved-lbl-btn{display:flex;align-items:center;gap:0;padding:0!important;overflow:hidden;position:relative;cursor:grab;transition:opacity .15s,border-color .15s}
-.saved-lbl-btn:active{cursor:grabbing}
-.saved-lbl-btn.drag-over-lbl{border-color:var(--acc)!important;opacity:.7}
-.saved-lbl-btn .slb-drag{display:flex;align-items:center;padding:0 4px 0 6px;color:var(--ink4);opacity:0;transition:opacity .12s;flex-shrink:0}
-.saved-lbl-btn:hover .slb-drag{opacity:1}
-.saved-lbl-btn .slb-name{display:flex;align-items:center;gap:5px;padding:5px 8px 5px 4px;cursor:pointer;flex:1}
+/* Locked (default): behaves like a normal static chip */
+.saved-lbl-btn{display:flex;align-items:center;gap:5px;padding:5px 10px!important;overflow:hidden;position:relative;cursor:pointer;transition:opacity .15s,border-color .15s,background .12s}
 .saved-lbl-btn .slb-dot{display:inline-block;width:7px;height:7px;border-radius:50%;flex-shrink:0;border:1px solid var(--bd)}
-.saved-lbl-btn .slb-rm{display:none;background:none;border:none;cursor:pointer;color:var(--ink4);font-size:12px;line-height:1;padding:0 6px 0 0;transition:color .1s;flex-shrink:0}
-.saved-lbl-btn:not(.ad):hover .slb-rm{display:block}
+/* Unlocked: drag mode */
+.saved-lbl-btn.unlocked{cursor:grab;padding:4px 6px 4px 4px!important;gap:3px}
+.saved-lbl-btn.unlocked:active{cursor:grabbing}
+.saved-lbl-btn.unlocked .slb-dot{margin-left:2px}
+.saved-lbl-btn.drag-over-lbl{border-color:var(--acc)!important;opacity:.7}
+.saved-lbl-btn .slb-drag{display:flex;align-items:center;padding:0 2px;color:var(--ink4);flex-shrink:0}
+.saved-lbl-btn .slb-rm{background:none;border:none;cursor:pointer;color:var(--ink4);font-size:12px;line-height:1;padding:0 0 0 2px;transition:color .1s;flex-shrink:0}
 .saved-lbl-btn .slb-rm:hover{color:#FF4D1C}
 .new-lbl-btn{opacity:.6;font-size:10px!important}
 .new-lbl-btn:hover{opacity:1}
+.lbl-lock-btn{opacity:.5;font-size:10px!important;letter-spacing:.02em}
+.lbl-lock-btn:hover{opacity:.85}
+.lbl-lock-btn.unlocked{opacity:1;color:var(--acc);border-color:var(--acc)!important;font-size:11px!important}
 /* Set as default button for built-in types */
 .set-default-btn{margin-top:8px;width:100%;padding:6px 10px;background:none;border:1px dashed var(--bd2);border-radius:var(--r-sm);font-family:var(--font-u);font-size:11px;color:var(--ink3);cursor:pointer;transition:all .15s}
 .set-default-btn:hover{border-color:var(--acc);color:var(--acc);background:var(--accbg)}

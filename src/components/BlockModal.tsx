@@ -102,13 +102,12 @@ export default function BlockModal() {
   const [suggestion, setSuggestion] = useState<Prediction | null>(null)
   const suggestTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // ── Drag-to-reorder: pure ref/DOM approach — zero React re-renders during drag ──
+  // ── Drag-to-reorder: only active when user explicitly unlocks label order ──
+  const [lblUnlocked, setLblUnlocked] = useState(false)
   const dragFromIdx  = useRef<number | null>(null)
   const dragOverEl   = useRef<HTMLElement | null>(null)
-  const dragAllowed  = useRef(false)
 
   const onLblDragStart = useCallback((e: React.DragEvent<HTMLElement>, i: number) => {
-    if (!dragAllowed.current) { e.preventDefault(); return }
     dragFromIdx.current = i
   }, [])
 
@@ -331,56 +330,63 @@ export default function BlockModal() {
             <div className="mtyps-div" />
           )}
 
-          {/* Custom labels — draggable, zero-rerender approach */}
+          {/* Custom labels */}
           {customLabels.map((lbl, i) => {
             const savedColor = customLabelColors[lbl] !== undefined ? CCOLS[customLabelColors[lbl]] : null
             const isActive = type === 'custom' && customName === lbl
             return (
               <div
                 key={lbl}
-                className={`mtyp saved-lbl-btn${isActive ? ' ad' : ''}`}
+                className={`mtyp saved-lbl-btn${isActive ? ' ad' : ''}${lblUnlocked ? ' unlocked' : ''}`}
                 style={savedColor && isActive ? { background: savedColor.bg, color: savedColor.ink } : {}}
-                draggable
-                onDragStart={e => onLblDragStart(e, i)}
-                onDragOver={e => onLblDragOver(e, i)}
-                onDrop={e => onLblDrop(e, i)}
-                onDragEnd={onLblDragEnd}
+                draggable={lblUnlocked}
+                onDragStart={lblUnlocked ? e => onLblDragStart(e, i) : undefined}
+                onDragOver={lblUnlocked ? e => onLblDragOver(e, i) : undefined}
+                onDrop={lblUnlocked ? e => onLblDrop(e, i) : undefined}
+                onDragEnd={lblUnlocked ? onLblDragEnd : undefined}
+                onClick={() => { if (!lblUnlocked) pickSavedLabel(lbl) }}
               >
-                <span
-                  className="slb-drag"
-                  title="drag to reorder"
-                  onMouseDown={() => { dragAllowed.current = true }}
-                  onMouseUp={() => { dragAllowed.current = false }}
-                >
-                  <svg width="8" height="12" viewBox="0 0 8 12" fill="none">
-                    <circle cx="2" cy="2" r="1.2" fill="currentColor" opacity=".5"/>
-                    <circle cx="6" cy="2" r="1.2" fill="currentColor" opacity=".5"/>
-                    <circle cx="2" cy="6" r="1.2" fill="currentColor" opacity=".5"/>
-                    <circle cx="6" cy="6" r="1.2" fill="currentColor" opacity=".5"/>
-                    <circle cx="2" cy="10" r="1.2" fill="currentColor" opacity=".5"/>
-                    <circle cx="6" cy="10" r="1.2" fill="currentColor" opacity=".5"/>
-                  </svg>
-                </span>
-                <span className="slb-name" onClick={() => pickSavedLabel(lbl)}>
-                  <span className="slb-dot" style={{
-                    background: savedColor ? savedColor.bg : 'var(--bd2)',
-                    border: `1px solid ${savedColor ? savedColor.bd : 'var(--bd)'}`,
-                  }} />
-                  {lbl}
-                </span>
-                <button
-                  className="slb-rm"
-                  onClick={e => { e.stopPropagation(); removeCustomLabel(lbl); if (customName === lbl) { setCustomName(''); setType('custom') } }}
-                  title="remove label"
-                >×</button>
+                {lblUnlocked && (
+                  <span className="slb-drag" title="drag to reorder">
+                    <svg width="8" height="12" viewBox="0 0 8 12" fill="none">
+                      <circle cx="2" cy="2" r="1.2" fill="currentColor" opacity=".5"/>
+                      <circle cx="6" cy="2" r="1.2" fill="currentColor" opacity=".5"/>
+                      <circle cx="2" cy="6" r="1.2" fill="currentColor" opacity=".5"/>
+                      <circle cx="6" cy="6" r="1.2" fill="currentColor" opacity=".5"/>
+                      <circle cx="2" cy="10" r="1.2" fill="currentColor" opacity=".5"/>
+                      <circle cx="6" cy="10" r="1.2" fill="currentColor" opacity=".5"/>
+                    </svg>
+                  </span>
+                )}
+                <span className="slb-dot" style={{
+                  background: savedColor ? savedColor.bg : 'var(--bd2)',
+                  border: `1px solid ${savedColor ? savedColor.bd : 'var(--bd)'}`,
+                }} />
+                {lbl}
+                {lblUnlocked && (
+                  <button
+                    className="slb-rm"
+                    onClick={e => { e.stopPropagation(); removeCustomLabel(lbl); if (customName === lbl) { setCustomName(''); setType('custom') } }}
+                    title="remove label"
+                  >×</button>
+                )}
               </div>
             )
           })}
 
-          {/* + new label */}
+          {/* + new / lock-unlock controls */}
           <button className="mtyp new-lbl-btn" onClick={() => setShowNewLabelInput(v => !v)} title="add a new custom label">
             {showNewLabelInput ? '×' : '+ new'}
           </button>
+          {customLabels.length > 0 && (
+            <button
+              className={`mtyp lbl-lock-btn${lblUnlocked ? ' unlocked' : ''}`}
+              onClick={() => setLblUnlocked(v => !v)}
+              title={lblUnlocked ? 'lock label order' : 'reorder / remove labels'}
+            >
+              {lblUnlocked ? '🔓 done' : '⠿'}
+            </button>
+          )}
 
           {/* Restore hidden presets link */}
           {(hiddenBuiltinTypes || []).length > 0 && (
