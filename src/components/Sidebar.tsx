@@ -7,7 +7,7 @@ import { todayStr, plannedMinutes, totalDayMinutes, toM, nowMinutes } from '../u
 export default function Sidebar() {
   const {
     sbCol, toggleSidebar, toggleMode, mode, view, setView,
-    blocks, focuses, setFocus, cfg, intentions, setEnergy, setPriority, setNote, lockIntentions, unlockIntentions, deleteDayPriorities, deleteDayNote, togglePriorityDone,
+    blocks, focuses, setFocus, cfg, intentions, setEnergy, setPriority, setNote, lockIntentions, unlockIntentions, deleteDayPriorities, deleteDayNote, togglePriorityDone, setPriorityForce,
     userName, openNotif, openSignIn, openSettings,
     clearDay, addBlock, selDate,
     timeBlindn, setTimeBlindn, openReschedule, setRescheduleDelay,
@@ -20,6 +20,7 @@ export default function Sidebar() {
   } = useStore()
   const [notesOpen, setNotesOpen] = useState(false)
   const [prioArchiveOpen, setPrioArchiveOpen] = useState(false)
+  const [editingPrio, setEditingPrio] = useState<{ date: string; idx: number; val: string } | null>(null)
 
   const [lateMenuOpen, setLateMenuOpen] = useState(false)
 
@@ -498,12 +499,39 @@ export default function Sidebar() {
                       <button className="notes-del" onClick={() => deleteDayPriorities(date)} title="delete priorities for this day">×</button>
                     </div>
                     <div className="pa-plist">
-                      {v.p.map((p, i) => p.trim() ? (
-                        <div key={i} className={`pa-prow${v.done?.[i] ? ' done' : ''}`}>
-                          <span className="pa-check">{v.done?.[i] ? '✓' : '·'}</span>
-                          <span className="pa-text">{p}</span>
-                        </div>
-                      ) : null)}
+                      {v.p.map((p, i) => {
+                        const isEditing = editingPrio?.date === date && editingPrio?.idx === i
+                        if (!p.trim() && !isEditing) return null
+                        return (
+                          <div key={i} className={`pa-prow${v.done?.[i] ? ' done' : ''}${isEditing ? ' editing' : ''}`}>
+                            <span className="pa-check">{v.done?.[i] ? '✓' : '·'}</span>
+                            {isEditing ? (
+                              <input
+                                className="pa-edit-inp"
+                                value={editingPrio.val}
+                                autoFocus
+                                onChange={e => setEditingPrio(prev => prev ? { ...prev, val: e.target.value } : null)}
+                                onKeyDown={e => {
+                                  if (e.key === 'Enter' || e.key === 'Escape') {
+                                    if (e.key === 'Enter') setPriorityForce(date, i, editingPrio.val.trim())
+                                    setEditingPrio(null)
+                                  }
+                                }}
+                                onBlur={() => {
+                                  setPriorityForce(date, i, editingPrio.val.trim())
+                                  setEditingPrio(null)
+                                }}
+                              />
+                            ) : (
+                              <span
+                                className="pa-text"
+                                onClick={() => setEditingPrio({ date, idx: i, val: p })}
+                                title="click to edit"
+                              >{p}</span>
+                            )}
+                          </div>
+                        )
+                      })}
                     </div>
                   </div>
                 )

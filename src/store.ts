@@ -186,6 +186,7 @@ type Actions = {
   setFocus: (date: string, text: string) => void
   setEnergy: (date: string, e: number) => void
   setPriority: (date: string, idx: number, val: string) => void
+  setPriorityForce: (date: string, idx: number, val: string) => void
   setNote: (date: string, note: string) => void
   lockIntentions: (date: string) => void
   unlockIntentions: (date: string) => void
@@ -580,6 +581,12 @@ export const useStore = create<Store>()(
       setPriority: (date, idx, val) => set(s => {
         const int = s.intentions[date] || { e: 0, p: ['', '', ''] }
         if (int.locked) return {}
+        const p = [...int.p] as [string, string, string]
+        p[idx] = val
+        return { intentions: { ...s.intentions, [date]: { ...int, p } } }
+      }),
+      setPriorityForce: (date, idx, val) => set(s => {
+        const int = s.intentions[date] || { e: 0, p: ['', '', ''] }
         const p = [...int.p] as [string, string, string]
         p[idx] = val
         return { intentions: { ...s.intentions, [date]: { ...int, p } } }
