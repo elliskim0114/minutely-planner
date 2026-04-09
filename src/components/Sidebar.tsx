@@ -504,7 +504,11 @@ export default function Sidebar() {
                         if (!p.trim() && !isEditing) return null
                         return (
                           <div key={i} className={`pa-prow${v.done?.[i] ? ' done' : ''}${isEditing ? ' editing' : ''}`}>
-                            <span className="pa-check">{v.done?.[i] ? '✓' : '·'}</span>
+                            <span
+                              className="pa-check"
+                              onClick={() => togglePriorityDone(date, i)}
+                              title={v.done?.[i] ? 'mark undone' : 'mark done'}
+                            >{v.done?.[i] ? '✓' : '·'}</span>
                             {isEditing ? (
                               <input
                                 className="pa-edit-inp"

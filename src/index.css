@@ -644,7 +644,8 @@ body.dragging{cursor:grabbing!important;user-select:none}
 .pa-plist{display:flex;flex-direction:column;gap:4px;margin-top:4px}
 .pa-prow{display:flex;align-items:center;gap:7px;font-family:var(--font-u);font-size:12px;color:var(--ink2)}
 .pa-prow.done{color:var(--ink4)}
-.pa-check{font-size:10px;width:14px;text-align:center;color:var(--acc);flex-shrink:0}
+.pa-check{font-size:10px;width:14px;text-align:center;color:var(--acc);flex-shrink:0;cursor:pointer;border-radius:3px;transition:background .12s}
+.pa-check:hover{background:var(--accbg)}
 .pa-prow.done .pa-check{color:#4CAF8A}
 .pa-text{flex:1;cursor:text;border-radius:4px;padding:1px 3px;transition:background .12s}
 .pa-text:hover{background:var(--accbg)}
