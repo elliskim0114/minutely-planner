@@ -217,7 +217,10 @@ export default function BlockModal() {
   const isBuiltin = type !== 'custom' && ALL_BUILTIN.some(b => b.key === type)
 
   return (
-    <div className="mb on" id="bm" onClick={e => { if (e.target === e.currentTarget) closeBlockModal() }}>
+    <div className="mb on" id="bm"
+      onClick={e => { if (e.target === e.currentTarget) closeBlockModal() }}
+      onKeyDown={e => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); handleSave() } }}
+    >
       <div className="mbox">
         <div className="mhdr">
           <span className="mttl">{title}</span>

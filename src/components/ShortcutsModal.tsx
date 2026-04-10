@@ -33,6 +33,10 @@ export default function ShortcutsModal() {
 
           <div className="kbd-section">blocks</div>
           <div className="kbd-r"><span className="kbd-d">quick add block</span><span className="kk">N</span></div>
+          <div className="kbd-r">
+            <span className="kbd-d">save block</span>
+            <div className="kbd-ks"><span className="kk">⌘</span><span className="kk">↵</span></div>
+          </div>
           <div className="kbd-r"><span className="kbd-d">mark block done</span><span className="kbd-d2">click ○ on block</span></div>
           <div className="kbd-r"><span className="kbd-d">mark block skipped</span><span className="kbd-d2">right-click ○</span></div>
           <div className="kbd-r"><span className="kbd-d">drag to reschedule</span><span className="kbd-d2">drag block header</span></div>
