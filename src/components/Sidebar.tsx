@@ -23,6 +23,7 @@ export default function Sidebar() {
   const [editingPrio, setEditingPrio] = useState<{ date: string; idx: number; val: string } | null>(null)
 
   const [lateMenuOpen, setLateMenuOpen] = useState(false)
+  const [dismissedPatterns, setDismissedPatterns] = useState<Set<string>>(new Set())
 
 
   // Mini calendar
@@ -354,12 +355,12 @@ export default function Sidebar() {
           </div>
 
           {/* Pattern insight */}
-          {patternEntry && (
+          {patternEntry && !dismissedPatterns.has(patternEntry[0]) && (
             <div className="pattern-card">
               <div className="pc-top">
                 <span className="pc-icon">⟳</span>
                 <span className="pc-ttl">pattern detected</span>
-                <button className="pc-dismiss" onClick={() => useStore.getState().showToast('dismissed')}>×</button>
+                <button className="pc-dismiss" onClick={() => setDismissedPatterns(p => { const s = new Set(p); s.add(patternEntry[0]); return s })}>×</button>
               </div>
               <div className="pc-body">
                 <strong>{patternEntry[0]}</strong> moved {patternEntry[1]}× — find it a permanent slot.

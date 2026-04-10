@@ -228,6 +228,7 @@ export default function SettingsModal() {
 
   const [tab, setTab] = useState<Tab>('profile')
   const [saved, setSaved] = useState(false)
+  const [iconPickerOpen, setIconPickerOpen] = useState<string | null>(null)
 
   // Profile tab state
   const [nameDraft, setNameDraft]   = useState(userName || '')
@@ -370,34 +371,37 @@ export default function SettingsModal() {
                 block type icons
                 <span className="sm-sec-hint">shown in analytics & stats</span>
               </div>
-              {(['focus', 'routine', 'study', 'free'] as const).map(type => (
-                <div key={type} className="sm-icon-row">
-                  <span className="sm-icon-type">{typeIcons[type] || '·'} {type}</span>
-                  <div className="sm-icon-opts">
-                    {TYPE_ICON_OPTIONS[type].map(emoji => (
+              {([...(['focus', 'routine', 'study', 'free'] as const), ...customLabels]).map(type => {
+                const emojis = (['focus','routine','study','free'] as string[]).includes(type)
+                  ? TYPE_ICON_OPTIONS[type as keyof typeof TYPE_ICON_OPTIONS]
+                  : getCustomLabelEmojis(type)
+                return (
+                  <div key={type} className="sm-icon-row">
+                    <span className="sm-icon-type">{type}</span>
+                    <div className="sm-icon-picker-wrap">
                       <button
-                        key={emoji}
-                        className={`sm-icon-btn${typeIcons[type] === emoji ? ' active' : ''}`}
-                        onClick={() => setTypeIcon(type, emoji)}
-                      >{emoji}</button>
-                    ))}
+                        className="sm-icon-trigger"
+                        title="change icon"
+                        onClick={() => setIconPickerOpen(iconPickerOpen === type ? null : type)}
+                      >{typeIcons[type] || '·'}</button>
+                      {iconPickerOpen === type && (
+                        <>
+                          <div className="sm-icon-picker-backdrop" onClick={() => setIconPickerOpen(null)} />
+                          <div className="sm-icon-popover">
+                            {emojis.map(emoji => (
+                              <button
+                                key={emoji}
+                                className={`sm-icon-btn${typeIcons[type] === emoji ? ' active' : ''}`}
+                                onClick={() => { setTypeIcon(type, emoji); setIconPickerOpen(null) }}
+                              >{emoji}</button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-              {customLabels.map(label => (
-                <div key={label} className="sm-icon-row">
-                  <span className="sm-icon-type">{typeIcons[label] || '·'} {label}</span>
-                  <div className="sm-icon-opts">
-                    {getCustomLabelEmojis(label).map(emoji => (
-                      <button
-                        key={emoji}
-                        className={`sm-icon-btn${typeIcons[label] === emoji ? ' active' : ''}`}
-                        onClick={() => setTypeIcon(label, emoji)}
-                      >{emoji}</button>
-                    ))}
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
 
             <div className="sm-section">

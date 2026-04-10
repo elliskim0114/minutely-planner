@@ -73,7 +73,7 @@ const ALL_BUILTIN: Array<{ key: BType; dot: string }> = [
 
 export default function BlockModal() {
   const {
-    blockModal, closeBlockModal, saveBlockModal, deleteFromBlockModal,
+    blockModal, closeBlockModal, saveBlockModal, deleteFromBlockModal, stopAndCleanRecurring,
     customLabels, customLabelColors, addCustomLabel, removeCustomLabel, reorderCustomLabels, saveAsTemplate,
     blocks, cfg, setTypeColorOverride, hideBuiltinCustom, setHideBuiltinCustom,
     hiddenBuiltinTypes, hideBuiltinType, showBuiltinType,
@@ -97,6 +97,7 @@ export default function BlockModal() {
   const [goalId, setGoalId] = useState<number | null>(block?.goalId ?? null)
   const [note, setNote] = useState(block?.note || '')
   const [savedTmpl, setSavedTmpl] = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState(false)
   const [showNewLabelInput, setShowNewLabelInput] = useState(false)
   const [newLabelVal, setNewLabelVal] = useState('')
   const [suggestion, setSuggestion] = useState<Prediction | null>(null)
@@ -531,8 +532,19 @@ export default function BlockModal() {
         )}
 
         <div className="macts">
-          {!isNew && (
-            <button className="mact-btn mdel" onClick={deleteFromBlockModal}>delete</button>
+          {!isNew && !deleteConfirm && (
+            <button className="mact-btn mdel" onClick={() => {
+              const hasOtherCopies = block && blocks.some(b => b.name.toLowerCase() === block.name.toLowerCase() && b.repeat && b.repeat !== 'none')
+              if (hasOtherCopies) { setDeleteConfirm(true) } else { deleteFromBlockModal() }
+            }}>delete</button>
+          )}
+          {!isNew && deleteConfirm && (
+            <div className="mdel-confirm">
+              <span className="mdel-confirm-lbl">delete…</span>
+              <button className="mact-btn mdel" onClick={deleteFromBlockModal}>just this</button>
+              <button className="mact-btn mdel" style={{whiteSpace:'nowrap'}} onClick={() => { stopAndCleanRecurring(block!.id); closeBlockModal(); useStore.getState().showToast(`removed all "${block!.name}" copies`) }}>every copy</button>
+              <button className="mact-btn" style={{opacity:.55,fontSize:11}} onClick={() => setDeleteConfirm(false)}>cancel</button>
+            </div>
           )}
           <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginLeft: 'auto' }}>
             {!isForPD && name.trim() && (

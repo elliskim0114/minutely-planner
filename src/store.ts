@@ -159,6 +159,7 @@ type Actions = {
   setTimeBlindn: (v: boolean) => void
   clearRepeatHint: () => void
   makeBlockRecurring: (blockId: number) => void
+  stopAndCleanRecurring: (blockId: number) => void
 
   // Mood tagging
   rateMood: (blockId: number, mood: string) => void
@@ -776,7 +777,16 @@ export const useStore = create<Store>()(
       ctxDelete: () => {
         const { ctxMenu } = get()
         get().hideCtxMenu()
-        if (ctxMenu.block) get().deleteBlock(ctxMenu.block.id)
+        if (ctxMenu.block) {
+          const bname = ctxMenu.block.name.toLowerCase()
+          const hasTemplate = get().blocks.some(b => b.name.toLowerCase() === bname && b.repeat && b.repeat !== 'none')
+          if (hasTemplate) {
+            get().stopAndCleanRecurring(ctxMenu.block.id)
+            get().showToast(`removed all "${ctxMenu.block.name}" copies`)
+          } else {
+            get().deleteBlock(ctxMenu.block.id)
+          }
+        }
       },
 
       copyBlock: (b) => {
@@ -1150,6 +1160,7 @@ export const useStore = create<Store>()(
                 ...template,
                 id: nextId++,
                 date: dateTarget,
+                repeat: 'none', // seeded copies are not templates themselves
               })
             }
           })
@@ -1162,6 +1173,18 @@ export const useStore = create<Store>()(
           }))
         }
       },
+
+      stopAndCleanRecurring: (blockId: number) => set(s => {
+        const template = s.blocks.find(b => b.id === blockId)
+        if (!template) return {}
+        // Delete every block with the same name (case-insensitive) — all recurring copies gone
+        const nameLower = template.name.toLowerCase()
+        return {
+          blockHistory: [...s.blockHistory.slice(-29), s.blocks],
+          blockFuture: [],
+          blocks: s.blocks.filter(b => b.name.toLowerCase() !== nameLower),
+        }
+      }),
 
       setTimeBlindn: (v) => set({ timeBlindn: v }),
       clearRepeatHint: () => set({ repeatHint: null }),

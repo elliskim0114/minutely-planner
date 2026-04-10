@@ -471,65 +471,7 @@ export default function CalendarGrid({ scrollId, numDays, getDate }: Props) {
           )
         })}
 
-      {/* Ghost blocks for recurring — show on dates without a real instance */}
-      {blocks
-        .filter(b => (b.repeat === 'daily' || b.repeat === 'weekdays' || b.repeat === 'weekly') && !dates.includes(b.date))
-        .flatMap(b => {
-          const ghosts: { date: string; b: typeof b }[] = []
-          dates.forEach(date => {
-            const tgtDay = new Date(date + 'T00:00:00').getDay()
-            if (b.repeat === 'daily') {
-              const alreadyExists = blocks.some(r => r.date === date && r.name === b.name && r.start === b.start && r.id !== b.id)
-              if (!alreadyExists) ghosts.push({ date, b })
-            } else if (b.repeat === 'weekdays') {
-              // Mon–Fri only (getDay 1–5)
-              if (tgtDay >= 1 && tgtDay <= 5) {
-                const alreadyExists = blocks.some(r => r.date === date && r.name === b.name && r.start === b.start && r.id !== b.id)
-                if (!alreadyExists) ghosts.push({ date, b })
-              }
-            } else if (b.repeat === 'weekly') {
-              // Same weekday
-              const srcDay = new Date(b.date + 'T00:00:00').getDay()
-              if (srcDay === tgtDay) {
-                const alreadyExists = blocks.some(r => r.date === date && r.name === b.name && r.start === b.start && r.id !== b.id)
-                if (!alreadyExists) ghosts.push({ date, b })
-              }
-            }
-          })
-          return ghosts
-        })
-        .map(({ date, b }) => {
-          const di = dates.indexOf(date)
-          if (di < 0) return null
-          const contW = containerRef.current?.offsetWidth ?? 756
-          const colW = (contW - 56) / numDays
-          const sm = toM(b.start)
-          const em2 = toM(b.end)
-          const top = m2y(sm, cfg.ds)
-          const height = Math.max(m2y(em2, cfg.ds) - top, SH - 2)
-          const left = 56 + di * colW + 2
-          const width = colW - 4
-          const customStyle = b.cc
-            ? { background: b.cc.bg, borderColor: b.cc.bd, color: b.cc.ink, opacity: 0.35 }
-            : { opacity: 0.35 }
-
-          return (
-            <div
-              key={`ghost-${b.id}-${date}`}
-              className={`blk ${blkClass(b)} ghost-blk`}
-              style={{ top, left, width, height, ...customStyle }}
-              title={`recurring: ${b.name} — click to apply`}
-              onClick={e => {
-                e.stopPropagation()
-                applyRecurring(b.id, date)
-              }}
-            >
-              <div className="bdh">
-                <div className="bn">{b.name}</div>
-              </div>
-            </div>
-          )
-        })}
+      {/* Ghost blocks removed — seedRecurring handles forward population */}
     </div>
   )
 }
