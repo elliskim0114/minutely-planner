@@ -402,7 +402,7 @@ export default function Sidebar() {
                 const hasBlocks = blockDates.has(ds)
                 return (
                   <button key={day} className={`mc2-day${isToday ? ' today' : ''}${isSel ? ' sel' : ''}${hasBlocks ? ' has-blocks' : ''}`} onClick={() => goToMiniCalDate(day)} title={ds}>
-                    {day}
+                    <span>{day}</span>
                     {hasBlocks && <span className="mc2-dot" title={`${blockCountByDate[ds]} blocks`}>{blockCountByDate[ds]}</span>}
                   </button>
                 )
