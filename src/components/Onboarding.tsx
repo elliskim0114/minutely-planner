@@ -64,6 +64,8 @@ export default function Onboarding() {
   const [signInLoading, setSignInLoading] = useState(false)
   const [signInError, setSignInError] = useState('')
   const [signInSent, setSignInSent] = useState(false)
+  const [otpCode, setOtpCode] = useState('')
+  const [verifyLoading, setVerifyLoading] = useState(false)
 
   // Config
   const [tf, setTf] = useState<'12' | '24'>('12')
@@ -160,20 +162,60 @@ export default function Onboarding() {
     if (supabaseConfigured) {
       const { error } = await supabase.auth.signInWithOtp({
         email: email.trim(),
-        options: {
-          data: { name: displayName.trim() || email.split('@')[0] },
-          emailRedirectTo: window.location.origin,
-        },
+        options: { shouldCreateUser: true },
       })
       setSignInLoading(false)
       if (error) { setSignInError(error.message); return }
-      setUserName(displayName.trim() || email.split('@')[0])
-      setUserEmail(email.trim())
       setSignInSent(true)
     } else {
       setUserName(displayName.trim() || email.split('@')[0])
       setUserEmail(email.trim())
       setSignInLoading(false)
+      goTo('s2')
+    }
+  }
+
+  const doVerify = async () => {
+    if (otpCode.trim().length < 6) { setSignInError('enter the 6-digit code from your email'); return }
+    setVerifyLoading(true)
+    setSignInError('')
+
+    const { data, error } = await supabase.auth.verifyOtp({
+      email: email.trim(),
+      token: otpCode.trim(),
+      type: 'email',
+    })
+
+    if (error) {
+      setVerifyLoading(false)
+      setSignInError('invalid or expired code — try again')
+      return
+    }
+
+    const resolvedName = displayName.trim() || data.user?.user_metadata?.name || email.split('@')[0]
+    setUserName(resolvedName)
+    setUserEmail(email.trim())
+
+    // Check if this is a returning user with completed onboarding
+    const { data: profile } = await supabase
+      .from('planner_profiles')
+      .select('onboarding_completed, preferences')
+      .eq('user_id', data.user!.id)
+      .single()
+
+    setVerifyLoading(false)
+
+    if (profile?.onboarding_completed && profile?.preferences) {
+      const p = profile.preferences
+      finishOnboarding({
+        mode: p.mode ?? mode,
+        cfg: p.cfg ?? { tf, ds, de, ws: wsVal },
+        userName: p.userName ?? resolvedName,
+        userEmail: email.trim(),
+        perfectDay: [],
+        userProfile: p.userProfile ?? null,
+      })
+    } else {
       goTo('s2')
     }
   }
@@ -350,11 +392,30 @@ export default function Onboarding() {
               <div style={{ fontSize: 36, marginBottom: 12, marginTop: 8 }}>📬</div>
               <div className="ob-qh">check your email</div>
               <div className="ob-qs" style={{ marginBottom: 20 }}>
-                we sent a magic link to <strong>{email}</strong>.<br />
-                click it to verify your account — then come back here to continue.
+                we sent a 6-digit code to <strong>{email}</strong>. enter it below to verify.
               </div>
-              <button className="ob-p" onClick={() => goTo('s2')}>i've confirmed, continue →</button>
-              <button className="ob-g" onClick={() => { setSignInSent(false); setEmail('') }}>use a different email</button>
+              <input
+                className="ob-inp"
+                type="text"
+                inputMode="numeric"
+                placeholder="000000"
+                maxLength={6}
+                value={otpCode}
+                onChange={e => { setOtpCode(e.target.value.replace(/\D/g, '')); setSignInError('') }}
+                onKeyDown={e => e.key === 'Enter' && doVerify()}
+                autoFocus
+                style={{ textAlign: 'center', letterSpacing: '0.3em', fontSize: 22, fontWeight: 700 }}
+              />
+              {signInError && <div className="ob-auth-error">{signInError}</div>}
+              <button className="ob-p" onClick={doVerify} disabled={verifyLoading}>
+                {verifyLoading
+                  ? <><div className="ald" /><div className="ald" /><div className="ald" /></>
+                  : 'verify →'
+                }
+              </button>
+              <button className="ob-g" onClick={() => { setSignInSent(false); setOtpCode(''); setSignInError('') }}>
+                use a different email
+              </button>
             </>
           ) : (
             <>
