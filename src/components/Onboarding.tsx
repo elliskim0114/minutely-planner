@@ -61,10 +61,9 @@ export default function Onboarding() {
   // Sign-in form
   const [email, setEmail] = useState('')
   const [displayName, setDisplayName] = useState('')
-  const [pw, setPw] = useState('')
-  const [signInMode, setSignInMode] = useState<'signin' | 'signup'>('signin')
   const [signInLoading, setSignInLoading] = useState(false)
   const [signInError, setSignInError] = useState('')
+  const [signInSent, setSignInSent] = useState(false)
 
   // Config
   const [tf, setTf] = useState<'12' | '24'>('12')
@@ -153,40 +152,30 @@ export default function Onboarding() {
   }
 
   const doAuth = async () => {
-    if (!email.trim() || !pw.trim()) return
+    if (!email.trim()) { setSignInError('email is required'); return }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setSignInError('enter a valid email'); return }
     setSignInLoading(true)
     setSignInError('')
 
-    // ── Real Supabase auth ──
-    if (supabase) {
-      try {
-        if (signInMode === 'signup') {
-          const { data, error } = await supabase.auth.signUp({ email, password: pw })
-          if (error) throw error
-          setUserName(displayName.trim() || data.user?.email?.split('@')[0] || email.split('@')[0])
-          setUserEmail(email)
-          goTo('s2')
-        } else {
-          const { data, error } = await supabase.auth.signInWithPassword({ email, password: pw })
-          if (error) throw error
-          setUserName(data.user?.user_metadata?.display_name || data.user?.email?.split('@')[0] || email.split('@')[0])
-          setUserEmail(email)
-          goTo('s2')
-        }
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err)
-        setSignInError(msg)
-      } finally {
-        setSignInLoading(false)
-      }
-      return
+    if (supabaseConfigured) {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email.trim(),
+        options: {
+          data: { name: displayName.trim() || email.split('@')[0] },
+          emailRedirectTo: window.location.origin,
+        },
+      })
+      setSignInLoading(false)
+      if (error) { setSignInError(error.message); return }
+      setUserName(displayName.trim() || email.split('@')[0])
+      setUserEmail(email.trim())
+      setSignInSent(true)
+    } else {
+      setUserName(displayName.trim() || email.split('@')[0])
+      setUserEmail(email.trim())
+      setSignInLoading(false)
+      goTo('s2')
     }
-
-    // ── Fallback: local-only (no Supabase configured) ──
-    setUserName(displayName.trim() || email.split('@')[0])
-    setUserEmail(email)
-    setSignInLoading(false)
-    goTo('s2')
   }
 
   const finishSetup = async () => {
@@ -356,73 +345,52 @@ export default function Onboarding() {
           <div className="ob-logo">minutely <span className="acdot" /></div>
           <span className="ob-step">step 1 of 4</span>
 
-          {/* mode toggle */}
-          <div className="ob-auth-toggle">
-            <button
-              className={`ob-auth-tab${signInMode === 'signin' ? ' on' : ''}`}
-              onClick={() => { setSignInMode('signin'); setSignInError('') }}
-            >sign in</button>
-            <button
-              className={`ob-auth-tab${signInMode === 'signup' ? ' on' : ''}`}
-              onClick={() => { setSignInMode('signup'); setSignInError('') }}
-            >create account</button>
-          </div>
-
-          <div className="ob-qh" style={{ marginTop: 14 }}>
-            {signInMode === 'signin' ? 'welcome back.' : 'join minutely.'}
-          </div>
-          <div className="ob-qs" style={{ marginBottom: 16 }}>
-            {signInMode === 'signin'
-              ? 'sign in to pick up where you left off.'
-              : 'your data stays private — we just need an email.'}
-          </div>
-
-          {signInMode === 'signup' && (
-            <input
-              className="ob-inp"
-              type="text"
-              placeholder="your name (optional)"
-              value={displayName}
-              onChange={e => setDisplayName(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && doAuth()}
-            />
+          {signInSent ? (
+            <>
+              <div style={{ fontSize: 36, marginBottom: 12, marginTop: 8 }}>📬</div>
+              <div className="ob-qh">check your email</div>
+              <div className="ob-qs" style={{ marginBottom: 20 }}>
+                we sent a magic link to <strong>{email}</strong>.<br />
+                click it to verify your account — then come back here to continue.
+              </div>
+              <button className="ob-p" onClick={() => goTo('s2')}>i've confirmed, continue →</button>
+              <button className="ob-g" onClick={() => { setSignInSent(false); setEmail('') }}>use a different email</button>
+            </>
+          ) : (
+            <>
+              <div className="ob-qh" style={{ marginTop: 8 }}>create or sign in to your account.</div>
+              <div className="ob-qs" style={{ marginBottom: 16 }}>
+                we'll email you a magic link — no password needed.
+              </div>
+              <input
+                className="ob-inp"
+                type="text"
+                placeholder="your name (optional)"
+                value={displayName}
+                onChange={e => setDisplayName(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && doAuth()}
+                autoFocus
+              />
+              <input
+                className="ob-inp"
+                type="email"
+                placeholder="email address"
+                value={email}
+                onChange={e => { setEmail(e.target.value); setSignInError('') }}
+                onKeyDown={e => e.key === 'Enter' && doAuth()}
+              />
+              {signInError && <div className="ob-auth-error">{signInError}</div>}
+              <button className="ob-p" onClick={doAuth} disabled={signInLoading}>
+                {signInLoading
+                  ? <><div className="ald" /><div className="ald" /><div className="ald" /></>
+                  : 'send magic link →'
+                }
+              </button>
+              <div className="ob-div">or</div>
+              <button className="ob-g" onClick={() => goTo('s1c')}>continue without account</button>
+              <button className="ob-back" onClick={() => goTo('s1')}>← back</button>
+            </>
           )}
-          <input
-            className="ob-inp"
-            type="email"
-            placeholder="email address"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && doAuth()}
-          />
-          <input
-            className="ob-inp"
-            type="password"
-            placeholder="password"
-            value={pw}
-            onChange={e => setPw(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && doAuth()}
-          />
-
-          {!supabaseConfigured && (
-            <div className="ob-auth-notice">
-              ⓘ Supabase not configured — account saved locally only.
-            </div>
-          )}
-
-          {signInError && (
-            <div className="ob-auth-error">{signInError}</div>
-          )}
-
-          <button className="ob-p" onClick={doAuth} disabled={signInLoading}>
-            {signInLoading
-              ? <><div className="ald" /><div className="ald" /><div className="ald" /></>
-              : signInMode === 'signin' ? 'sign in →' : 'create account →'
-            }
-          </button>
-          <div className="ob-div">or</div>
-          <button className="ob-g" onClick={() => goTo('s1c')}>continue without account</button>
-          <button className="ob-back" onClick={() => goTo('s1')}>← back</button>
         </div>
       </div>
 
