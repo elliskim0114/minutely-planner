@@ -241,19 +241,31 @@ async function handleWhatNow(body: any, res: ServerResponse) {
   json(res, 200, { message: (msg.content[0] as any).text?.trim() ?? '' })
 }
 
+const SB_URL = 'https://gggzfhgdwwqpjnerlpcc.supabase.co'
+const SB_KEY = 'sb_publishable_sO8gdutgM-9CatUa56GQ3g_b9Hz5--Q'
+
 async function handleVerifyOtp(body: any, res: ServerResponse) {
   const { email, token } = body
   if (!email || !token) return json(res, 400, { error: 'email and token required' })
-  const r = await fetch('https://gggzfhgdwwqpjnerlpcc.supabase.co/auth/v1/verify', {
+  const r = await fetch(`${SB_URL}/auth/v1/verify`, {
     method: 'POST',
-    headers: {
-      'apikey': 'sb_publishable_sO8gdutgM-9CatUa56GQ3g_b9Hz5--Q',
-      'Content-Type': 'application/json',
-    },
+    headers: { 'apikey': SB_KEY, 'Content-Type': 'application/json' },
     body: JSON.stringify({ type: 'email', email, token }),
   })
   const data = await r.json()
   json(res, r.status, data)
+}
+
+async function handleGetProfile(body: any, res: ServerResponse) {
+  const { user_id, access_token } = body
+  if (!user_id || !access_token) return json(res, 400, { error: 'user_id and access_token required' })
+  const r = await fetch(
+    `${SB_URL}/rest/v1/planner_profiles?user_id=eq.${user_id}&select=onboarding_completed,preferences&limit=1`,
+    { headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${access_token}` } }
+  )
+  if (!r.ok) return json(res, r.status, { error: 'profile fetch failed' })
+  const rows = await r.json()
+  json(res, 200, rows[0] ?? null)
 }
 
 // ── Main handler ─────────────────────────────────────────────────────────────
@@ -290,6 +302,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     if (path === '/api/analytics-insights') return await handleAnalyticsInsights(body, res)
     if (path === '/api/what-now') return await handleWhatNow(body, res)
     if (path === '/api/verify-otp') return await handleVerifyOtp(body, res)
+    if (path === '/api/get-profile') return await handleGetProfile(body, res)
     return json(res, 404, { error: 'not found' })
   } catch (err: any) {
     return json(res, 500, { error: String(err) })

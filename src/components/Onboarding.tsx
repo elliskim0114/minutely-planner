@@ -187,12 +187,10 @@ export default function Onboarding() {
     setSignInError('')
 
     try {
-      // Route verify through our own Vercel API to avoid client-side network issues
+      // Step 1: verify OTP via server proxy (avoids client-side Supabase network issues)
       const controller = new AbortController()
       const timer = setTimeout(() => controller.abort(), 20000)
-
-      let json: any
-      let ok: boolean
+      let verifyJson: any, verifyOk: boolean
       try {
         const res = await fetch('/api/verify-otp', {
           method: 'POST',
@@ -201,32 +199,39 @@ export default function Onboarding() {
           signal: controller.signal,
         })
         clearTimeout(timer)
-        json = await res.json()
-        ok = res.ok
-      } catch (fetchErr: any) {
+        verifyJson = await res.json()
+        verifyOk = res.ok
+      } catch (e: any) {
         clearTimeout(timer)
-        if (fetchErr?.name === 'AbortError') {
-          setSignInError('verification timed out — check your connection and try again')
-        } else {
-          setSignInError('network error — check your connection and try again')
-        }
+        setSignInError(e?.name === 'AbortError'
+          ? 'verification timed out — check your connection and try again'
+          : 'network error — check your connection and try again')
         return
       }
 
-      if (!ok) {
-        const msg = (json?.msg ?? json?.error_description ?? '').toLowerCase()
-        if (msg.includes('expired') || msg.includes('invalid') || json?.code === 403) {
+      if (!verifyOk) {
+        const msg = (verifyJson?.msg ?? verifyJson?.error_description ?? '').toLowerCase()
+        if (msg.includes('expired') || msg.includes('invalid') || verifyJson?.code === 403) {
           setSignInError('code expired or invalid — tap resend for a new one')
         } else {
-          setSignInError(json?.msg || json?.error || 'something went wrong — try again')
+          setSignInError(verifyJson?.msg || verifyJson?.error || 'something went wrong — try again')
         }
         return
       }
 
-      // Set the session via SDK so auth state is tracked properly
-      const { access_token, refresh_token, user } = json
+      const { access_token, refresh_token, user } = verifyJson
+
+      // Step 2: store session in localStorage directly — avoids setSession() network call
       if (access_token && refresh_token) {
-        await supabase.auth.setSession({ access_token, refresh_token })
+        try {
+          const sessionKey = 'sb-gggzfhgdwwqpjnerlpcc-auth-token'
+          localStorage.setItem(sessionKey, JSON.stringify({
+            access_token, refresh_token, user,
+            token_type: 'bearer',
+            expires_in: 3600,
+            expires_at: Math.floor(Date.now() / 1000) + 3600,
+          }))
+        } catch { /* non-fatal */ }
       }
 
       const resolvedName = displayName.trim() || user?.user_metadata?.name || email.split('@')[0]
@@ -234,31 +239,39 @@ export default function Onboarding() {
       setUserEmail(email.trim())
 
       if (authMode === 'signin') {
+        // Step 3 (sign-in): fetch profile via server proxy — avoids client-side Supabase call
         const userId = user?.id
-        if (userId) {
-          const { data: profile } = await supabase
-            .from('planner_profiles')
-            .select('onboarding_completed, preferences')
-            .eq('user_id', userId)
-            .maybeSingle()
+        if (!userId) { setSignInError('something went wrong — try again'); return }
 
-          if (profile?.onboarding_completed && profile?.preferences) {
-            const p = profile.preferences
-            finishOnboarding({
-              mode: p.mode ?? 'light',
-              cfg: p.cfg ?? { tf: '12', ds: '06:00', de: '23:00', ws: 0 },
-              userName: p.userName ?? resolvedName,
-              userEmail: email.trim(),
-              perfectDay: [],
-              userProfile: p.userProfile ?? null,
-            })
-          } else {
-            setSignInError('no account found for this email — go back and create one instead')
-          }
+        const controller2 = new AbortController()
+        const timer2 = setTimeout(() => controller2.abort(), 10000)
+        let profile: any = null
+        try {
+          const pRes = await fetch('/api/get-profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: userId, access_token }),
+            signal: controller2.signal,
+          })
+          clearTimeout(timer2)
+          if (pRes.ok) profile = await pRes.json()
+        } catch { clearTimeout(timer2) }
+
+        if (profile?.onboarding_completed && profile?.preferences) {
+          const p = profile.preferences
+          finishOnboarding({
+            mode: p.mode ?? 'light',
+            cfg: p.cfg ?? { tf: '12', ds: '06:00', de: '23:00', ws: 0 },
+            userName: p.userName ?? resolvedName,
+            userEmail: email.trim(),
+            perfectDay: [],
+            userProfile: p.userProfile ?? null,
+          })
         } else {
-          setSignInError('something went wrong — try again')
+          setSignInError('no account found — go back and create one instead')
         }
       } else {
+        // Sign-up: go straight to onboarding steps
         goTo('s2')
       }
     } catch {
@@ -439,10 +452,7 @@ export default function Onboarding() {
               />
               {signInError && <div className="ob-auth-error">{signInError}</div>}
               <button className="ob-p" onClick={doVerify} disabled={verifyLoading}>
-                {verifyLoading
-                  ? <><div className="ald" /><div className="ald" /><div className="ald" /></>
-                  : 'verify →'
-                }
+                {verifyLoading ? 'verifying…' : 'verify →'}
               </button>
               <button className="ob-g" onClick={async () => {
                 setOtpCode(''); setSignInError('')
