@@ -161,13 +161,18 @@ export default function Onboarding() {
     setSignInError('')
 
     if (supabaseConfigured) {
-      const { error } = await supabase.auth.signInWithOtp({
-        email: email.trim(),
-        options: { shouldCreateUser: true },
-      })
-      setSignInLoading(false)
-      if (error) { setSignInError(error.message); return }
-      setSignInSent(true)
+      try {
+        const { error } = await supabase.auth.signInWithOtp({
+          email: email.trim(),
+          options: { shouldCreateUser: true },
+        })
+        if (error) { setSignInError(error.message); return }
+        setSignInSent(true)
+      } catch {
+        setSignInError('network error — check your connection and try again')
+      } finally {
+        setSignInLoading(false)
+      }
     } else {
       setUserName(displayName.trim() || email.split('@')[0])
       setUserEmail(email.trim())
@@ -181,56 +186,61 @@ export default function Onboarding() {
     setVerifyLoading(true)
     setSignInError('')
 
-    const { data, error } = await supabase.auth.verifyOtp({
-      email: email.trim(),
-      token: otpCode.trim(),
-      type: 'email',
-    })
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        email: email.trim(),
+        token: otpCode.trim(),
+        type: 'email',
+      })
 
-    if (error) {
-      setVerifyLoading(false)
-      const msg = error.message?.toLowerCase() ?? ''
-      if (msg.includes('expired') || msg.includes('invalid') || error.status === 403) {
-        setSignInError('code expired or invalid — tap resend for a new one')
-      } else {
-        setSignInError(error.message || 'something went wrong — try again')
+      if (error) {
+        const msg = error.message?.toLowerCase() ?? ''
+        if (msg.includes('expired') || msg.includes('invalid') || error.status === 403) {
+          setSignInError('code expired or invalid — tap resend for a new one')
+        } else {
+          setSignInError(error.message || 'something went wrong — try again')
+        }
+        return
       }
-      return
-    }
 
-    const resolvedName = displayName.trim() || data.user?.user_metadata?.name || email.split('@')[0]
-    setUserName(resolvedName)
-    setUserEmail(email.trim())
+      const resolvedName = displayName.trim() || data.user?.user_metadata?.name || email.split('@')[0]
+      setUserName(resolvedName)
+      setUserEmail(email.trim())
 
-    // For sign-in: look up saved profile and restore it
-    if (authMode === 'signin') {
-      const { data: profile } = await supabase
-        .from('planner_profiles')
-        .select('onboarding_completed, preferences')
-        .eq('user_id', data.user!.id)
-        .maybeSingle()
+      // For sign-in: look up saved profile and restore it
+      if (authMode === 'signin') {
+        const userId = data.user?.id
+        if (userId) {
+          const { data: profile } = await supabase
+            .from('planner_profiles')
+            .select('onboarding_completed, preferences')
+            .eq('user_id', userId)
+            .maybeSingle()
 
-      setVerifyLoading(false)
-
-      if (profile?.onboarding_completed && profile?.preferences) {
-        const p = profile.preferences
-        finishOnboarding({
-          mode: p.mode ?? 'light',
-          cfg: p.cfg ?? { tf: '12', ds: '06:00', de: '23:00', ws: 0 },
-          userName: p.userName ?? resolvedName,
-          userEmail: email.trim(),
-          perfectDay: [],
-          userProfile: p.userProfile ?? null,
-        })
+          if (profile?.onboarding_completed && profile?.preferences) {
+            const p = profile.preferences
+            finishOnboarding({
+              mode: p.mode ?? 'light',
+              cfg: p.cfg ?? { tf: '12', ds: '06:00', de: '23:00', ws: 0 },
+              userName: p.userName ?? resolvedName,
+              userEmail: email.trim(),
+              perfectDay: [],
+              userProfile: p.userProfile ?? null,
+            })
+          } else {
+            goTo('s2')
+          }
+        } else {
+          goTo('s2')
+        }
       } else {
-        // Account exists but no saved profile — take them through onboarding once
-        setSignInError('')
+        // Sign-up: always go through onboarding
         goTo('s2')
       }
-    } else {
-      // Sign-up: always go through onboarding
+    } catch {
+      setSignInError('something went wrong — check your connection and try again')
+    } finally {
       setVerifyLoading(false)
-      goTo('s2')
     }
   }
 
