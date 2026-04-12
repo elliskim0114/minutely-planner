@@ -73,33 +73,36 @@ export default function App() {
 
   useEffect(() => {
     const loadAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      setSession(session)
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        setSession(session)
 
-      if (session?.user) {
-        const { data } = await supabase
-          .from('planner_profiles')
-          .select('*')
-          .eq('user_id', session.user.id)
-          .maybeSingle()
+        if (session?.user) {
+          try {
+            const { data } = await supabase
+              .from('planner_profiles')
+              .select('*')
+              .eq('user_id', session.user.id)
+              .maybeSingle()
 
-        setProfile(data)
+            setProfile(data)
 
-        // Restore saved preferences if user has completed onboarding before
-        if (data?.onboarding_completed && data?.preferences && !useStore.getState().onboarded) {
-          const p = data.preferences
-          useStore.getState().finishOnboarding({
-            mode: p.mode ?? 'light',
-            cfg: p.cfg ?? { tf: '12', ds: '06:00', de: '23:00', ws: 0 },
-            userName: p.userName ?? session.user.email?.split('@')[0] ?? null,
-            userEmail: session.user.email ?? null,
-            perfectDay: [],
-            userProfile: p.userProfile ?? null,
-          })
+            if (data?.onboarding_completed && data?.preferences && !useStore.getState().onboarded) {
+              const p = data.preferences
+              useStore.getState().finishOnboarding({
+                mode: p.mode ?? 'light',
+                cfg: p.cfg ?? { tf: '12', ds: '06:00', de: '23:00', ws: 0 },
+                userName: p.userName ?? session.user.email?.split('@')[0] ?? null,
+                userEmail: session.user.email ?? null,
+                perfectDay: [],
+                userProfile: p.userProfile ?? null,
+              })
+            }
+          } catch { setProfile(null) }
+        } else {
+          setProfile(null)
         }
-      } else {
-        setProfile(null)
-      }
+      } catch { /* session fetch failed — proceed as logged out */ }
 
       setAuthLoading(false)
     }
@@ -110,26 +113,27 @@ export default function App() {
       setSession(newSession)
 
       if (newSession?.user) {
-        const { data } = await supabase
-          .from('planner_profiles')
-          .select('*')
-          .eq('user_id', newSession.user.id)
-          .maybeSingle()
+        try {
+          const { data } = await supabase
+            .from('planner_profiles')
+            .select('*')
+            .eq('user_id', newSession.user.id)
+            .maybeSingle()
 
-        setProfile(data)
+          setProfile(data)
 
-        // Restore saved preferences on sign-in
-        if (data?.onboarding_completed && data?.preferences && !useStore.getState().onboarded) {
-          const p = data.preferences
-          useStore.getState().finishOnboarding({
-            mode: p.mode ?? 'light',
-            cfg: p.cfg ?? { tf: '12', ds: '06:00', de: '23:00', ws: 0 },
-            userName: p.userName ?? newSession.user.email?.split('@')[0] ?? null,
-            userEmail: newSession.user.email ?? null,
-            perfectDay: [],
-            userProfile: p.userProfile ?? null,
-          })
-        }
+          if (data?.onboarding_completed && data?.preferences && !useStore.getState().onboarded) {
+            const p = data.preferences
+            useStore.getState().finishOnboarding({
+              mode: p.mode ?? 'light',
+              cfg: p.cfg ?? { tf: '12', ds: '06:00', de: '23:00', ws: 0 },
+              userName: p.userName ?? newSession.user.email?.split('@')[0] ?? null,
+              userEmail: newSession.user.email ?? null,
+              perfectDay: [],
+              userProfile: p.userProfile ?? null,
+            })
+          }
+        } catch { setProfile(null) }
       } else {
         setProfile(null)
       }
