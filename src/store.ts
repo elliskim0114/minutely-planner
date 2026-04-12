@@ -836,11 +836,15 @@ export const useStore = create<Store>()(
       openSignIn: () => set({ signInOpen: true }),
       closeSignIn: () => set({ signInOpen: false }),
       signOut: () => {
+        // Clear session from localStorage directly — avoids hanging network call
+        localStorage.removeItem('sb-gggzfhgdwwqpjnerlpcc-auth-token')
         supabase.auth.signOut().catch(() => {})
         set({ onboarded: false, userName: null, userEmail: null })
       },
       deleteAccount: () => {
         localStorage.removeItem('mn-store')
+        localStorage.removeItem('sb-gggzfhgdwwqpjnerlpcc-auth-token')
+        supabase.auth.signOut().catch(() => {})
         set({ onboarded: false, userName: null, userEmail: null })
       },
       doLateSignIn: (email, name) => {
