@@ -187,31 +187,60 @@ export default function Onboarding() {
     setSignInError('')
 
     try {
-      const timeout = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('timeout')), 15000)
-      )
-      const { data, error } = await Promise.race([
-        supabase.auth.verifyOtp({ email: email.trim(), token: otpCode.trim(), type: 'email' }),
-        timeout,
-      ])
+      // Use direct fetch instead of SDK to avoid internal SDK hangs
+      const controller = new AbortController()
+      const timer = setTimeout(() => controller.abort(), 12000)
 
-      if (error) {
-        const msg = error.message?.toLowerCase() ?? ''
-        if (msg.includes('expired') || msg.includes('invalid') || error.status === 403) {
-          setSignInError('code expired or invalid — tap resend for a new one')
+      let json: any
+      let ok: boolean
+      try {
+        const res = await fetch(
+          'https://gggzfhgdwwqpjnerlpcc.supabase.co/auth/v1/verify',
+          {
+            method: 'POST',
+            headers: {
+              'apikey': 'sb_publishable_sO8gdutgM-9CatUa56GQ3g_b9Hz5--Q',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ type: 'email', email: email.trim(), token: otpCode.trim() }),
+            signal: controller.signal,
+          }
+        )
+        clearTimeout(timer)
+        json = await res.json()
+        ok = res.ok
+      } catch (fetchErr: any) {
+        clearTimeout(timer)
+        if (fetchErr?.name === 'AbortError') {
+          setSignInError('verification timed out — check your connection and try again')
         } else {
-          setSignInError(error.message || 'something went wrong — try again')
+          setSignInError('network error — check your connection and try again')
         }
         return
       }
 
-      const resolvedName = displayName.trim() || data.user?.user_metadata?.name || email.split('@')[0]
+      if (!ok) {
+        const msg = (json?.msg ?? json?.error_description ?? '').toLowerCase()
+        if (msg.includes('expired') || msg.includes('invalid') || json?.code === 403) {
+          setSignInError('code expired or invalid — tap resend for a new one')
+        } else {
+          setSignInError(json?.msg || json?.error || 'something went wrong — try again')
+        }
+        return
+      }
+
+      // Set the session via SDK so auth state is tracked properly
+      const { access_token, refresh_token, user } = json
+      if (access_token && refresh_token) {
+        await supabase.auth.setSession({ access_token, refresh_token })
+      }
+
+      const resolvedName = displayName.trim() || user?.user_metadata?.name || email.split('@')[0]
       setUserName(resolvedName)
       setUserEmail(email.trim())
 
-      // For sign-in: look up saved profile and restore it
       if (authMode === 'signin') {
-        const userId = data.user?.id
+        const userId = user?.id
         if (userId) {
           const { data: profile } = await supabase
             .from('planner_profiles')
@@ -230,22 +259,16 @@ export default function Onboarding() {
               userProfile: p.userProfile ?? null,
             })
           } else {
-            // Supabase account exists but no saved profile — shouldn't happen for sign-in
             setSignInError('no account found for this email — go back and create one instead')
           }
         } else {
           setSignInError('something went wrong — try again')
         }
       } else {
-        // Sign-up: always go through onboarding
         goTo('s2')
       }
-    } catch (e: any) {
-      if (e?.message === 'timeout') {
-        setSignInError('verification timed out — check your connection and try again')
-      } else {
-        setSignInError('something went wrong — check your connection and try again')
-      }
+    } catch {
+      setSignInError('something went wrong — check your connection and try again')
     } finally {
       setVerifyLoading(false)
     }
