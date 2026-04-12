@@ -65,24 +65,24 @@
   --s3:0 16px 48px rgba(0,0,0,0.75);
 }
 
-/* ── UNLOCKABLE THEME: ember (warm amber-gold, unlocks at 5 gems) ── */
+/* ── UNLOCKABLE THEME: ember (smoldering fire, unlocks at 5 gems) ── */
 [data-mode="ember"]{
-  --bg:#0A0602;--bg2:#140E06;--bg3:#1E1608;
-  --surf:#18120A;--surf2:#221A0C;
-  --bd:rgba(255,210,100,0.1);--bd2:rgba(255,210,100,0.22);
-  --ink:#FFF4D0;--ink2:#E8C870;--ink3:#B08830;--ink4:#6A5010;
-  --acc:#FF9500;--acc2:#FFB840;
-  --accbg:rgba(255,149,0,0.12);--accbg2:rgba(255,149,0,0.22);
-  --nowglow:rgba(255,149,0,0.35);
-  --bfbg:#2A1200;--bfbd:#8B4A00;--bfink:#FFD080;
-  --brbg:#0A1A00;--brbd:#2A5800;--brink:#90D840;
-  --bsbg:#0A0A20;--bsbd:#303080;--bsink:#A0A8FF;
-  --blbg:#200E00;--blbd:#804000;--blink:#FFB060;
-  --bdbg:#1A1400;--bdbd:#504000;--bdink:#D0B840;
-  --past:rgba(0,0,0,0.25);--nowstrip:rgba(255,149,0,0.08);
-  --s1:0 2px 8px rgba(0,0,0,0.5);
-  --s2:0 4px 20px rgba(0,0,0,0.6);
-  --s3:0 16px 48px rgba(0,0,0,0.75);
+  --bg:rgba(5,0,0,0.0);--bg2:rgba(10,2,0,0.0);--bg3:rgba(16,4,0,0.0);
+  --surf:rgba(8,1,0,0.62);--surf2:rgba(14,3,0,0.68);
+  --bd:rgba(255,90,30,0.20);--bd2:rgba(255,90,30,0.38);
+  --ink:#FFFFFF;--ink2:#FFB08A;--ink3:#C05C38;--ink4:rgba(255,148,90,0.32);
+  --acc:#FF5000;--acc2:#FF7A30;
+  --accbg:rgba(255,80,0,0.14);--accbg2:rgba(255,80,0,0.28);
+  --nowglow:rgba(255,80,0,0.55);
+  --bfbg:rgba(0,12,36,0.65);--bfbd:rgba(70,150,255,0.5);--bfink:#90C8FF;
+  --brbg:rgba(0,18,6,0.65);--brbd:rgba(0,180,90,0.5);--brink:#66EEA0;
+  --bsbg:rgba(8,0,28,0.65);--bsbd:rgba(140,0,210,0.5);--bsink:#DD88FF;
+  --blbg:rgba(24,6,0,0.65);--blbd:rgba(180,70,0,0.5);--blink:#FFB060;
+  --bdbg:rgba(14,3,0,0.65);--bdbd:rgba(120,30,0,0.5);--bdink:#E07040;
+  --past:rgba(0,0,0,0.52);--nowstrip:rgba(255,80,0,0.10);
+  --s1:0 2px 12px rgba(0,0,0,0.7);
+  --s2:0 4px 24px rgba(0,0,0,0.84);
+  --s3:0 16px 52px rgba(0,0,0,0.96);
 }
 /* ── UNLOCKABLE THEME: ocean (deep blue, unlocks at 12 gems) ── */
 [data-mode="ocean"]{
@@ -440,6 +440,66 @@ body[data-mode="gold"]{
 [data-mode="gold"] .sc-box,
 [data-mode="gold"] .uc-panel{
   background:rgba(8,5,0,0.92) !important;
+  backdrop-filter:blur(28px) !important;
+  -webkit-backdrop-filter:blur(28px) !important;
+}
+
+/* ── EMBER: smoldering coals — deep red/coal/fire-orange sweep ── */
+@keyframes emberGlow{
+  0%  {background-position:0%   50%}
+  33% {background-position:65%  25%}
+  66% {background-position:100% 75%}
+  100%{background-position:0%   50%}
+}
+body[data-mode="ember"]{
+  background:linear-gradient(
+    -42deg,
+    #050000,
+    #1C0400,
+    #540A00,
+    #902000,
+    #CC3000,
+    #FF5000,
+    #BB1C00,
+    #6A0600,
+    #FF6820,
+    #400800,
+    #CC4400,
+    #1A0100
+  ) !important;
+  background-size:500% 500% !important;
+  animation:emberGlow 14s ease-in-out infinite !important;
+}
+[data-mode="ember"] #app{background:transparent !important}
+[data-mode="ember"] #sb,
+[data-mode="ember"] #topbar,
+[data-mode="ember"] #sb-btm,
+[data-mode="ember"] .cal-view,
+[data-mode="ember"] .view-inner,
+[data-mode="ember"] .gv-inner,
+[data-mode="ember"] .av-inner,
+[data-mode="ember"] .mpd-inner,
+[data-mode="ember"] .templates-inner{
+  background:rgba(6,1,0,0.66) !important;
+  backdrop-filter:blur(20px) !important;
+  -webkit-backdrop-filter:blur(20px) !important;
+}
+[data-mode="ember"] #topbar{border-bottom-color:rgba(255,90,30,0.20) !important}
+[data-mode="ember"] #sb{border-right-color:rgba(255,90,30,0.20) !important}
+[data-mode="ember"] .cal-col-hdr,
+[data-mode="ember"] .cal-day-hdr{background:rgba(5,1,0,0.55) !important;backdrop-filter:blur(12px) !important;-webkit-backdrop-filter:blur(12px) !important}
+[data-mode="ember"] .cal-time-gutter{background:rgba(4,1,0,0.50) !important}
+/* Ember: opaque modal/popup backgrounds */
+[data-mode="ember"] .mbox,
+[data-mode="ember"] .sm-panel,
+[data-mode="ember"] .fm-box,
+[data-mode="ember"] .coach-box,
+[data-mode="ember"] .notes-modal,
+[data-mode="ember"] .tmpl-box,
+[data-mode="ember"] .pdw-box,
+[data-mode="ember"] .sc-box,
+[data-mode="ember"] .uc-panel{
+  background:rgba(8,1,0,0.92) !important;
   backdrop-filter:blur(28px) !important;
   -webkit-backdrop-filter:blur(28px) !important;
 }
