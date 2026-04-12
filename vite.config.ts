@@ -25,12 +25,16 @@ export default defineConfig({
       workbox: {
         skipWaiting: true,
         clientsClaim: true,
-        globPatterns: ['**/*.{css,html,ico,png,svg,woff2}'],
+        cleanupOutdatedCaches: true,
+        globPatterns: ['**/*.{css,ico,png,svg,woff2}'],
         runtimeCaching: [
           {
             urlPattern: /\.js$/,
-            handler: 'NetworkFirst',
-            options: { cacheName: 'js-cache', networkTimeoutSeconds: 5 },
+            handler: 'NetworkOnly',
+          },
+          {
+            urlPattern: /\.html$/,
+            handler: 'NetworkOnly',
           },
           {
             urlPattern: /^\/api\//,
