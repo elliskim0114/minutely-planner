@@ -228,10 +228,11 @@ export default function Onboarding() {
               userProfile: p.userProfile ?? null,
             })
           } else {
-            goTo('s2')
+            // Supabase account exists but no saved profile — shouldn't happen for sign-in
+            setSignInError('no account found for this email — go back and create one instead')
           }
         } else {
-          goTo('s2')
+          setSignInError('something went wrong — try again')
         }
       } else {
         // Sign-up: always go through onboarding
@@ -428,6 +429,7 @@ export default function Onboarding() {
               <button className="ob-g" onClick={() => { setSignInSent(false); setOtpCode(''); setSignInError('') }}>
                 use a different email
               </button>
+              <button className="ob-back" onClick={() => { setSignInSent(false); setOtpCode(''); setSignInError(''); goTo('s1') }}>← back</button>
             </>
           ) : (
             <>
