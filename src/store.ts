@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { supabase } from './supabase'
 import type {
   Mode, View, Block, PDBlock, Config, Intentions,
   BlockModalState, CtxMenuState, NotifSettings, QueueItem, BlockTemplate, WeeklyTemplate, Goal, UserProfile,
@@ -834,7 +835,10 @@ export const useStore = create<Store>()(
       closeWhatNow: () => set({ whatNowOpen: false }),
       openSignIn: () => set({ signInOpen: true }),
       closeSignIn: () => set({ signInOpen: false }),
-      signOut: () => set({ onboarded: false, userName: null, userEmail: null }),
+      signOut: () => {
+        supabase.auth.signOut().catch(() => {})
+        set({ onboarded: false, userName: null, userEmail: null })
+      },
       deleteAccount: () => {
         localStorage.removeItem('mn-store')
         set({ onboarded: false, userName: null, userEmail: null })
