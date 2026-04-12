@@ -86,41 +86,41 @@
 }
 /* ── UNLOCKABLE THEME: ocean (deep blue, unlocks at 12 gems) ── */
 [data-mode="ocean"]{
-  --bg:#020810;--bg2:#040E18;--bg3:#081422;
-  --surf:#061020;--surf2:#0A1828;
-  --bd:rgba(100,180,255,0.1);--bd2:rgba(100,180,255,0.2);
-  --ink:#D8F0FF;--ink2:#90C8F0;--ink3:#4888B8;--ink4:#1A4870;
+  --bg:rgba(0,4,14,0.0);--bg2:rgba(0,8,20,0.0);--bg3:rgba(0,12,28,0.0);
+  --surf:rgba(0,6,18,0.62);--surf2:rgba(0,10,24,0.68);
+  --bd:rgba(60,160,255,0.20);--bd2:rgba(60,160,255,0.38);
+  --ink:#FFFFFF;--ink2:#90D8FF;--ink3:#4090C0;--ink4:rgba(120,200,255,0.32);
   --acc:#00B4FF;--acc2:#40CCFF;
-  --accbg:rgba(0,180,255,0.1);--accbg2:rgba(0,180,255,0.2);
-  --nowglow:rgba(0,180,255,0.3);
-  --bfbg:#1A0820;--bfbd:#5A1880;--bfink:#E0A8FF;
-  --brbg:#001E18;--brbd:#006858;--brink:#60E0C8;
-  --bsbg:#00101E;--bsbd:#003878;--bsink:#80C0FF;
-  --blbg:#0E1800;--blbd:#386800;--blink:#A0E040;
-  --bdbg:#081018;--bdbd:#204050;--bdink:#90B8D0;
-  --past:rgba(0,0,0,0.3);--nowstrip:rgba(0,180,255,0.07);
-  --s1:0 2px 8px rgba(0,0,0,0.5);
-  --s2:0 4px 20px rgba(0,0,0,0.6);
-  --s3:0 16px 48px rgba(0,0,0,0.8);
+  --accbg:rgba(0,180,255,0.14);--accbg2:rgba(0,180,255,0.28);
+  --nowglow:rgba(0,180,255,0.55);
+  --bfbg:rgba(18,0,36,0.65);--bfbd:rgba(120,40,200,0.5);--bfink:#D090FF;
+  --brbg:rgba(0,20,18,0.65);--brbd:rgba(0,160,130,0.5);--brink:#60E8D0;
+  --bsbg:rgba(0,10,28,0.65);--bsbd:rgba(0,80,200,0.5);--bsink:#80C8FF;
+  --blbg:rgba(8,14,0,0.65);--blbd:rgba(60,120,0,0.5);--blink:#A0E840;
+  --bdbg:rgba(0,8,18,0.65);--bdbd:rgba(0,60,110,0.5);--bdink:#80C0E0;
+  --past:rgba(0,0,0,0.52);--nowstrip:rgba(0,180,255,0.10);
+  --s1:0 2px 12px rgba(0,0,0,0.7);
+  --s2:0 4px 24px rgba(0,0,0,0.84);
+  --s3:0 16px 52px rgba(0,0,0,0.96);
 }
 /* ── UNLOCKABLE THEME: forest (mossy dark green, unlocks at 20 gems) ── */
 [data-mode="forest"]{
-  --bg:#030A04;--bg2:#071209;--bg3:#0C1A0E;
-  --surf:#091408;--surf2:#0E1C10;
-  --bd:rgba(80,200,100,0.12);--bd2:rgba(80,200,100,0.22);
-  --ink:#D4F5DC;--ink2:#88D498;--ink3:#3A8A4A;--ink4:#1A4022;
+  --bg:rgba(0,4,2,0.0);--bg2:rgba(2,8,4,0.0);--bg3:rgba(4,12,6,0.0);
+  --surf:rgba(2,8,3,0.62);--surf2:rgba(4,12,5,0.68);
+  --bd:rgba(60,200,90,0.20);--bd2:rgba(60,200,90,0.38);
+  --ink:#FFFFFF;--ink2:#88EEA0;--ink3:#3A9A50;--ink4:rgba(100,220,130,0.32);
   --acc:#22C55E;--acc2:#4ADE80;
-  --accbg:rgba(34,197,94,0.1);--accbg2:rgba(34,197,94,0.2);
-  --nowglow:rgba(34,197,94,0.25);
-  --bfbg:#061A10;--bfbd:#1A5430;--bfink:#80EAA0;
-  --brbg:#0A1806;--brbd:#2A5010;--brink:#90C840;
-  --bsbg:#04180C;--bsbd:#0E4828;--bsink:#60D8A0;
-  --blbg:#101402;--blbd:#404800;--blink:#C8D840;
-  --bdbg:#080E08;--bdbd:#1A2C1A;--bdink:#70A070;
-  --past:rgba(0,0,0,0.35);--nowstrip:rgba(34,197,94,0.06);
-  --s1:0 2px 8px rgba(0,0,0,0.55);
-  --s2:0 4px 20px rgba(0,0,0,0.65);
-  --s3:0 16px 48px rgba(0,0,0,0.8);
+  --accbg:rgba(34,197,94,0.14);--accbg2:rgba(34,197,94,0.28);
+  --nowglow:rgba(34,197,94,0.55);
+  --bfbg:rgba(4,0,20,0.65);--bfbd:rgba(100,40,200,0.5);--bfink:#C090FF;
+  --brbg:rgba(0,16,6,0.65);--brbd:rgba(10,140,60,0.5);--brink:#60EE90;
+  --bsbg:rgba(2,0,20,0.65);--bsbd:rgba(60,0,180,0.5);--bsink:#B080FF;
+  --blbg:rgba(12,12,0,0.65);--blbd:rgba(100,110,0,0.5);--blink:#D8E840;
+  --bdbg:rgba(2,8,2,0.65);--bdbd:rgba(20,70,20,0.5);--bdink:#70B870;
+  --past:rgba(0,0,0,0.52);--nowstrip:rgba(34,197,94,0.09);
+  --s1:0 2px 12px rgba(0,0,0,0.7);
+  --s2:0 4px 24px rgba(0,0,0,0.84);
+  --s3:0 16px 52px rgba(0,0,0,0.96);
 }
 /* ── UNLOCKABLE THEME: aurora (teal/cyan/purple/green animated gradient, unlocks at 35 gems) ── */
 [data-mode="aurora"]{
@@ -440,6 +440,124 @@ body[data-mode="gold"]{
 [data-mode="gold"] .sc-box,
 [data-mode="gold"] .uc-panel{
   background:rgba(8,5,0,0.92) !important;
+  backdrop-filter:blur(28px) !important;
+  -webkit-backdrop-filter:blur(28px) !important;
+}
+
+/* ── OCEAN: deep water — midnight blue/teal/navy sweep ── */
+@keyframes oceanGlow{
+  0%  {background-position:0%   50%}
+  33% {background-position:60%  20%}
+  66% {background-position:100% 80%}
+  100%{background-position:0%   50%}
+}
+body[data-mode="ocean"]{
+  background:linear-gradient(
+    -40deg,
+    #000408,
+    #000E20,
+    #002050,
+    #003888,
+    #0060B0,
+    #0090D8,
+    #004480,
+    #001840,
+    #0070C0,
+    #002C60,
+    #001028,
+    #004898
+  ) !important;
+  background-size:500% 500% !important;
+  animation:oceanGlow 15s ease-in-out infinite !important;
+}
+[data-mode="ocean"] #app{background:transparent !important}
+[data-mode="ocean"] #sb,
+[data-mode="ocean"] #topbar,
+[data-mode="ocean"] #sb-btm,
+[data-mode="ocean"] .cal-view,
+[data-mode="ocean"] .view-inner,
+[data-mode="ocean"] .gv-inner,
+[data-mode="ocean"] .av-inner,
+[data-mode="ocean"] .mpd-inner,
+[data-mode="ocean"] .templates-inner{
+  background:rgba(0,5,16,0.66) !important;
+  backdrop-filter:blur(20px) !important;
+  -webkit-backdrop-filter:blur(20px) !important;
+}
+[data-mode="ocean"] #topbar{border-bottom-color:rgba(60,160,255,0.20) !important}
+[data-mode="ocean"] #sb{border-right-color:rgba(60,160,255,0.20) !important}
+[data-mode="ocean"] .cal-col-hdr,
+[data-mode="ocean"] .cal-day-hdr{background:rgba(0,4,14,0.55) !important;backdrop-filter:blur(12px) !important;-webkit-backdrop-filter:blur(12px) !important}
+[data-mode="ocean"] .cal-time-gutter{background:rgba(0,3,12,0.50) !important}
+[data-mode="ocean"] .mbox,
+[data-mode="ocean"] .sm-panel,
+[data-mode="ocean"] .fm-box,
+[data-mode="ocean"] .coach-box,
+[data-mode="ocean"] .notes-modal,
+[data-mode="ocean"] .tmpl-box,
+[data-mode="ocean"] .pdw-box,
+[data-mode="ocean"] .sc-box,
+[data-mode="ocean"] .uc-panel{
+  background:rgba(0,5,18,0.92) !important;
+  backdrop-filter:blur(28px) !important;
+  -webkit-backdrop-filter:blur(28px) !important;
+}
+
+/* ── FOREST: woodland — deep green/moss/earth sweep ── */
+@keyframes forestGlow{
+  0%  {background-position:0%   50%}
+  33% {background-position:70%  30%}
+  66% {background-position:100% 70%}
+  100%{background-position:0%   50%}
+}
+body[data-mode="forest"]{
+  background:linear-gradient(
+    -38deg,
+    #010402,
+    #021008,
+    #062816,
+    #0C4820,
+    #147030,
+    #1E9840,
+    #0E5828,
+    #042010,
+    #18C050,
+    #0A3C18,
+    #021408,
+    #107838
+  ) !important;
+  background-size:500% 500% !important;
+  animation:forestGlow 16s ease-in-out infinite !important;
+}
+[data-mode="forest"] #app{background:transparent !important}
+[data-mode="forest"] #sb,
+[data-mode="forest"] #topbar,
+[data-mode="forest"] #sb-btm,
+[data-mode="forest"] .cal-view,
+[data-mode="forest"] .view-inner,
+[data-mode="forest"] .gv-inner,
+[data-mode="forest"] .av-inner,
+[data-mode="forest"] .mpd-inner,
+[data-mode="forest"] .templates-inner{
+  background:rgba(2,7,3,0.66) !important;
+  backdrop-filter:blur(20px) !important;
+  -webkit-backdrop-filter:blur(20px) !important;
+}
+[data-mode="forest"] #topbar{border-bottom-color:rgba(60,200,90,0.20) !important}
+[data-mode="forest"] #sb{border-right-color:rgba(60,200,90,0.20) !important}
+[data-mode="forest"] .cal-col-hdr,
+[data-mode="forest"] .cal-day-hdr{background:rgba(1,5,2,0.55) !important;backdrop-filter:blur(12px) !important;-webkit-backdrop-filter:blur(12px) !important}
+[data-mode="forest"] .cal-time-gutter{background:rgba(1,4,2,0.50) !important}
+[data-mode="forest"] .mbox,
+[data-mode="forest"] .sm-panel,
+[data-mode="forest"] .fm-box,
+[data-mode="forest"] .coach-box,
+[data-mode="forest"] .notes-modal,
+[data-mode="forest"] .tmpl-box,
+[data-mode="forest"] .pdw-box,
+[data-mode="forest"] .sc-box,
+[data-mode="forest"] .uc-panel{
+  background:rgba(2,6,3,0.92) !important;
   backdrop-filter:blur(28px) !important;
   -webkit-backdrop-filter:blur(28px) !important;
 }
