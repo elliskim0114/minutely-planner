@@ -187,11 +187,13 @@ export default function Onboarding() {
     setSignInError('')
 
     try {
-      const { data, error } = await supabase.auth.verifyOtp({
-        email: email.trim(),
-        token: otpCode.trim(),
-        type: 'email',
-      })
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('timeout')), 15000)
+      )
+      const { data, error } = await Promise.race([
+        supabase.auth.verifyOtp({ email: email.trim(), token: otpCode.trim(), type: 'email' }),
+        timeout,
+      ])
 
       if (error) {
         const msg = error.message?.toLowerCase() ?? ''
@@ -238,8 +240,12 @@ export default function Onboarding() {
         // Sign-up: always go through onboarding
         goTo('s2')
       }
-    } catch {
-      setSignInError('something went wrong — check your connection and try again')
+    } catch (e: any) {
+      if (e?.message === 'timeout') {
+        setSignInError('verification timed out — check your connection and try again')
+      } else {
+        setSignInError('something went wrong — check your connection and try again')
+      }
     } finally {
       setVerifyLoading(false)
     }
@@ -406,7 +412,7 @@ export default function Onboarding() {
                 className="ob-inp"
                 type="text"
                 inputMode="numeric"
-                placeholder="000000"
+                placeholder="00000000"
                 maxLength={8}
                 value={otpCode}
                 onChange={e => { setOtpCode(e.target.value.replace(/\D/g, '')); setSignInError('') }}
