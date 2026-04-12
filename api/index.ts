@@ -241,6 +241,21 @@ async function handleWhatNow(body: any, res: ServerResponse) {
   json(res, 200, { message: (msg.content[0] as any).text?.trim() ?? '' })
 }
 
+async function handleVerifyOtp(body: any, res: ServerResponse) {
+  const { email, token } = body
+  if (!email || !token) return json(res, 400, { error: 'email and token required' })
+  const r = await fetch('https://gggzfhgdwwqpjnerlpcc.supabase.co/auth/v1/verify', {
+    method: 'POST',
+    headers: {
+      'apikey': 'sb_publishable_sO8gdutgM-9CatUa56GQ3g_b9Hz5--Q',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ type: 'email', email, token }),
+  })
+  const data = await r.json()
+  json(res, r.status, data)
+}
+
 // ── Main handler ─────────────────────────────────────────────────────────────
 
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
@@ -274,6 +289,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     if (path === '/api/manage') return await handleManage(body, res)
     if (path === '/api/analytics-insights') return await handleAnalyticsInsights(body, res)
     if (path === '/api/what-now') return await handleWhatNow(body, res)
+    if (path === '/api/verify-otp') return await handleVerifyOtp(body, res)
     return json(res, 404, { error: 'not found' })
   } catch (err: any) {
     return json(res, 500, { error: String(err) })

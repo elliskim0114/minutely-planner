@@ -187,25 +187,19 @@ export default function Onboarding() {
     setSignInError('')
 
     try {
-      // Use direct fetch instead of SDK to avoid internal SDK hangs
+      // Route verify through our own Vercel API to avoid client-side network issues
       const controller = new AbortController()
-      const timer = setTimeout(() => controller.abort(), 12000)
+      const timer = setTimeout(() => controller.abort(), 20000)
 
       let json: any
       let ok: boolean
       try {
-        const res = await fetch(
-          'https://gggzfhgdwwqpjnerlpcc.supabase.co/auth/v1/verify',
-          {
-            method: 'POST',
-            headers: {
-              'apikey': 'sb_publishable_sO8gdutgM-9CatUa56GQ3g_b9Hz5--Q',
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ type: 'email', email: email.trim(), token: otpCode.trim() }),
-            signal: controller.signal,
-          }
-        )
+        const res = await fetch('/api/verify-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email.trim(), token: otpCode.trim() }),
+          signal: controller.signal,
+        })
         clearTimeout(timer)
         json = await res.json()
         ok = res.ok
