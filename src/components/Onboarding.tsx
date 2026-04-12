@@ -357,36 +357,17 @@ export default function Onboarding() {
         <div className="ob-card">
           <div className="ob-logo">minutely <span className="acdot" /></div>
           <span className="ob-step">step 1 of 4</span>
-          <div className="ob-qh">want your planner to follow you?</div>
-          <div className="ob-qs">sign in to sync across devices — or just dive in.</div>
-          <div className="ob-opts">
-            <button
-              className={`ob-opt${authChoice === 'signin' ? ' sel' : ''}`}
-              onClick={() => setAuthChoice('signin')}
-            >
-              <div className="ob-odot" />
-              <div>
-                <div className="ob-oname">sign in / create account</div>
-                <div className="ob-ohint">access minutely on any device</div>
-              </div>
-            </button>
-            <button
-              className={`ob-opt${authChoice === 'guest' ? ' sel' : ''}`}
-              onClick={() => setAuthChoice('guest')}
-            >
-              <div className="ob-odot" />
-              <div>
-                <div className="ob-oname">continue without account</div>
-                <div className="ob-ohint">data stays on this device only</div>
-              </div>
-            </button>
-          </div>
-          <button
-            className="ob-p"
-            disabled={!authChoice}
-            style={{ opacity: authChoice ? 1 : 0.35, cursor: authChoice ? 'pointer' : 'default' }}
-            onClick={handleNextS1}
-          >next →</button>
+          <div className="ob-qh">welcome.</div>
+          <div className="ob-qs" style={{ marginBottom: 24 }}>sign in to your account, or create a new one to get started.</div>
+          <button className="ob-p" onClick={() => { setAuthMode('signin'); goTo('s1b') }}>
+            sign in →
+          </button>
+          <button className="ob-p" style={{ marginTop: 10, background: 'var(--bg2)', color: 'var(--ink)', border: '1.5px solid var(--bd2)' }}
+            onClick={() => { setAuthMode('signup'); goTo('s1b') }}>
+            create account →
+          </button>
+          <div className="ob-div">or</div>
+          <button className="ob-g" onClick={() => goTo('s1c')}>continue without account</button>
         </div>
       </div>
 
@@ -424,6 +405,11 @@ export default function Onboarding() {
                   : 'verify →'
                 }
               </button>
+              <button className="ob-g" onClick={async () => {
+                setOtpCode(''); setSignInError('')
+                await supabase.auth.signInWithOtp({ email: email.trim(), options: { shouldCreateUser: true } })
+                setSignInError('')
+              }}>resend code</button>
               <button className="ob-g" onClick={() => { setSignInSent(false); setOtpCode(''); setSignInError('') }}>
                 use a different email
               </button>
