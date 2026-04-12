@@ -547,6 +547,23 @@ body.dragging{cursor:grabbing!important;user-select:none}
 
 .ob-card{width:100%;max-width:420px;text-align:left;animation:floatUp .32s cubic-bezier(.22,1,.36,1) both}
 .ob-step{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--acc);margin-bottom:12px;display:block}
+
+/* ── Welcome screen ── */
+.ob-welcome-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px 28px;text-align:center}
+.ob-welcome-ring{position:relative;width:90px;height:90px;margin-bottom:28px}
+.ob-welcome-ring::before{content:'';position:absolute;inset:0;border-radius:50%;border:2px solid var(--acc);animation:welcomeRingPulse 2.2s ease-in-out infinite}
+.ob-welcome-ring::after{content:'';position:absolute;inset:10px;border-radius:50%;border:2px solid var(--acc);opacity:.5;animation:welcomeRingPulse 2.2s .4s ease-in-out infinite}
+@keyframes welcomeRingPulse{0%,100%{transform:scale(1);opacity:.2}50%{transform:scale(1.1);opacity:.55}}
+.ob-welcome-dot{position:absolute;width:7px;height:7px;border-radius:50%;background:var(--acc);top:50%;left:50%;margin:-3.5px}
+.ob-welcome-dot:nth-child(1){animation:welcomeOrbit 2.4s linear infinite}
+.ob-welcome-dot:nth-child(2){animation:welcomeOrbit 2.4s -.8s linear infinite}
+.ob-welcome-dot:nth-child(3){animation:welcomeOrbit 2.4s -1.6s linear infinite}
+@keyframes welcomeOrbit{0%{transform:rotate(0deg) translateX(38px)}100%{transform:rotate(360deg) translateX(38px)}}
+.ob-welcome-logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:400;font-style:italic;color:var(--ink);letter-spacing:.01em;margin-bottom:24px;opacity:0;animation:welcomeFadeUp .6s .2s cubic-bezier(.22,1,.36,1) forwards}
+.ob-welcome-msg{font-family:'Playfair Display',serif;font-size:42px;font-weight:700;color:var(--ink);line-height:1.1;margin-bottom:14px;opacity:0;animation:welcomeFadeUp .7s .45s cubic-bezier(.22,1,.36,1) forwards}
+.ob-welcome-sub{font-size:15px;color:var(--ink3);line-height:1.6;max-width:260px;margin-bottom:40px;opacity:0;animation:welcomeFadeUp .6s .72s cubic-bezier(.22,1,.36,1) forwards}
+.ob-welcome-btn{opacity:0;animation:welcomeFadeUp .5s 1s cubic-bezier(.22,1,.36,1) forwards;max-width:180px}
+@keyframes welcomeFadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
 .ob-qh{font-family:var(--font-d);font-size:26px;font-weight:700;line-height:1.25;color:var(--ink);margin-bottom:8px}
 .ob-qs{font-size:14px;color:var(--ink2);line-height:1.6;margin-bottom:22px}
 .ob-logo{font-family:var(--font-d);font-size:24px;font-weight:900;font-style:italic;letter-spacing:-.03em;color:var(--ink);margin-bottom:22px;display:flex;align-items:center;gap:8px}

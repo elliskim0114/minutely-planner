@@ -3,10 +3,10 @@ import { useStore } from '../store'
 import { supabase, supabaseConfigured } from '../supabase'
 import type { Mode, UserProfile } from '../types'
 
-type Screen = 's0' | 's1' | 's1b' | 's1c' | 's2' | 's3' | 's4' | 's5' | 's5b' | 's6'
+type Screen = 's0' | 's1' | 's1b' | 's1c' | 's1w' | 's2' | 's3' | 's4' | 's5' | 's5b' | 's6'
 
 const DOTS: Record<Screen, number> = {
-  s0: 0, s1: 1, s1b: 1, s1c: 1, s2: 2, s3: 3, s4: 4, s5: 5, s5b: 6, s6: 7,
+  s0: 0, s1: 1, s1b: 1, s1c: 1, s1w: 1, s2: 2, s3: 3, s4: 4, s5: 5, s5b: 6, s6: 7,
 }
 
 const OCCUPATION_PRESETS = [
@@ -272,8 +272,8 @@ export default function Onboarding() {
           goTo('s2')
         }
       } else {
-        // Sign-up: go straight to onboarding steps
-        goTo('s2')
+        // Sign-up: show welcome screen first
+        goTo('s1w')
       }
     } catch {
       setSignInError('something went wrong — check your connection and try again')
@@ -407,19 +407,15 @@ export default function Onboarding() {
       </div>
 
       {/* ─────────────────────────────────────────────
-          S1 — sign in vs guest  (SELECT then NEXT)
+          S1 — create account vs guest
       ───────────────────────────────────────────── */}
       <div className={scrCls('s1')}>
         <div className="ob-card">
           <div className="ob-logo">minutely <span className="acdot" /></div>
           <span className="ob-step">step 1 of 4</span>
           <div className="ob-qh">welcome.</div>
-          <div className="ob-qs" style={{ marginBottom: 24 }}>sign in to your account, or create a new one to get started.</div>
-          <button className="ob-p" onClick={() => { setAuthMode('signin'); goTo('s1b') }}>
-            sign in →
-          </button>
-          <button className="ob-p" style={{ marginTop: 10, background: 'var(--bg2)', color: 'var(--ink)', border: '1.5px solid var(--bd2)' }}
-            onClick={() => { setAuthMode('signup'); goTo('s1b') }}>
+          <div className="ob-qs" style={{ marginBottom: 24 }}>create a free account to save your schedule across devices.</div>
+          <button className="ob-p" onClick={() => { setAuthMode('signup'); goTo('s1b') }}>
             create account →
           </button>
           <div className="ob-div">or</div>
@@ -440,7 +436,7 @@ export default function Onboarding() {
               <div style={{ fontSize: 36, marginBottom: 12, marginTop: 8 }}>📬</div>
               <div className="ob-qh">check your email</div>
               <div className="ob-qs" style={{ marginBottom: 20 }}>
-                we sent a sign-in code to <strong>{email}</strong>. enter it below to verify.
+                we sent a code to <strong>{email}</strong>. enter it below to verify.
               </div>
               <input
                 className="ob-inp"
@@ -461,7 +457,6 @@ export default function Onboarding() {
               <button className="ob-g" onClick={async () => {
                 setOtpCode(''); setSignInError('')
                 await supabase.auth.signInWithOtp({ email: email.trim(), options: { shouldCreateUser: true } })
-                setSignInError('')
               }}>resend code</button>
               <button className="ob-g" onClick={() => { setSignInSent(false); setOtpCode(''); setSignInError('') }}>
                 use a different email
@@ -470,27 +465,15 @@ export default function Onboarding() {
             </>
           ) : (
             <>
-              <div className="ob-auth-toggle" style={{ marginTop: 8, marginBottom: 16 }}>
-                <button className={`ob-auth-tab${authMode === 'signin' ? ' on' : ''}`}
-                  onClick={() => { setAuthMode('signin'); setSignInError('') }}>sign in</button>
-                <button className={`ob-auth-tab${authMode === 'signup' ? ' on' : ''}`}
-                  onClick={() => { setAuthMode('signup'); setSignInError('') }}>create account</button>
-              </div>
-              <div className="ob-qs" style={{ marginBottom: 16 }}>
-                {authMode === 'signin'
-                  ? 'welcome back — enter your email and we\'ll send a code.'
-                  : 'we\'ll email you a code — no password needed.'}
-              </div>
-              {authMode === 'signup' && (
-                <input
-                  className="ob-inp"
-                  type="text"
-                  placeholder="your name (optional)"
-                  value={displayName}
-                  onChange={e => setDisplayName(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && doAuth()}
-                />
-              )}
+              <div className="ob-qs" style={{ marginBottom: 16, marginTop: 8 }}>we'll email you a one-time code — no password needed.</div>
+              <input
+                className="ob-inp"
+                type="text"
+                placeholder="your name (optional)"
+                value={displayName}
+                onChange={e => setDisplayName(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && doAuth()}
+              />
               <input
                 className="ob-inp"
                 type="email"
@@ -502,16 +485,32 @@ export default function Onboarding() {
               />
               {signInError && <div className="ob-auth-error">{signInError}</div>}
               <button className="ob-p" onClick={doAuth} disabled={signInLoading}>
-                {signInLoading
-                  ? <><div className="ald" /><div className="ald" /><div className="ald" /></>
-                  : authMode === 'signin' ? 'send code →' : 'create account →'
-                }
+                {signInLoading ? 'sending…' : 'send code →'}
               </button>
               <div className="ob-div">or</div>
               <button className="ob-g" onClick={() => goTo('s1c')}>continue without account</button>
               <button className="ob-back" onClick={() => goTo('s1')}>← back</button>
             </>
           )}
+        </div>
+      </div>
+
+      {/* ─────────────────────────────────────────────
+          S1w — welcome animation (after account created)
+      ───────────────────────────────────────────── */}
+      <div className={scrCls('s1w')}>
+        <div className="ob-welcome-wrap">
+          <div className="ob-welcome-ring">
+            <div className="ob-welcome-dot" />
+            <div className="ob-welcome-dot" />
+            <div className="ob-welcome-dot" />
+          </div>
+          <div className="ob-welcome-logo">minutely</div>
+          <div className="ob-welcome-msg">
+            welcome{userName ? `, ${userName.split(' ')[0]}` : ''}.
+          </div>
+          <div className="ob-welcome-sub">your account is ready. let's set up your perfect day.</div>
+          <button className="ob-p ob-welcome-btn" onClick={() => goTo('s2')}>let's go →</button>
         </div>
       </div>
 
