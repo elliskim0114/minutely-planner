@@ -237,8 +237,9 @@ export default function AnalyticsView() {
         </div>
 
         <div className="av-cols">
+
+          {/* ── Left column ── */}
           <div className="av-col-main">
-            {/* Focus hours bar chart */}
             <div className="av-card">
               <div className="av-card-ttl">focus hours · last 14 days</div>
               <div className="av-bars">
@@ -250,10 +251,8 @@ export default function AnalyticsView() {
                     <div key={i} className="av-bar-col">
                       <div className="av-bar-val">{h > 0 ? `${h}h` : ''}</div>
                       <div className="av-bar-track">
-                        <div
-                          className={`av-bar-fill${isToday ? ' today' : ''}`}
-                          style={{ height: `${Math.max(2, pct)}%`, background: isToday ? 'var(--acc)' : 'var(--bfbd)' }}
-                        />
+                        <div className={`av-bar-fill${isToday ? ' today' : ''}`}
+                          style={{ height: `${Math.max(2, pct)}%`, background: isToday ? 'var(--acc)' : 'var(--bfbd)' }} />
                       </div>
                       <div className={`av-bar-lbl${isToday ? ' today' : ''}`}>{label}</div>
                     </div>
@@ -262,7 +261,6 @@ export default function AnalyticsView() {
               </div>
             </div>
 
-            {/* Plan health sparkline */}
             <div className="av-card">
               <div className="av-card-ttl">plan health · last 7 days</div>
               <div className="av-health-bars">
@@ -282,49 +280,130 @@ export default function AnalyticsView() {
                 })}
               </div>
             </div>
-          </div>
 
-          <div className="av-col-side">
-            {/* Time by type */}
-            <div className="av-card">
-              <div className="av-card-ttl">time by type · this week</div>
-              {totalMins === 0 ? (
-                <div className="av-empty">no blocks this week</div>
-              ) : (
-                <div className="av-types">
-                  {Object.entries(typeMinutes)
-                    .sort((a, b) => b[1] - a[1])
-                    .map(([type, mins]) => {
-                      const pct = Math.round((mins / totalMins) * 100)
-                      const h = Math.floor(mins / 60)
-                      const m = mins % 60
-                      return (
-                        <div key={type} className="av-type-row">
-                          <div className="av-type-hdr">
-                            <span className="av-type-icon">{typeIcons[type] || ''}</span>
-                            <span className="av-type-name">{type}</span>
-                            <span className="av-type-val">{h}h{m ? ` ${m}m` : ''} · {pct}%</span>
-                          </div>
-                          <div className="av-type-bar">
-                            <div className="av-type-fill" style={{ width: `${pct}%`, background: TYPE_COLORS[type] || 'var(--bd2)' }} />
-                          </div>
+            {/* AI Insights — fills whitespace in left column */}
+            <div className="av-insights-section">
+              <div className="av-insights-hdr">
+                <div>
+                  <div className="av-insights-title">✦ AI scheduling insights</div>
+                  <div className="av-insights-sub">based on your last 7 days — get specific suggestions for your next schedule</div>
+                </div>
+                <button className={`av-insights-btn${insightsLoading ? ' loading' : ''}`} onClick={runInsights} disabled={insightsLoading}>
+                  {insightsLoading
+                    ? <><div className="av-ins-dot" /><div className="av-ins-dot" /><div className="av-ins-dot" /><span>analyzing…</span></>
+                    : insights.length > 0 ? '↺ refresh' : '✦ analyze my week'}
+                </button>
+              </div>
+              {insightsError && <div className="av-ins-error">{insightsError}</div>}
+              {insights.length > 0 && (
+                <div className="av-insight-cards">
+                  {insights.map((ins, i) => (
+                    <div key={i} className="av-insight-card">
+                      <div className="av-ins-top">
+                        <span className="av-ins-icon">{ins.icon}</span>
+                        <div className="av-ins-content">
+                          <div className="av-ins-title"><TypedText text={ins.title} speed={28} delay={i * 220} /></div>
+                          <div className="av-ins-body"><TypedText text={ins.body} speed={8} delay={i * 220 + ins.title.length * 28} /></div>
                         </div>
-                      )
-                    })}
+                      </div>
+                      {ins.prompt && (
+                        <div className="av-ins-foot">
+                          <div className="av-ins-prompt">"{ins.prompt}"</div>
+                          <button className={`av-ins-apply${appliedIdx === i ? ' applied' : ''}`} onClick={() => applyInsightPrompt(ins.prompt!, i)}>
+                            {appliedIdx === i ? '✓ applied' : '→ use this'}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {insights.length === 0 && !insightsLoading && !insightsError && (
+                <div className="av-ins-placeholder">
+                  <div className="av-ins-ph-icon">✦</div>
+                  <div className="av-ins-ph-text">click "analyze my week" to get personalized suggestions based on your scheduling patterns, energy levels, and goals</div>
                 </div>
               )}
             </div>
 
-            {/* Goals progress */}
+            {/* Habit patterns */}
+            <div className="av-insights-section">
+              <div className="av-insights-hdr">
+                <div>
+                  <div className="av-insights-title">◷ habit patterns</div>
+                  <div className="av-insights-sub">AI scans your last 14 days to surface recurring patterns and suggestions</div>
+                </div>
+                <button className={`av-insights-btn${habitsLoading ? ' loading' : ''}`} onClick={fetchHabits} disabled={habitsLoading}>
+                  {habitsLoading
+                    ? <><div className="av-ins-dot" /><div className="av-ins-dot" /><div className="av-ins-dot" /><span>scanning…</span></>
+                    : habitsFetched ? '↺ re-scan' : '◷ detect habits'}
+                </button>
+              </div>
+              {habitsError && <div className="av-ins-error">{habitsError}</div>}
+              {habitsFetched && habits.length > 0 && (
+                <div className="av-insight-cards">
+                  {habits.map((h, i) => (
+                    <div key={i} className={`av-insight-card coach-habit-card coach-chip-${h.type}`}>
+                      <div className="av-ins-top">
+                        <span className="av-ins-icon">◷</span>
+                        <div className="av-ins-content">
+                          <div className="av-ins-title">{h.pattern}</div>
+                          <div className="av-ins-body">{h.suggestion}</div>
+                        </div>
+                        <span className={`chc-conf chc-conf-${h.confidence}`} style={{ flexShrink: 0, alignSelf: 'flex-start' }}>{h.confidence}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {habitsFetched && habits.length === 0 && (
+                <div className="av-ins-placeholder">
+                  <div className="av-ins-ph-icon">◷</div>
+                  <div className="av-ins-ph-text">no clear patterns yet — add more blocks over the next few days and scan again</div>
+                </div>
+              )}
+              {!habitsFetched && !habitsLoading && !habitsError && (
+                <div className="av-ins-placeholder">
+                  <div className="av-ins-ph-icon">◷</div>
+                  <div className="av-ins-ph-text">click "detect habits" to find recurring patterns in your last 14 days of scheduling</div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ── Right column ── */}
+          <div className="av-col-side">
+            <div className="av-card">
+              <div className="av-card-ttl">time by type · this week</div>
+              {totalMins === 0 ? <div className="av-empty">no blocks this week</div> : (
+                <div className="av-types">
+                  {Object.entries(typeMinutes).sort((a, b) => b[1] - a[1]).map(([type, mins]) => {
+                    const pct = Math.round((mins / totalMins) * 100)
+                    const h = Math.floor(mins / 60), m = mins % 60
+                    return (
+                      <div key={type} className="av-type-row">
+                        <div className="av-type-hdr">
+                          <span className="av-type-icon">{typeIcons[type] || ''}</span>
+                          <span className="av-type-name">{type}</span>
+                          <span className="av-type-val">{h}h{m ? ` ${m}m` : ''} · {pct}%</span>
+                        </div>
+                        <div className="av-type-bar">
+                          <div className="av-type-fill" style={{ width: `${pct}%`, background: TYPE_COLORS[type] || 'var(--bd2)' }} />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+
             <div className="av-card">
               <div className="av-card-hdr">
                 <div className="av-card-ttl">goals this week</div>
                 <button className="av-goals-btn" onClick={openGoals}>manage</button>
               </div>
               {goals.length === 0 ? (
-                <div className="av-empty">
-                  <button className="av-add-goal" onClick={openGoals}>+ add a goal</button>
-                </div>
+                <div className="av-empty"><button className="av-add-goal" onClick={openGoals}>+ add a goal</button></div>
               ) : (
                 <div className="av-goals">
                   {goals.map(g => {
@@ -347,7 +426,6 @@ export default function AnalyticsView() {
               )}
             </div>
 
-            {/* Most moved blocks */}
             {topMoved.length > 0 && (
               <div className="av-card">
                 <div className="av-card-ttl">most rescheduled</div>
@@ -362,116 +440,7 @@ export default function AnalyticsView() {
               </div>
             )}
           </div>
-        </div>
-        {/* AI Insights section */}
-        <div className="av-insights-section">
-          <div className="av-insights-hdr">
-            <div>
-              <div className="av-insights-title">✦ AI scheduling insights</div>
-              <div className="av-insights-sub">based on your last 7 days — get specific suggestions for your next schedule</div>
-            </div>
-            <button
-              className={`av-insights-btn${insightsLoading ? ' loading' : ''}`}
-              onClick={runInsights}
-              disabled={insightsLoading}
-            >
-              {insightsLoading
-                ? <><div className="av-ins-dot" /><div className="av-ins-dot" /><div className="av-ins-dot" /><span>analyzing…</span></>
-                : insights.length > 0 ? '↺ refresh' : '✦ analyze my week'
-              }
-            </button>
-          </div>
 
-          {insightsError && (
-            <div className="av-ins-error">{insightsError}</div>
-          )}
-
-          {insights.length > 0 && (
-            <div className="av-insight-cards">
-              {insights.map((ins, i) => (
-                <div key={i} className="av-insight-card">
-                  <div className="av-ins-top">
-                    <span className="av-ins-icon">{ins.icon}</span>
-                    <div className="av-ins-content">
-                      <div className="av-ins-title">
-                        <TypedText text={ins.title} speed={28} delay={i * 220} />
-                      </div>
-                      <div className="av-ins-body">
-                        <TypedText text={ins.body} speed={8} delay={i * 220 + ins.title.length * 28} />
-                      </div>
-                    </div>
-                  </div>
-                  {ins.prompt && (
-                    <div className="av-ins-foot">
-                      <div className="av-ins-prompt">"{ins.prompt}"</div>
-                      <button
-                        className={`av-ins-apply${appliedIdx === i ? ' applied' : ''}`}
-                        onClick={() => applyInsightPrompt(ins.prompt!, i)}
-                      >
-                        {appliedIdx === i ? '✓ applied' : '→ use this'}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-
-          {insights.length === 0 && !insightsLoading && !insightsError && (
-            <div className="av-ins-placeholder">
-              <div className="av-ins-ph-icon">✦</div>
-              <div className="av-ins-ph-text">click "analyze my week" to get personalized suggestions based on your scheduling patterns, energy levels, and goals</div>
-            </div>
-          )}
-        </div>
-
-        {/* Habits section */}
-        <div className="av-insights-section" style={{ marginTop: 20 }}>
-          <div className="av-insights-hdr">
-            <div>
-              <div className="av-insights-title">◷ habit patterns</div>
-              <div className="av-insights-sub">AI scans your last 14 days to surface recurring patterns and suggestions</div>
-            </div>
-            <button
-              className={`av-insights-btn${habitsLoading ? ' loading' : ''}`}
-              onClick={fetchHabits}
-              disabled={habitsLoading}
-            >
-              {habitsLoading
-                ? <><div className="av-ins-dot" /><div className="av-ins-dot" /><div className="av-ins-dot" /><span>scanning…</span></>
-                : habitsFetched ? '↺ re-scan' : '◷ detect habits'
-              }
-            </button>
-          </div>
-          {habitsError && <div className="av-ins-error">{habitsError}</div>}
-          {habitsFetched && habits.length > 0 && (
-            <div className="av-insight-cards">
-              {habits.map((h, i) => (
-                <div key={i} className={`av-insight-card coach-habit-card coach-chip-${h.type}`}>
-                  <div className="av-ins-top">
-                    <span className="av-ins-icon">◷</span>
-                    <div className="av-ins-content">
-                      <div className="av-ins-title">{h.pattern}</div>
-                      <div className="av-ins-body">{h.suggestion}</div>
-                    </div>
-                    <span className={`chc-conf chc-conf-${h.confidence}`} style={{ flexShrink: 0, alignSelf: 'flex-start' }}>{h.confidence}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-          {habitsFetched && habits.length === 0 && (
-            <div className="av-ins-placeholder">
-              <div className="av-ins-ph-icon">◷</div>
-              <div className="av-ins-ph-text">no clear patterns yet — add more blocks over the next few days and scan again</div>
-            </div>
-          )}
-          {!habitsFetched && !habitsLoading && !habitsError && (
-            <div className="av-ins-placeholder">
-              <div className="av-ins-ph-icon">◷</div>
-              <div className="av-ins-ph-text">click "detect habits" to find recurring patterns in your last 14 days of scheduling</div>
-            </div>
-          )}
         </div>
       </div>
     </div>
