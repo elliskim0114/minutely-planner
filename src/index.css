@@ -3033,16 +3033,19 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .gv-form-inp{width:100%;padding:11px 14px;background:var(--bg2);border:1.5px solid var(--bd);border-radius:11px;font-family:var(--font-u);font-size:14px;color:var(--ink);outline:none;margin-bottom:10px;box-sizing:border-box;transition:border-color .14s}
 .gv-form-inp:focus{border-color:var(--acc);background:var(--surf)}
 .gv-form-desc{font-size:12px;color:var(--ink2)}
-.gv-form-row{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.gv-form-row{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:16px;flex-wrap:wrap}
 .gv-form-colors{display:flex;gap:8px}
 .gv-cc{width:24px;height:24px;border-radius:50%;border:none;cursor:pointer;transition:transform .12s;flex-shrink:0}
 .gv-cc:hover{transform:scale(1.15)}
 .gv-cc.on{transform:scale(1.25)}
-.gv-form-target{display:flex;align-items:center;gap:7px}
-.gv-form-target-lbl{font-family:var(--font-u);font-size:11px;color:var(--ink3)}
-.gv-form-target-inp{width:54px;padding:6px 8px;background:var(--bg2);border:1.5px solid var(--bd);border-radius:8px;font-family:var(--font-m);font-size:13px;color:var(--ink);text-align:center;outline:none}
+.gv-form-target{display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.gv-form-target-row{display:flex;align-items:center;gap:6px}
+.gv-form-target-inp{width:52px;padding:6px 8px;background:var(--bg2);border:1.5px solid var(--bd);border-radius:8px;font-family:var(--font-m);font-size:13px;color:var(--ink);text-align:center;outline:none}
 .gv-form-target-inp:focus{border-color:var(--acc)}
-.gv-form-target-unit{font-family:var(--font-u);font-size:12px;color:var(--ink3)}
+.gv-unit-tabs,.gv-period-tabs{display:flex;border:1.5px solid var(--bd);border-radius:8px;overflow:hidden}
+.gv-unit-tab,.gv-period-tab{padding:5px 9px;font-family:var(--font-u);font-size:11px;font-weight:500;color:var(--ink3);background:var(--bg2);border:none;cursor:pointer;transition:all .15s}
+.gv-unit-tab.on,.gv-period-tab.on{background:var(--acc);color:#fff}
+.gv-unit-tab+.gv-unit-tab,.gv-period-tab+.gv-period-tab{border-left:1.5px solid var(--bd)}
 .gv-form-preview{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1.5px solid;border-radius:13px;margin-bottom:16px;transition:border-color .2s,background .2s}
 .gv-form-prev-name{font-family:var(--font-d);font-size:16px;font-weight:700;transition:color .2s}
 .gv-form-prev-hrs{font-family:var(--font-u);font-size:12px;color:var(--ink3);margin-top:3px}

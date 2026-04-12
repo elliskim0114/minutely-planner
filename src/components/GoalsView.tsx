@@ -28,7 +28,9 @@ export default function GoalsView() {
   const [dragOverId, setDragOverId] = useState<number | null>(null)
   const [name, setName] = useState('')
   const [color, setColor] = useState(COLORS[1])
-  const [targetHours, setTargetHours] = useState(10)
+  const [targetAmount, setTargetAmount] = useState(10)
+  const [targetUnit, setTargetUnit] = useState<'hours' | 'minutes'>('hours')
+  const [targetPeriod, setTargetPeriod] = useState<'daily' | 'weekly' | 'monthly'>('weekly')
   const [desc, setDesc] = useState('')
 
   const now = new Date()
@@ -80,8 +82,8 @@ export default function GoalsView() {
 
   const saveGoal = () => {
     if (!name.trim()) return
-    addGoal({ name: name.trim(), color, targetHours, targetUnit: 'hours', targetPeriod: 'weekly', description: desc.trim() || undefined })
-    setName(''); setDesc(''); setTargetHours(10); setColor(COLORS[1]); setAdding(false)
+    addGoal({ name: name.trim(), color, targetHours: targetAmount, targetUnit, targetPeriod, description: desc.trim() || undefined })
+    setName(''); setDesc(''); setTargetAmount(10); setTargetUnit('hours'); setTargetPeriod('weekly'); setColor(COLORS[1]); setAdding(false)
   }
 
   const totalWeekHrs = goals.reduce((s, g) => {
@@ -280,17 +282,32 @@ export default function GoalsView() {
                 ))}
               </div>
               <div className="gv-form-target">
-                <span className="gv-form-target-lbl">weekly target</span>
-                <input type="number" className="gv-form-target-inp" min={1} max={168}
-                  value={targetHours} onChange={e => setTargetHours(Number(e.target.value))} />
-                <span className="gv-form-target-unit">h</span>
+                <div className="gv-form-target-row">
+                  <input
+                    type="number"
+                    className="gv-form-target-inp"
+                    min={1}
+                    max={targetUnit === 'minutes' ? 1440 : 168}
+                    value={targetAmount}
+                    onChange={e => setTargetAmount(Number(e.target.value))}
+                  />
+                  <div className="gv-unit-tabs">
+                    <button className={`gv-unit-tab${targetUnit === 'hours' ? ' on' : ''}`} onClick={() => setTargetUnit('hours')}>h</button>
+                    <button className={`gv-unit-tab${targetUnit === 'minutes' ? ' on' : ''}`} onClick={() => setTargetUnit('minutes')}>min</button>
+                  </div>
+                </div>
+                <div className="gv-period-tabs">
+                  {(['daily','weekly','monthly'] as const).map(p => (
+                    <button key={p} className={`gv-period-tab${targetPeriod === p ? ' on' : ''}`} onClick={() => setTargetPeriod(p)}>{p}</button>
+                  ))}
+                </div>
               </div>
             </div>
             <div className="gv-form-preview" style={{ borderColor: color, background: color + '12' }}>
               <ProgressRing pct={0} color={color} size={44} stroke={4} />
               <div>
                 <div className="gv-form-prev-name" style={{ color }}>{name || 'goal name'}</div>
-                <div className="gv-form-prev-hrs">0 / {targetHours}h target</div>
+                <div className="gv-form-prev-hrs">0 / {targetAmount}{targetUnit === 'hours' ? 'h' : 'min'} {targetPeriod}</div>
               </div>
             </div>
             <div className="gv-form-actions">
