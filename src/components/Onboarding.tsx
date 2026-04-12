@@ -181,15 +181,29 @@ export default function Onboarding() {
     setVerifyLoading(true)
     setSignInError('')
 
-    const { data, error } = await supabase.auth.verifyOtp({
+    const verifyPromise = supabase.auth.verifyOtp({
       email: email.trim(),
       token: otpCode.trim(),
       type: 'email',
     })
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('timeout')), 10000)
+    )
+
+    let data: any, error: any
+    try {
+      const result = await Promise.race([verifyPromise, timeoutPromise]) as any
+      data = result.data
+      error = result.error
+    } catch {
+      setVerifyLoading(false)
+      setSignInError('request timed out — check your connection and try again')
+      return
+    }
 
     if (error) {
       setVerifyLoading(false)
-      setSignInError('invalid or expired code — try again')
+      setSignInError('invalid or expired code — tap resend for a new one')
       return
     }
 
