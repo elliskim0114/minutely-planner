@@ -229,6 +229,7 @@ export default function SettingsModal() {
   const [tab, setTab] = useState<Tab>('profile')
   const [saved, setSaved] = useState(false)
   const [iconPickerOpen, setIconPickerOpen] = useState<string | null>(null)
+  const [deleteConfirm, setDeleteConfirm] = useState(false)
 
   // Profile tab state
   const [nameDraft, setNameDraft]   = useState(userName || '')
@@ -595,20 +596,33 @@ export default function SettingsModal() {
               }}>
                 sign out
               </button>
-              <button className="sm-delete-btn" onClick={async () => {
-                if (window.confirm('Delete all your data? This cannot be undone.')) {
-                  if (supabaseConfigured) {
-                    const { data: { session } } = await supabase.auth.getSession()
-                    if (session?.user) {
-                      await supabase.from('planner_profiles').delete().eq('user_id', session.user.id)
-                    }
-                    await supabase.auth.signOut()
-                  }
-                  deleteAccount()
-                }
-              }}>
-                delete account
-              </button>
+              {!deleteConfirm ? (
+                <button className="sm-delete-btn" onClick={() => setDeleteConfirm(true)}>
+                  delete account
+                </button>
+              ) : (
+                <div style={{ background: 'var(--bg2)', border: '1.5px solid #FF4D1C44', borderRadius: 'var(--r-sm)', padding: '14px 16px' }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)', marginBottom: 4 }}>are you sure?</div>
+                  <div style={{ fontSize: 12, color: 'var(--ink3)', marginBottom: 14, lineHeight: 1.5 }}>this will permanently delete all your data and cannot be undone.</div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button className="sm-delete-btn" onClick={async () => {
+                      if (supabaseConfigured) {
+                        const { data: { session } } = await supabase.auth.getSession()
+                        if (session?.user) {
+                          await supabase.from('planner_profiles').delete().eq('user_id', session.user.id)
+                        }
+                        await supabase.auth.signOut()
+                      }
+                      deleteAccount()
+                    }}>
+                      yes, delete everything
+                    </button>
+                    <button className="mact-btn" style={{ opacity: 0.6, fontSize: 11 }} onClick={() => setDeleteConfirm(false)}>
+                      cancel
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </>
         )}
