@@ -565,7 +565,10 @@ export default function BlockModal() {
               </button>
             )}
             <button className="mact-btn mcanc" onClick={closeBlockModal}>cancel</button>
-            <button className="mact-btn msave" onClick={handleSave}>save</button>
+            <div className="msave-wrap">
+              <button className="mact-btn msave" onClick={handleSave}>save</button>
+              <span className="msave-hint">↵ enter</span>
+            </div>
           </div>
         </div>
       </div>

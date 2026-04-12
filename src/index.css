@@ -1403,6 +1403,8 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .msave{background:var(--acc);border:1.5px solid var(--acc);font-weight:600;color:#fff}
 .msave:hover{background:var(--acc2);border-color:var(--acc2);transform:translateY(-2px);box-shadow:0 4px 12px var(--nowglow)}
 .msave:active{transform:scale(.96)}
+.msave-wrap{display:flex;flex-direction:column;align-items:center;gap:4px}
+.msave-hint{font-family:var(--font-m);font-size:10px;color:var(--ink3);opacity:.6;letter-spacing:.02em;white-space:nowrap}
 .slc-color{display:inline-block;width:8px;height:8px;border-radius:50%;margin:0 3px;flex-shrink:0}
 
 /* ── NOTIFICATION MODAL ── */
