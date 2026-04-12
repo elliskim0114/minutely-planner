@@ -589,8 +589,9 @@ export default function SettingsModal() {
               </button>
             </div>
             <div className="sm-danger-zone">
-              <button className="sm-signout-btn" onClick={async () => {
-                if (supabaseConfigured) await supabase.auth.signOut()
+              <button className="sm-signout-btn" onClick={() => {
+                localStorage.removeItem('sb-gggzfhgdwwqpjnerlpcc-auth-token')
+                supabase.auth.signOut().catch(() => {})
                 signOut()
                 closeSettings()
               }}>
@@ -605,14 +606,9 @@ export default function SettingsModal() {
                   <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)', marginBottom: 4 }}>are you sure?</div>
                   <div style={{ fontSize: 12, color: 'var(--ink3)', marginBottom: 14, lineHeight: 1.5 }}>this will permanently delete all your data and cannot be undone.</div>
                   <div style={{ display: 'flex', gap: 8 }}>
-                    <button className="sm-delete-btn" onClick={async () => {
-                      if (supabaseConfigured) {
-                        const { data: { session } } = await supabase.auth.getSession()
-                        if (session?.user) {
-                          await supabase.from('planner_profiles').delete().eq('user_id', session.user.id)
-                        }
-                        await supabase.auth.signOut()
-                      }
+                    <button className="sm-delete-btn" onClick={() => {
+                      localStorage.removeItem('sb-gggzfhgdwwqpjnerlpcc-auth-token')
+                      supabase.auth.signOut().catch(() => {})
                       deleteAccount()
                     }}>
                       yes, delete everything
