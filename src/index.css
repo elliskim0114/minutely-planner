@@ -549,13 +549,19 @@ body.dragging{cursor:grabbing!important;user-select:none}
 .ob-step{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--acc);margin-bottom:12px;display:block}
 
 /* ── Welcome screen ── */
-.ob-welcome-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px 28px;text-align:center}
-.ob-welcome-icon{width:64px;height:64px;margin-bottom:32px;opacity:0;animation:wFade .8s .1s cubic-bezier(.16,1,.3,1) forwards}
-.ob-welcome-icon svg{width:100%;height:100%}
-.ob-welcome-msg{font-family:'Playfair Display',serif;font-size:40px;font-weight:700;color:var(--ink);line-height:1.15;margin-bottom:14px;opacity:0;animation:wFade .9s .35s cubic-bezier(.16,1,.3,1) forwards}
-.ob-welcome-sub{font-size:15px;color:var(--ink3);line-height:1.65;max-width:240px;margin-bottom:44px;opacity:0;animation:wFade .9s .6s cubic-bezier(.16,1,.3,1) forwards}
-.ob-welcome-btn{opacity:0;animation:wFade .8s .85s cubic-bezier(.16,1,.3,1) forwards;max-width:180px}
-@keyframes wFade{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+.ob-welcome-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px 28px;text-align:center;gap:0}
+.ob-welcome-icon{width:56px;height:56px;margin-bottom:36px}
+.ob-welcome-icon svg{width:100%;height:100%;overflow:visible}
+.ob-bar1{opacity:0;animation:barIn .55s .05s cubic-bezier(.16,1,.3,1) forwards}
+.ob-bar2{opacity:0;animation:barIn .55s .18s cubic-bezier(.16,1,.3,1) forwards}
+.ob-bar3{opacity:0;animation:barIn .55s .3s cubic-bezier(.16,1,.3,1) forwards}
+@keyframes barIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+.ob-welcome-msg{font-family:'Playfair Display',serif;font-size:42px;font-weight:700;color:var(--ink);line-height:1.15;margin-bottom:20px;min-height:1.2em}
+.ob-welcome-cursor{display:inline-block;width:2.5px;height:.82em;background:var(--acc);margin-left:3px;vertical-align:text-bottom;animation:blink .65s step-end infinite}
+.ob-welcome-sub{font-size:15px;color:var(--ink3);line-height:1.65;max-width:240px;margin-bottom:44px;opacity:0;transform:translateY(10px);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1)}
+.ob-welcome-sub.vis{opacity:1;transform:translateY(0)}
+.ob-welcome-btn{max-width:200px;opacity:0;transform:translateY(10px);transition:opacity .6s cubic-bezier(.16,1,.3,1),transform .6s cubic-bezier(.16,1,.3,1)}
+.ob-welcome-btn.vis{opacity:1;transform:translateY(0)}
 .ob-qh{font-family:var(--font-d);font-size:26px;font-weight:700;line-height:1.25;color:var(--ink);margin-bottom:8px}
 .ob-qs{font-size:14px;color:var(--ink2);line-height:1.6;margin-bottom:22px}
 .ob-logo{font-family:var(--font-d);font-size:24px;font-weight:900;font-style:italic;letter-spacing:-.03em;color:var(--ink);margin-bottom:22px;display:flex;align-items:center;gap:8px}

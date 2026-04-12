@@ -93,6 +93,12 @@ export default function Onboarding() {
   const [userName, setUserName] = useState<string | null>(null)
   const [userEmail, setUserEmail] = useState<string | null>(null)
 
+  // Welcome screen typing state
+  const [welcomeTyped, setWelcomeTyped] = useState('')
+  const [welcomeCursor, setWelcomeCursor] = useState(false)
+  const [welcomeSubVisible, setWelcomeSubVisible] = useState(false)
+  const [welcomeBtnVisible, setWelcomeBtnVisible] = useState(false)
+
   const tagRef = useRef<HTMLParagraphElement>(null)
 
   // Typewriter effect on mount
@@ -116,6 +122,37 @@ export default function Onboarding() {
     }, 48)
     return () => clearInterval(iv)
   }, [])
+
+  // Welcome screen typing effect
+  useEffect(() => {
+    if (screen !== 's1w') return
+    const firstName = userName ? userName.split(' ')[0] : ''
+    const fullText = `welcome${firstName ? `, ${firstName}` : ''}.`
+    let i = 0
+    setWelcomeTyped('')
+    setWelcomeCursor(false)
+    setWelcomeSubVisible(false)
+    setWelcomeBtnVisible(false)
+
+    const startDelay = setTimeout(() => {
+      setWelcomeCursor(true)
+      const iv = setInterval(() => {
+        i++
+        setWelcomeTyped(fullText.slice(0, i))
+        if (i >= fullText.length) {
+          clearInterval(iv)
+          setTimeout(() => {
+            setWelcomeCursor(false)
+            setWelcomeSubVisible(true)
+            setTimeout(() => setWelcomeBtnVisible(true), 400)
+          }, 900)
+        }
+      }, 55)
+      return () => clearInterval(iv)
+    }, 350)
+
+    return () => clearTimeout(startDelay)
+  }, [screen])
 
   // ── Navigation ──────────────────────────────────────────────
   const goTo = (next: Screen) => {
@@ -502,16 +539,22 @@ export default function Onboarding() {
         <div className="ob-welcome-wrap">
           <div className="ob-welcome-icon">
             <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="4" y="7"  width="40" height="10" rx="3" fill="var(--acc)" />
-              <rect x="4" y="20" width="40" height="10" rx="3" fill="var(--ink)" opacity="0.35" />
-              <rect x="4" y="33" width="40" height="10" rx="3" fill="var(--ink)" opacity="0.15" />
+              <rect className="ob-bar1" x="4" y="7"  width="40" height="10" rx="3" fill="var(--acc)" />
+              <rect className="ob-bar2" x="4" y="21" width="40" height="10" rx="3" fill="var(--ink)" opacity="0.3" />
+              <rect className="ob-bar3" x="4" y="35" width="40" height="10" rx="3" fill="var(--ink)" opacity="0.13" />
             </svg>
           </div>
           <div className="ob-welcome-msg">
-            welcome{userName ? `, ${userName.split(' ')[0]}` : ''}.
+            {welcomeTyped}
+            {welcomeCursor && <span className="ob-welcome-cursor" />}
           </div>
-          <div className="ob-welcome-sub">your account is ready.<br/>let's set up your perfect day.</div>
-          <button className="ob-p ob-welcome-btn" onClick={() => goTo('s2')}>let's go →</button>
+          <div className={`ob-welcome-sub${welcomeSubVisible ? ' vis' : ''}`}>
+            let's build your perfect day.
+          </div>
+          <button
+            className={`ob-p ob-welcome-btn${welcomeBtnVisible ? ' vis' : ''}`}
+            onClick={() => goTo('s2')}
+          >let's go →</button>
         </div>
       </div>
 
