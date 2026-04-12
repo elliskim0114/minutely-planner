@@ -500,16 +500,17 @@ export default function Onboarding() {
       ───────────────────────────────────────────── */}
       <div className={scrCls('s1w')}>
         <div className="ob-welcome-wrap">
-          <div className="ob-welcome-ring">
-            <div className="ob-welcome-dot" />
-            <div className="ob-welcome-dot" />
-            <div className="ob-welcome-dot" />
+          <div className="ob-welcome-icon">
+            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="4" y="7"  width="40" height="10" rx="3" fill="var(--acc)" />
+              <rect x="4" y="20" width="40" height="10" rx="3" fill="var(--ink)" opacity="0.35" />
+              <rect x="4" y="33" width="40" height="10" rx="3" fill="var(--ink)" opacity="0.15" />
+            </svg>
           </div>
-          <div className="ob-welcome-logo">minutely</div>
           <div className="ob-welcome-msg">
             welcome{userName ? `, ${userName.split(' ')[0]}` : ''}.
           </div>
-          <div className="ob-welcome-sub">your account is ready. let's set up your perfect day.</div>
+          <div className="ob-welcome-sub">your account is ready.<br/>let's set up your perfect day.</div>
           <button className="ob-p ob-welcome-btn" onClick={() => goTo('s2')}>let's go →</button>
         </div>
       </div>
