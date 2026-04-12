@@ -268,6 +268,22 @@ async function handleGetProfile(body: any, res: ServerResponse) {
   json(res, 200, rows[0] ?? null)
 }
 
+async function handleSaveProfile(body: any, res: ServerResponse) {
+  const { user_id, access_token, preferences } = body
+  if (!user_id || !access_token) return json(res, 400, { error: 'user_id and access_token required' })
+  const r = await fetch(`${SB_URL}/rest/v1/planner_profiles`, {
+    method: 'POST',
+    headers: {
+      'apikey': SB_KEY,
+      'Authorization': `Bearer ${access_token}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'resolution=merge-duplicates',
+    },
+    body: JSON.stringify({ user_id, onboarding_completed: true, preferences }),
+  })
+  json(res, r.ok ? 200 : r.status, { ok: r.ok })
+}
+
 // ── Main handler ─────────────────────────────────────────────────────────────
 
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
@@ -303,6 +319,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     if (path === '/api/what-now') return await handleWhatNow(body, res)
     if (path === '/api/verify-otp') return await handleVerifyOtp(body, res)
     if (path === '/api/get-profile') return await handleGetProfile(body, res)
+    if (path === '/api/save-profile') return await handleSaveProfile(body, res)
     return json(res, 404, { error: 'not found' })
   } catch (err: any) {
     return json(res, 500, { error: String(err) })

@@ -588,38 +588,6 @@ export default function SettingsModal() {
                 {saved ? '✓ saved!' : 'save changes'}
               </button>
             </div>
-            <div className="sm-danger-zone">
-              <button className="sm-signout-btn" onClick={() => {
-                localStorage.removeItem('sb-gggzfhgdwwqpjnerlpcc-auth-token')
-                supabase.auth.signOut().catch(() => {})
-                signOut()
-                closeSettings()
-              }}>
-                sign out
-              </button>
-              {!deleteConfirm ? (
-                <button className="sm-delete-btn" onClick={() => setDeleteConfirm(true)}>
-                  delete account
-                </button>
-              ) : (
-                <div style={{ background: 'var(--bg2)', border: '1.5px solid #FF4D1C44', borderRadius: 'var(--r-sm)', padding: '14px 16px' }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)', marginBottom: 4 }}>are you sure?</div>
-                  <div style={{ fontSize: 12, color: 'var(--ink3)', marginBottom: 14, lineHeight: 1.5 }}>this will permanently delete all your data and cannot be undone.</div>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button className="sm-delete-btn" onClick={() => {
-                      localStorage.removeItem('sb-gggzfhgdwwqpjnerlpcc-auth-token')
-                      supabase.auth.signOut().catch(() => {})
-                      deleteAccount()
-                    }}>
-                      yes, delete everything
-                    </button>
-                    <button className="mact-btn" style={{ opacity: 0.6, fontSize: 11 }} onClick={() => setDeleteConfirm(false)}>
-                      cancel
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
           </>
         )}
       </div>

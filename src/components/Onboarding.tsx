@@ -268,7 +268,8 @@ export default function Onboarding() {
             userProfile: p.userProfile ?? null,
           })
         } else {
-          setSignInError('no account found — go back and create one instead')
+          // Verified successfully but no saved profile — take through onboarding
+          goTo('s2')
         }
       } else {
         // Sign-up: go straight to onboarding steps
@@ -303,19 +304,22 @@ export default function Onboarding() {
       addGoal({ name: customGoal.trim(), color: customGoalColor, targetHours: 10 })
     }
 
-    // Save preferences to Supabase so they restore on next sign-in
-    if (supabaseConfigured) {
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session?.user) {
-          await supabase.from('planner_profiles').upsert({
+    // Save profile server-side (avoids client-side Supabase network issues)
+    try {
+      const sessionRaw = localStorage.getItem('sb-gggzfhgdwwqpjnerlpcc-auth-token')
+      const session = sessionRaw ? JSON.parse(sessionRaw) : null
+      if (session?.user?.id && session?.access_token) {
+        fetch('/api/save-profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
             user_id: session.user.id,
-            onboarding_completed: true,
+            access_token: session.access_token,
             preferences: { mode, cfg, userName, userProfile: profile },
-          }, { onConflict: 'user_id' })
-        }
-      } catch { /* non-fatal — data stays in localStorage */ }
-    }
+          }),
+        }).catch(() => {})
+      }
+    } catch { /* non-fatal */ }
   }
 
   const toggleLifestyle = (v: string) => setSelectedLifestyle(prev => {
