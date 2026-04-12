@@ -176,7 +176,7 @@ export default function Onboarding() {
   }
 
   const doVerify = async () => {
-    if (otpCode.trim().length < 6) { setSignInError('enter the 6-digit code from your email'); return }
+    if (otpCode.trim().length < 6) { setSignInError('enter the code from your email'); return }
     setVerifyLoading(true)
     setSignInError('')
 
@@ -392,14 +392,14 @@ export default function Onboarding() {
               <div style={{ fontSize: 36, marginBottom: 12, marginTop: 8 }}>📬</div>
               <div className="ob-qh">check your email</div>
               <div className="ob-qs" style={{ marginBottom: 20 }}>
-                we sent a 6-digit code to <strong>{email}</strong>. enter it below to verify.
+                we sent a sign-in code to <strong>{email}</strong>. enter it below to verify.
               </div>
               <input
                 className="ob-inp"
                 type="text"
                 inputMode="numeric"
                 placeholder="000000"
-                maxLength={6}
+                maxLength={8}
                 value={otpCode}
                 onChange={e => { setOtpCode(e.target.value.replace(/\D/g, '')); setSignInError('') }}
                 onKeyDown={e => e.key === 'Enter' && doVerify()}
