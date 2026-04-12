@@ -70,6 +70,8 @@ export default function App() {
   const [session, setSession] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
   const [authLoading, setAuthLoading] = useState(true)
+  // Safety net — never stay blank for more than 4 seconds
+  useEffect(() => { const t = setTimeout(() => setAuthLoading(false), 4000); return () => clearTimeout(t) }, [])
 
   useEffect(() => {
     const loadAuth = async () => {
