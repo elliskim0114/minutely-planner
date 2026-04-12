@@ -59,6 +59,7 @@ export default function Onboarding() {
   const [authChoice, setAuthChoice] = useState<'signin' | 'guest' | null>(null)
 
   // Sign-in form
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
   const [email, setEmail] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [signInLoading, setSignInLoading] = useState(false)
@@ -196,26 +197,34 @@ export default function Onboarding() {
     setUserName(resolvedName)
     setUserEmail(email.trim())
 
-    // Check if this is a returning user with completed onboarding
-    const { data: profile } = await supabase
-      .from('planner_profiles')
-      .select('onboarding_completed, preferences')
-      .eq('user_id', data.user!.id)
-      .single()
+    // For sign-in: look up saved profile and restore it
+    if (authMode === 'signin') {
+      const { data: profile } = await supabase
+        .from('planner_profiles')
+        .select('onboarding_completed, preferences')
+        .eq('user_id', data.user!.id)
+        .maybeSingle()
 
-    setVerifyLoading(false)
+      setVerifyLoading(false)
 
-    if (profile?.onboarding_completed && profile?.preferences) {
-      const p = profile.preferences
-      finishOnboarding({
-        mode: p.mode ?? mode,
-        cfg: p.cfg ?? { tf, ds, de, ws: wsVal },
-        userName: p.userName ?? resolvedName,
-        userEmail: email.trim(),
-        perfectDay: [],
-        userProfile: p.userProfile ?? null,
-      })
+      if (profile?.onboarding_completed && profile?.preferences) {
+        const p = profile.preferences
+        finishOnboarding({
+          mode: p.mode ?? 'light',
+          cfg: p.cfg ?? { tf: '12', ds: '06:00', de: '23:00', ws: 0 },
+          userName: p.userName ?? resolvedName,
+          userEmail: email.trim(),
+          perfectDay: [],
+          userProfile: p.userProfile ?? null,
+        })
+      } else {
+        // Account exists but no saved profile — take them through onboarding once
+        setSignInError('')
+        goTo('s2')
+      }
     } else {
+      // Sign-up: always go through onboarding
+      setVerifyLoading(false)
       goTo('s2')
     }
   }
@@ -244,14 +253,16 @@ export default function Onboarding() {
 
     // Save preferences to Supabase so they restore on next sign-in
     if (supabaseConfigured) {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session?.user) {
-        await supabase.from('planner_profiles').upsert({
-          user_id: session.user.id,
-          onboarding_completed: true,
-          preferences: { mode, cfg, userName, userProfile: profile },
-        }, { onConflict: 'user_id' })
-      }
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.user) {
+          await supabase.from('planner_profiles').upsert({
+            user_id: session.user.id,
+            onboarding_completed: true,
+            preferences: { mode, cfg, userName, userProfile: profile },
+          }, { onConflict: 'user_id' })
+        }
+      } catch { /* non-fatal — data stays in localStorage */ }
     }
   }
 
@@ -419,19 +430,27 @@ export default function Onboarding() {
             </>
           ) : (
             <>
-              <div className="ob-qh" style={{ marginTop: 8 }}>create or sign in to your account.</div>
-              <div className="ob-qs" style={{ marginBottom: 16 }}>
-                we'll email you a magic link — no password needed.
+              <div className="ob-auth-toggle" style={{ marginTop: 8, marginBottom: 16 }}>
+                <button className={`ob-auth-tab${authMode === 'signin' ? ' on' : ''}`}
+                  onClick={() => { setAuthMode('signin'); setSignInError('') }}>sign in</button>
+                <button className={`ob-auth-tab${authMode === 'signup' ? ' on' : ''}`}
+                  onClick={() => { setAuthMode('signup'); setSignInError('') }}>create account</button>
               </div>
-              <input
-                className="ob-inp"
-                type="text"
-                placeholder="your name (optional)"
-                value={displayName}
-                onChange={e => setDisplayName(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && doAuth()}
-                autoFocus
-              />
+              <div className="ob-qs" style={{ marginBottom: 16 }}>
+                {authMode === 'signin'
+                  ? 'welcome back — enter your email and we\'ll send a code.'
+                  : 'we\'ll email you a code — no password needed.'}
+              </div>
+              {authMode === 'signup' && (
+                <input
+                  className="ob-inp"
+                  type="text"
+                  placeholder="your name (optional)"
+                  value={displayName}
+                  onChange={e => setDisplayName(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && doAuth()}
+                />
+              )}
               <input
                 className="ob-inp"
                 type="email"
@@ -439,12 +458,13 @@ export default function Onboarding() {
                 value={email}
                 onChange={e => { setEmail(e.target.value); setSignInError('') }}
                 onKeyDown={e => e.key === 'Enter' && doAuth()}
+                autoFocus
               />
               {signInError && <div className="ob-auth-error">{signInError}</div>}
               <button className="ob-p" onClick={doAuth} disabled={signInLoading}>
                 {signInLoading
                   ? <><div className="ald" /><div className="ald" /><div className="ald" /></>
-                  : 'send magic link →'
+                  : authMode === 'signin' ? 'send code →' : 'create account →'
                 }
               </button>
               <div className="ob-div">or</div>
