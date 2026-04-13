@@ -407,63 +407,64 @@ export default function SettingsModal() {
             </div>
 
             <div className="sm-section">
-              <div className="sm-sec-label">daily summary notification</div>
-              <div className="sm-notif-row">
-                <div className="sm-notif-info">
-                  <span className="sm-notif-title">morning reminder</span>
-                  <span className="sm-notif-sub">push notification with your day</span>
-                </div>
-                <button
-                  className={`sm-notif-toggle${notifSettings.pushEnabled ? ' on' : ''}`}
-                  onClick={async () => {
-                    const enabling = !notifSettings.pushEnabled
-                    if (enabling) {
-                      const perm = await Notification.requestPermission()
-                      if (perm !== 'granted') return
-                      const reg = await navigator.serviceWorker.ready
-                      const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY
-                      const sub = await reg.pushManager.subscribe({
-                        userVisibleOnly: true,
-                        applicationServerKey: vapidKey,
-                      })
-                      await fetch('/api/subscribe-push', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                          subscription: sub.toJSON(),
-                          notifyTime: notifSettings.pushTime,
-                          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                        }),
-                      })
-                    } else {
-                      const reg = await navigator.serviceWorker.ready
-                      const sub = await reg.pushManager.getSubscription()
-                      if (sub) {
-                        await fetch('/api/unsubscribe-push', {
+              <div className="sm-sec-label">daily summary</div>
+              <div className="sm-notif-card">
+                <div className="sm-notif-row">
+                  <div className="sm-notif-info">
+                    <span className="sm-notif-title">morning reminder</span>
+                    <span className="sm-notif-sub">push notification each morning with your day plan</span>
+                  </div>
+                  <button
+                    className={`sm-switch${notifSettings.pushEnabled ? ' on' : ''}`}
+                    onClick={async () => {
+                      const enabling = !notifSettings.pushEnabled
+                      if (enabling) {
+                        const perm = await Notification.requestPermission()
+                        if (perm !== 'granted') return
+                        const reg = await navigator.serviceWorker.ready
+                        const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY
+                        const sub = await reg.pushManager.subscribe({
+                          userVisibleOnly: true,
+                          applicationServerKey: vapidKey,
+                        })
+                        await fetch('/api/subscribe-push', {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ endpoint: sub.endpoint }),
+                          body: JSON.stringify({
+                            subscription: sub.toJSON(),
+                            notifyTime: notifSettings.pushTime,
+                            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                          }),
                         })
-                        await sub.unsubscribe()
+                      } else {
+                        const reg = await navigator.serviceWorker.ready
+                        const sub = await reg.pushManager.getSubscription()
+                        if (sub) {
+                          await fetch('/api/unsubscribe-push', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ endpoint: sub.endpoint }),
+                          })
+                          await sub.unsubscribe()
+                        }
                       }
-                    }
-                    toggleNotif('pushEnabled')
-                  }}
-                >
-                  {notifSettings.pushEnabled ? 'on' : 'off'}
-                </button>
-              </div>
-              {notifSettings.pushEnabled && (
-                <div className="sm-field" style={{ marginTop: 8 }}>
-                  <label className="sm-lbl">notify me at</label>
-                  <input
-                    className="sm-inp sm-inp-time"
-                    type="time"
-                    value={notifSettings.pushTime}
-                    onChange={e => setPushTime(e.target.value)}
-                  />
+                      toggleNotif('pushEnabled')
+                    }}
+                    aria-label="toggle morning reminder"
+                  ><span className="sm-switch-knob" /></button>
                 </div>
-              )}
+                {notifSettings.pushEnabled && (
+                  <div className="sm-notif-time-row">
+                    <span className="sm-lbl">send at</span>
+                    <input
+                      className="sm-inp sm-inp-time sm-notif-time-inp"
+                      type="time"
+                      value={notifSettings.pushTime}
+                      onChange={e => setPushTime(e.target.value)}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="sm-section">
