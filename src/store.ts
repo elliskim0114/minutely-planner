@@ -252,6 +252,7 @@ type Actions = {
   doLateSignIn: (email: string, name?: string) => void
   connectGCal: () => void
   toggleNotif: (key: keyof NotifSettings) => void
+  setPushTime: (time: string) => void
 
   // Queue
   addToQueue: (item: Omit<QueueItem, 'id'>) => void
@@ -385,7 +386,7 @@ export const useStore = create<Store>()(
       nid: 1,
       userName: null,
       userEmail: null,
-      notifSettings: { blocks: false, morning: false, eod: false, energy: false },
+      notifSettings: { blocks: false, morning: false, eod: false, energy: false, pushEnabled: false, pushTime: '08:00' },
       queue: [],
       qid: 1,
       customLabels: [],
@@ -875,6 +876,9 @@ export const useStore = create<Store>()(
       },
       toggleNotif: (key) => set(s => ({
         notifSettings: { ...s.notifSettings, [key]: !s.notifSettings[key] },
+      })),
+      setPushTime: (time) => set(s => ({
+        notifSettings: { ...s.notifSettings, pushTime: time },
       })),
 
       addToQueue: (item) => set(s => ({

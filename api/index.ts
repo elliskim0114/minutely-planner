@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
+import webpush from 'web-push'
 import type { IncomingMessage, ServerResponse } from 'http'
 
 function getClient(userKey?: string) {
@@ -284,6 +285,85 @@ async function handleSaveProfile(body: any, res: ServerResponse) {
   json(res, r.ok ? 200 : r.status, { ok: r.ok })
 }
 
+// ── Push notification handlers ────────────────────────────────────────────────
+
+function initVapid() {
+  const pub = process.env.VAPID_PUBLIC_KEY
+  const priv = process.env.VAPID_PRIVATE_KEY
+  if (!pub || !priv) throw new Error('VAPID keys not configured')
+  webpush.setVapidDetails('mailto:minutely@app.com', pub, priv)
+}
+
+async function handleSubscribePush(body: any, res: ServerResponse) {
+  const { subscription, notifyTime, timezone, userId } = body
+  if (!subscription?.endpoint) return json(res, 400, { error: 'subscription required' })
+  const r = await fetch(`${SB_URL}/rest/v1/push_subscriptions`, {
+    method: 'POST',
+    headers: {
+      'apikey': SB_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'resolution=merge-duplicates',
+    },
+    body: JSON.stringify({
+      user_id: userId || 'anon',
+      endpoint: subscription.endpoint,
+      p256dh: subscription.keys.p256dh,
+      auth: subscription.keys.auth,
+      notify_time: notifyTime || '08:00',
+      timezone: timezone || 'UTC',
+    }),
+  })
+  json(res, r.ok ? 200 : r.status, { ok: r.ok })
+}
+
+async function handleUnsubscribePush(body: any, res: ServerResponse) {
+  const { endpoint } = body
+  if (!endpoint) return json(res, 400, { error: 'endpoint required' })
+  await fetch(`${SB_URL}/rest/v1/push_subscriptions?endpoint=eq.${encodeURIComponent(endpoint)}`, {
+    method: 'DELETE',
+    headers: { 'apikey': SB_KEY },
+  })
+  json(res, 200, { ok: true })
+}
+
+async function handleSendDailySummary(_body: any, res: ServerResponse) {
+  try {
+    initVapid()
+  } catch {
+    return json(res, 500, { error: 'VAPID keys not configured' })
+  }
+  // Fetch all subscriptions whose notify_time matches current hour in their timezone
+  const subRes = await fetch(`${SB_URL}/rest/v1/push_subscriptions?select=*`, {
+    headers: { 'apikey': SB_KEY },
+  })
+  if (!subRes.ok) return json(res, 500, { error: 'failed to fetch subscriptions' })
+  const subs: any[] = await subRes.json()
+
+  const now = new Date()
+  let sent = 0, failed = 0
+  await Promise.all(subs.map(async (sub) => {
+    try {
+      // Convert current UTC time to subscriber's timezone and check hour
+      const localHour = new Date(now.toLocaleString('en-US', { timeZone: sub.timezone })).getHours()
+      const localMin  = new Date(now.toLocaleString('en-US', { timeZone: sub.timezone })).getMinutes()
+      const [targetH, targetM] = (sub.notify_time as string).split(':').map(Number)
+      if (localHour !== targetH || localMin > 10) return // only fire within first 10 min of the hour
+      await webpush.sendNotification(
+        { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+        JSON.stringify({
+          title: 'minutely ✦',
+          body: "good morning — time to plan your perfect day.",
+          url: '/',
+        })
+      )
+      sent++
+    } catch {
+      failed++
+    }
+  }))
+  json(res, 200, { sent, failed })
+}
+
 // ── Main handler ─────────────────────────────────────────────────────────────
 
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
@@ -320,6 +400,9 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     if (path === '/api/verify-otp') return await handleVerifyOtp(body, res)
     if (path === '/api/get-profile') return await handleGetProfile(body, res)
     if (path === '/api/save-profile') return await handleSaveProfile(body, res)
+    if (path === '/api/subscribe-push') return await handleSubscribePush(body, res)
+    if (path === '/api/unsubscribe-push') return await handleUnsubscribePush(body, res)
+    if (path === '/api/send-daily-summary') return await handleSendDailySummary(body, res)
     return json(res, 404, { error: 'not found' })
   } catch (err: any) {
     return json(res, 500, { error: String(err) })

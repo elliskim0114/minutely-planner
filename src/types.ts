@@ -74,6 +74,8 @@ export interface NotifSettings {
   morning: boolean
   eod: boolean
   energy: boolean
+  pushEnabled: boolean
+  pushTime: string  // "HH:MM" e.g. "08:00"
 }
 
 export interface BlockModalState {

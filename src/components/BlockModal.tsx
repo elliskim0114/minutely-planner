@@ -219,7 +219,7 @@ export default function BlockModal() {
   return (
     <div className="mb on" id="bm"
       onClick={e => { if (e.target === e.currentTarget) closeBlockModal() }}
-      onKeyDown={e => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); handleSave() } }}
+      onKeyDown={e => { if (e.shiftKey && e.key === 'Enter') { e.preventDefault(); handleSave() } }}
     >
       <div className="mbox">
         <div className="mhdr">
@@ -570,7 +570,7 @@ export default function BlockModal() {
             </div>
             <div className="msave-wrap">
               <button className="mact-btn msave" onClick={handleSave}>save</button>
-              <span className="msave-hint"><kbd className="msave-kbd">enter</kbd></span>
+              <span className="msave-hint"><kbd className="msave-kbd">shift</kbd><kbd className="msave-kbd">enter</kbd></span>
             </div>
           </div>
         </div>
