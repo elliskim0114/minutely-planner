@@ -2565,7 +2565,7 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 
 /* ── Focus mode minimized pill ── */
 /* ── Focus bar (minimized) ── */
-.fm-bar{position:fixed;bottom:54px;left:var(--sb-w);right:0;z-index:350;display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:60px;background:linear-gradient(135deg,#1a1030 0%,#0f1628 100%);border-top:1px solid rgba(255,255,255,.1);box-shadow:0 -8px 32px rgba(0,0,0,.3);animation:slideUpIn .3s var(--spring) both;transition:left .22s}
+.fm-bar{position:fixed;bottom:0;left:var(--sb-w);right:0;z-index:350;display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:60px;background:linear-gradient(135deg,#1a1030 0%,#0f1628 100%);border-top:1px solid rgba(255,255,255,.1);box-shadow:0 -8px 32px rgba(0,0,0,.3);animation:slideUpIn .3s var(--spring) both;transition:left .22s}
 @keyframes slideUpIn{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
 .fm-bar-left{display:flex;align-items:center;gap:14px;flex:1;min-width:0;cursor:pointer}
 .fm-bar-left:hover .fm-bar-time{color:#fff}
@@ -2650,6 +2650,8 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .av-type-val{font-family:var(--font-u);font-size:11px;color:var(--ink3)}
 .av-type-bar{height:4px;background:var(--bg2);border-radius:2px;overflow:hidden}
 .av-type-fill{height:100%;border-radius:2px;transition:width .4s cubic-bezier(.22,1,.36,1)}
+.av-types-seeall{margin-top:8px;background:none;border:1px solid var(--bd);border-radius:8px;padding:6px 12px;font-family:var(--font-u);font-size:11px;font-weight:700;color:var(--ink3);cursor:pointer;width:100%;transition:color .12s,border-color .12s}
+.av-types-seeall:hover{color:var(--ink);border-color:var(--bd2)}
 
 /* Goals */
 .av-goals{display:flex;flex-direction:column;gap:12px}
@@ -2820,7 +2822,7 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .tmpl-more{opacity:.6}
 
 /* ── Analytics AI Insights ── */
-.av-insights-section{margin-top:28px;background:var(--surf);border:1px solid var(--bd);border-radius:16px;padding:24px;overflow:hidden}
+.av-insights-section{background:var(--surf);border:1px solid var(--bd);border-radius:16px;padding:24px;overflow:hidden}
 .av-insights-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px}
 .av-insights-title{font-family:var(--font-u);font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px}
 .av-insights-sub{font-family:var(--font-u);font-size:12px;color:var(--ink3)}

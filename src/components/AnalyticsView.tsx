@@ -27,7 +27,7 @@ const TYPE_BG: Record<string, string> = {
 }
 
 function getDateStr(d: Date) {
-  return d.toISOString().slice(0, 10)
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
 }
 
 export default function AnalyticsView() {
@@ -40,6 +40,7 @@ export default function AnalyticsView() {
   const [habitsLoading, setHabitsLoading] = useState(false)
   const [habitsError, setHabitsError] = useState('')
   const [habitsFetched, setHabitsFetched] = useState(false)
+  const [showAllTypes, setShowAllTypes] = useState(false)
 
   // Build last 14 days
   const today = new Date()
@@ -64,15 +65,19 @@ export default function AnalyticsView() {
 
   // Block type breakdown (last 7 days)
   const typeMinutes: Record<string, number> = {}
+  const typeIsCustom: Record<string, boolean> = {}
   let totalMins = 0
   last7.forEach(({ date }) => {
     blocks.filter(b => b.date === date).forEach(b => {
       const mins = toM(b.end) - toM(b.start)
-      const key = b.cc ? 'custom' : b.type
+      const key = b.cc ? ((b as any).customName || b.name) : b.type
       typeMinutes[key] = (typeMinutes[key] || 0) + mins
+      if (b.cc) typeIsCustom[key] = true
       totalMins += mins
     })
   })
+  const typeEntries = Object.entries(typeMinutes).sort((a, b) => b[1] - a[1])
+  const visibleTypes = showAllTypes ? typeEntries : typeEntries.slice(0, 5)
 
   // Plan health per day (last 7)
   const healthScores = last7.map(({ date }) => {
@@ -183,7 +188,7 @@ export default function AnalyticsView() {
     setHabitsLoading(true); setHabitsError(''); setHabitsFetched(false)
     try {
       const since = new Date(); since.setDate(since.getDate() - 14)
-      const sinceStr = since.toISOString().slice(0, 10)
+      const sinceStr = getDateStr(since)
       const recentBlocks = blocks
         .filter(b => b.date >= sinceStr)
         .map(b => ({ date: b.date, start: b.start, end: b.end, name: b.name, type: b.type }))
@@ -377,22 +382,28 @@ export default function AnalyticsView() {
               <div className="av-card-ttl">time by type · this week</div>
               {totalMins === 0 ? <div className="av-empty">no blocks this week</div> : (
                 <div className="av-types">
-                  {Object.entries(typeMinutes).sort((a, b) => b[1] - a[1]).map(([type, mins]) => {
+                  {visibleTypes.map(([key, mins]) => {
                     const pct = Math.round((mins / totalMins) * 100)
                     const h = Math.floor(mins / 60), m = mins % 60
+                    const isCustom = typeIsCustom[key]
                     return (
-                      <div key={type} className="av-type-row">
+                      <div key={key} className="av-type-row">
                         <div className="av-type-hdr">
-                          <span className="av-type-icon">{typeIcons[type] || ''}</span>
-                          <span className="av-type-name">{type}</span>
+                          <span className="av-type-icon">{typeIcons[key] || (isCustom ? '✦' : '')}</span>
+                          <span className="av-type-name">{key}</span>
                           <span className="av-type-val">{h}h{m ? ` ${m}m` : ''} · {pct}%</span>
                         </div>
                         <div className="av-type-bar">
-                          <div className="av-type-fill" style={{ width: `${pct}%`, background: TYPE_COLORS[type] || 'var(--bd2)' }} />
+                          <div className="av-type-fill" style={{ width: `${pct}%`, background: TYPE_COLORS[key] || 'var(--acc)' }} />
                         </div>
                       </div>
                     )
                   })}
+                  {typeEntries.length > 5 && (
+                    <button className="av-types-seeall" onClick={() => setShowAllTypes(s => !s)}>
+                      {showAllTypes ? '↑ show less' : `+ ${typeEntries.length - 5} more`}
+                    </button>
+                  )}
                 </div>
               )}
             </div>
