@@ -17,6 +17,7 @@ import WhatNowModal from './components/WhatNowModal'
 import SignInModal from './components/SignInModal'
 import Toast from './components/Toast'
 import Confetti from './components/Confetti'
+import GoldRain from './components/GoldRain'
 import QuickAdd from './components/QuickAdd'
 import FocusMode from './components/FocusMode'
 import TemplatesModal from './components/TemplatesModal'
@@ -518,6 +519,7 @@ export default function App() {
       )}
       {checkinOpen && <CoachCheckin />}
       <Confetti />
+      <GoldRain />
       <MobileNav />
     </div>
   )

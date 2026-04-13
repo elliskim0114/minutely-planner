@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store'
 
 // SVG animals as inline components
@@ -216,13 +216,72 @@ const ANIMALS: Record<string, { component: React.ReactNode; label: string; speed
   goldengoose: { component: <GoldenGoose />, label: '🪿', speed: 3.8, y: 2 },
 }
 
+// Golden egg explosion when the goose crosses center
+function GoldenEggExplosion({ x, y }: { x: number; y: number }) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const GOLD = ['#FFD700','#FFC200','#FFE066','#F5A623','#FFBA40','#FFF0B0','#E8A000']
+  const SHAPES = ['◆','★','✦','●','✧','◉']
+
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+    const particles: { el: HTMLSpanElement; vx: number; vy: number; grav: number; rot: number; rotV: number; alpha: number; decay: number; px: number; py: number }[] = []
+    for (let i = 0; i < 30; i++) {
+      const el = document.createElement('span')
+      const angle = (Math.PI * 2 * i) / 30 + (Math.random() - 0.5) * 0.4
+      const speed = 3 + Math.random() * 7
+      el.textContent = SHAPES[Math.floor(Math.random() * SHAPES.length)]
+      el.style.cssText = `position:fixed;left:${x}px;top:${y}px;color:${GOLD[Math.floor(Math.random()*GOLD.length)]};font-size:${8+Math.random()*10}px;pointer-events:none;z-index:9998;user-select:none;text-shadow:0 0 6px rgba(255,215,0,0.8)`
+      container.appendChild(el)
+      particles.push({ el, vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed-3, grav: 0.2, rot: Math.random()*360, rotV: (Math.random()-0.5)*15, alpha: 1, decay: 0.018+Math.random()*0.012, px: x, py: y })
+    }
+    let raf: number
+    const tick = () => {
+      let alive = false
+      particles.forEach(p => {
+        if (p.alpha <= 0) return
+        p.px += p.vx; p.py += p.vy; p.vy += p.grav; p.vx *= 0.97
+        p.rot += p.rotV; p.alpha -= p.decay
+        if (p.alpha < 0) p.alpha = 0; else alive = true
+        p.el.style.transform = `translate(${p.px-x}px,${p.py-y}px) rotate(${p.rot}deg)`
+        p.el.style.opacity = String(p.alpha)
+      })
+      if (alive) raf = requestAnimationFrame(tick)
+      else particles.forEach(p => p.el.remove())
+    }
+    raf = requestAnimationFrame(tick)
+    return () => { cancelAnimationFrame(raf); particles.forEach(p => p.el.remove()) }
+  }, [])
+
+  return <div ref={containerRef} style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 9998 }} />
+}
+
 export default function CelebrationAnimal() {
   const { celebrationAnimal, clearCelebration } = useStore()
   const [visible, setVisible] = useState(false)
+  const [eggPos, setEggPos] = useState<{ x: number; y: number } | null>(null)
+  const [eggExploded, setEggExploded] = useState(false)
+  const isGoose = celebrationAnimal === 'goldengoose'
 
   useEffect(() => {
     if (celebrationAnimal) {
       setVisible(true)
+      setEggPos(null)
+      setEggExploded(false)
+
+      // For the golden goose: drop an egg at the midpoint of its journey
+      if (celebrationAnimal === 'goldengoose') {
+        const speed = ANIMALS.goldengoose.speed * 1000
+        setTimeout(() => {
+          const y = window.innerHeight - 68 - 2 + 48 // approx bottom of goose
+          setEggPos({ x: window.innerWidth / 2, y })
+        }, speed * 0.45)
+        setTimeout(() => {
+          setEggExploded(true)
+          setEggPos(null)
+        }, speed * 0.45 + 600)
+      }
+
       const t = setTimeout(() => {
         setVisible(false)
         clearCelebration()
@@ -239,17 +298,27 @@ export default function CelebrationAnimal() {
   const isRocket = celebrationAnimal === 'rocket'
 
   return (
-    <div
-      className={`celebration-animal celebration-${celebrationAnimal}`}
-      style={{
-        animationDuration: `${animal.speed}s`,
-        bottom: isRocket ? 'auto' : `${68 + animal.y}px`,
-        top: isRocket ? '40px' : 'auto',
-      }}
-      onClick={clearCelebration}
-      title="click to dismiss"
-    >
-      {animal.component}
-    </div>
+    <>
+      <div
+        className={`celebration-animal celebration-${celebrationAnimal}`}
+        style={{
+          animationDuration: `${animal.speed}s`,
+          bottom: isRocket ? 'auto' : `${68 + animal.y}px`,
+          top: isRocket ? '40px' : 'auto',
+        }}
+        onClick={clearCelebration}
+        title="click to dismiss"
+      >
+        {animal.component}
+      </div>
+      {/* Egg drop */}
+      {isGoose && eggPos && !eggExploded && (
+        <div style={{ position: 'fixed', left: eggPos.x - 8, top: eggPos.y, pointerEvents: 'none', zIndex: 9997, animation: 'eggDrop 0.6s ease-in both', fontSize: 16 }}>🥚</div>
+      )}
+      {/* Egg explosion */}
+      {isGoose && eggExploded && (
+        <GoldenEggExplosion x={window.innerWidth / 2} y={window.innerHeight - 68} />
+      )}
+    </>
   )
 }

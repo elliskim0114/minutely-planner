@@ -57,6 +57,7 @@ interface UIState {
   gcalDone: boolean
   pendingAIPrompt: string | null  // energy → MPD AI handoff
   confettiKey: number             // increments to trigger confetti burst
+  goldRainKey: number             // increments to trigger gold rain (Focus Master)
   celebrationAnimal: string | null  // currently active celebration animal
   unlockPopup: { type: 'theme' | 'animal' | 'legendary'; name: string; label: string; description: string; emoji: string } | null
   weekReviewOpen: boolean
@@ -434,6 +435,7 @@ export const useStore = create<Store>()(
       gcalDone: false,
       pendingAIPrompt: null,
       confettiKey: 0,
+      goldRainKey: 0,
       celebrationAnimal: null,
       unlockPopup: null,
       weekReviewOpen: false,
@@ -1274,12 +1276,17 @@ export const useStore = create<Store>()(
             triggerAnimal = 'goldengoose'
             toastMsg = '◆ ×100 — focus master! gold theme + golden goose unlocked! 🪿'
             doConfetti = true
-            popup = { type: 'theme', name: 'gold', label: 'Focus Master 🪿', description: 'Gold theme unlocked AND a golden goose joins your celebrations. Legendary.', emoji: '🪿' }
+            popup = { type: 'legendary', name: 'gold', label: 'Focus Master 🪿', description: 'Gold theme unlocked AND a golden goose joins your celebrations. Legendary.', emoji: '🪿' }
           }
 
+          // Gold rain: on 100-gem unlock and every 10 gems for masters
+          const isMaster = gems >= 100
+          const doGoldRain = (gems === 100) || (isMaster && gems > 100 && gems % 10 === 0)
+
           setTimeout(() => useStore.getState().showToast(toastMsg), 50)
-          if (doConfetti) setTimeout(() => useStore.setState({ confettiKey: s.confettiKey + 1 }), 200)
-          if (popup) setTimeout(() => useStore.setState({ unlockPopup: popup }), 400)
+          if (doConfetti) setTimeout(() => useStore.setState(st => ({ confettiKey: st.confettiKey + 1 })), 200)
+          if (doGoldRain) setTimeout(() => useStore.setState(st => ({ goldRainKey: st.goldRainKey + 1 })), 400)
+          if (popup) setTimeout(() => useStore.setState({ unlockPopup: popup }), 600)
 
           // On non-milestone gems, run an animal if celebrations are unlocked (every 5 gems)
           const finalCelebrations = newCelebrations.length > 0 ? newCelebrations : s.unlockedCelebrations

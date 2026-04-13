@@ -300,7 +300,10 @@ export default function SettingsModal() {
             <div className="sm-avatar">{(userName || 'U')[0].toUpperCase()}</div>
             <div>
               <div className="sm-hdr-name">{userName || 'your profile'}</div>
-              <div className="sm-hdr-sub">settings & preferences</div>
+              {focusGems >= 100
+                ? <div className="sm-hdr-master">✦ focus master</div>
+                : <div className="sm-hdr-sub">settings & preferences</div>
+              }
             </div>
           </div>
           <button className="sm-close" onClick={closeSettings}>×</button>

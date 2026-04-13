@@ -624,7 +624,8 @@ body[data-mode="ember"]{
 
 /* ── SIDEBAR GEM BADGE ── */
 .sb-gem-badge{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:20px;font-size:11px;font-weight:600;color:var(--ink2);background:var(--bg3);border:1px solid var(--bd);transition:all .2s;cursor:default;user-select:none;margin:4px 0 0}
-.sb-gem-badge.master{color:#FCD34D;background:rgba(245,158,11,0.12);border-color:rgba(245,158,11,0.3);box-shadow:0 0 12px rgba(245,158,11,0.2)}
+@keyframes masterGlow{0%,100%{box-shadow:0 0 10px rgba(245,158,11,0.3),0 0 0 rgba(245,158,11,0)}50%{box-shadow:0 0 18px rgba(245,158,11,0.6),0 0 32px rgba(245,158,11,0.2)}}
+.sb-gem-badge.master{color:#FCD34D;background:rgba(245,158,11,0.14);border-color:rgba(245,158,11,0.4);animation:masterGlow 2.4s ease-in-out infinite}
 .sb-gem-badge .sb-gem-icon{font-size:12px;line-height:1}
 .sb-gem-badge .sb-gem-lbl{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
 
@@ -1168,6 +1169,10 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .blk.tl::before{background:var(--blbd)}
 .blk.td::before{background:var(--bdbd)}
 @keyframes bkIn{from{opacity:0;transform:scaleY(.85) translateY(4px)}to{opacity:1;transform:none}}
+/* Gold theme: focus blocks get a subtle gold shimmer sweep */
+@keyframes goldBlockShimmer{0%{background-position:-200% center}100%{background-position:200% center}}
+[data-mode="gold"] .blk.tf{border-color:rgba(255,200,60,0.35) !important;box-shadow:0 0 8px rgba(255,180,20,0.2) !important}
+[data-mode="gold"] .blk.tf::after{content:'';position:absolute;inset:0;border-radius:inherit;background:linear-gradient(105deg,transparent 40%,rgba(255,220,80,0.12) 50%,transparent 60%);background-size:200% 100%;animation:goldBlockShimmer 3s linear infinite;pointer-events:none}
 .blk:hover{box-shadow:var(--s2);transform:translateY(-2px) scale(1.016);z-index:5}
 .blk:hover::before{opacity:1}
 .blk.drag{opacity:.92;z-index:20;box-shadow:var(--s3);transform:scale(1.05) rotate(.6deg)}
@@ -2023,6 +2028,9 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 }
 .sm-hdr-name{font-family:var(--font-d);font-size:16px;font-weight:700;color:var(--ink)}
 .sm-hdr-sub{font-family:var(--font-u);font-size:11px;color:var(--ink3);margin-top:2px}
+@keyframes masterTitleGlow{0%,100%{opacity:.85}50%{opacity:1}}
+.sm-hdr-master{font-family:var(--font-u);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-top:2px;background:linear-gradient(90deg,#F59E0B,#FFD700,#F5A623,#FFE066,#F59E0B);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:masterTitleGlow 2s ease-in-out infinite,shimmerText 3s linear infinite}
+@keyframes shimmerText{0%{background-position:0% center}100%{background-position:200% center}}
 .sm-close{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--bd);background:none;cursor:pointer;color:var(--ink3);font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .sm-close:hover{background:var(--bg2);color:var(--ink)}
 
@@ -2980,6 +2988,7 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .celebration-rocket svg{
   animation:none;
 }
+@keyframes eggDrop{from{transform:translateY(-20px);opacity:0}to{transform:translateY(60px);opacity:1}}
 
 /* ── Day Greeting Banner ── */
 @keyframes greetingSlide{from{transform:translateY(-100%);opacity:0}to{transform:translateY(0);opacity:1}}
