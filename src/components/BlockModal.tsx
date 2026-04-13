@@ -193,7 +193,7 @@ export default function BlockModal() {
     setNewLabelVal('')
   }
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     if (!name.trim()) { nameRef.current?.focus(); return }
     // Auto-save custom label with its current color
     if (type === 'custom' && customName.trim()) {
@@ -212,14 +212,27 @@ export default function BlockModal() {
       goalId,
       note: note.trim() || null,
     })
-  }
+  }, [name, type, customName, ccIdx, start, end, repeat, goalId, note, nameRef, addCustomLabel, saveBlockModal])
+
+  // Global Enter to save — fires even when focus is on body (after clicking off an input)
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key !== 'Enter' || e.shiftKey) return
+      const tag = (e.target as HTMLElement).tagName
+      if (tag === 'TEXTAREA') return
+      if (tag === 'BUTTON') return
+      e.preventDefault()
+      handleSave()
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [handleSave])
 
   const isBuiltin = type !== 'custom' && ALL_BUILTIN.some(b => b.key === type)
 
   return (
     <div className="mb on" id="bm"
       onClick={e => { if (e.target === e.currentTarget) closeBlockModal() }}
-      onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && (e.target as HTMLElement).tagName !== 'TEXTAREA') { e.preventDefault(); handleSave() } }}
     >
       <div className="mbox">
         <div className="mhdr">
