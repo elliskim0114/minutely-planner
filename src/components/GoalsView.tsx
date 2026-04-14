@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { useStore } from '../store'
 import { toM } from '../utils'
+import GoalDetailView from './GoalDetailView'
+import { Goal } from '../types'
 
 const COLORS = ['#FF4D1C','#6C63FF','#059669','#0EA5E9','#F59E0B','#EC4899','#8B5CF6','#14B8A6']
 
@@ -24,6 +26,7 @@ function ProgressRing({ pct, color, size = 80, stroke = 7 }: { pct: number; colo
 export default function GoalsView() {
   const { view, goals, blocks, addGoal, openGoals, rewardedGoals, rewardGoal, typeIcons, reorderGoals } = useStore()
   const [adding, setAdding] = useState(false)
+  const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null)
   const dragId = useRef<number | null>(null)
   const [dragOverId, setDragOverId] = useState<number | null>(null)
   const [name, setName] = useState('')
@@ -100,6 +103,10 @@ export default function GoalsView() {
   return (
     <div id="goals-view" className={view === 'goals' ? 'on' : ''}>
       <div className="gv-inner">
+        {selectedGoal && (
+          <GoalDetailView goal={selectedGoal} onBack={() => setSelectedGoal(null)} />
+        )}
+        {!selectedGoal && (<>
 
         {/* ── Hero ── */}
         <div className="gv-hero">
@@ -161,9 +168,10 @@ export default function GoalsView() {
               return (
                 <div key={g.id}
                   className={`gv-card${isComplete ? ' complete' : ''}${dragOverId === g.id ? ' drag-over' : ''}`}
-                  style={{ '--gv-col': g.color } as React.CSSProperties}
+                  style={{ '--gv-col': g.color, cursor: 'pointer' } as React.CSSProperties}
+                  onClick={() => setSelectedGoal(g)}
                   draggable
-                  onDragStart={() => { dragId.current = g.id }}
+                  onDragStart={e => { e.stopPropagation(); dragId.current = g.id }}
                   onDragOver={e => { e.preventDefault(); setDragOverId(g.id) }}
                   onDragLeave={() => setDragOverId(null)}
                   onDrop={() => {
@@ -207,7 +215,7 @@ export default function GoalsView() {
                         </div>
                         <div className="gv-bar-lbl">{periodLabel}</div>
                       </div>
-                      <button className="gv-edit-btn" onClick={openGoals} title="manage goals">
+                      <button className="gv-edit-btn" onClick={e => { e.stopPropagation(); openGoals() }} title="manage goals">
                         <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
                           <path d="M9 2L11 4L4.5 10.5H2.5V8.5L9 2Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
                         </svg>
@@ -319,6 +327,7 @@ export default function GoalsView() {
           </div>
         )}
 
+      </>)}
       </div>
     </div>
   )

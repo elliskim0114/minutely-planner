@@ -3263,6 +3263,54 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 
 @media(max-width:768px){.gv-inner{padding:20px 16px 90px}.gv-title{font-size:28px}.gv-hero{flex-direction:column}.gv-grid{grid-template-columns:1fr}}
 
+/* ── Goal Detail View ── */
+.gdv-wrap{width:100%;max-width:1100px;margin:0 auto}
+.gdv-back{background:none;border:none;font-family:var(--font-u);font-size:12px;font-weight:700;color:var(--ink3);cursor:pointer;padding:0 0 20px 0;letter-spacing:.04em;transition:color .12s}
+.gdv-back:hover{color:var(--ink)}
+.gdv-hdr{position:relative;background:var(--surf);border:1px solid var(--bd);border-radius:20px;padding:28px;margin-bottom:20px;overflow:hidden}
+.gdv-hdr-accent{position:absolute;top:0;left:0;right:0;height:3px}
+.gdv-hdr-inner{display:flex;align-items:center;gap:20px;position:relative}
+.gdv-ring-center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.gdv-ring-pct{font-family:var(--font-m);font-size:13px;font-weight:700}
+.gdv-hdr-info{flex:1;min-width:0}
+.gdv-hdr-name{font-family:var(--font-d);font-size:22px;font-weight:700;color:var(--ink);line-height:1.2;margin-bottom:4px}
+.gdv-hdr-desc{font-family:var(--font-u);font-size:12px;color:var(--ink3);margin-bottom:8px}
+.gdv-hdr-progress{font-family:var(--font-u);font-size:13px;font-weight:600}
+.gdv-hdr-sep{color:var(--ink3)}
+.gdv-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.gdv-kpi{background:var(--surf);border:1px solid var(--bd);border-radius:14px;padding:16px;text-align:center}
+.gdv-kpi-val{font-family:var(--font-m);font-size:26px;font-weight:700;color:var(--ink);line-height:1}
+.gdv-kpi-lbl{font-family:var(--font-u);font-size:10px;font-weight:700;color:var(--ink3);margin-top:5px;letter-spacing:.04em;text-transform:uppercase}
+.gdv-cols{display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start}
+.gdv-col-main{display:flex;flex-direction:column;gap:16px}
+.gdv-col-side{display:flex;flex-direction:column;gap:16px}
+.gdv-card{background:var(--surf);border:1px solid var(--bd);border-radius:16px;padding:22px}
+.gdv-card-ttl{font-family:var(--font-u);font-size:12px;font-weight:700;color:var(--ink);letter-spacing:.04em;text-transform:uppercase;margin-bottom:14px}
+.gdv-card-sub{font-family:var(--font-u);font-size:11px;color:var(--ink3);margin-top:-10px;margin-bottom:14px}
+.gdv-coach-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:4px}
+.gdv-chart{position:relative;display:flex;align-items:flex-end;gap:6px;height:140px;padding-bottom:20px}
+.gdv-target-line{position:absolute;left:0;right:0;border-top:1px dashed var(--bd2);pointer-events:none}
+.gdv-target-lbl{position:absolute;right:0;top:-16px;font-family:var(--font-u);font-size:9px;font-weight:700;color:var(--ink4);letter-spacing:.04em}
+.gdv-bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%}
+.gdv-bar-val{font-family:var(--font-u);font-size:9px;font-weight:700;color:var(--ink3);min-height:12px;line-height:1}
+.gdv-bar-track{flex:1;width:100%;background:var(--bg2);border-radius:4px;overflow:hidden;display:flex;align-items:flex-end}
+.gdv-bar-fill{width:100%;border-radius:4px;transition:height .5s cubic-bezier(.22,1,.36,1)}
+.gdv-bar-lbl{font-family:var(--font-u);font-size:8px;font-weight:600;color:var(--ink4);text-align:center;white-space:nowrap}
+.gdv-bar-lbl.this{color:var(--ink);font-weight:700}
+.gdv-sessions{display:flex;flex-direction:column;gap:10px}
+.gdv-session-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bg2)}
+.gdv-session-row:last-child{border-bottom:none}
+.gdv-session-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.gdv-session-info{flex:1;min-width:0}
+.gdv-session-name{font-family:var(--font-u);font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gdv-session-meta{font-family:var(--font-u);font-size:10px;color:var(--ink3);margin-top:2px}
+.gdv-session-dur{font-family:var(--font-m);font-size:13px;font-weight:700;flex-shrink:0}
+.gdv-empty{font-family:var(--font-u);font-size:12px;color:var(--ink4);line-height:1.6;padding:12px 0}
+.gdv-plan-card{border-width:1.5px}
+.gdv-plan-btn{margin-top:14px;width:100%;padding:12px;border:none;border-radius:12px;font-family:var(--font-u);font-size:13px;font-weight:700;color:#fff;cursor:pointer;transition:filter .14s,transform .14s}
+.gdv-plan-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+@media(max-width:768px){.gdv-cols{grid-template-columns:1fr}.gdv-kpis{grid-template-columns:repeat(2,1fr)}}
+
 /* ── Command Palette ─────────────────────────────────────────────────────── */
 .cp-overlay{
   position:fixed;inset:0;z-index:9000;

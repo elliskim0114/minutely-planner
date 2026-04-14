@@ -232,6 +232,16 @@ async function handleAnalyticsInsights(body: any, res: ServerResponse) {
   json(res, 200, parseJsonObject((msg.content[0] as any).text ?? ''))
 }
 
+async function handleGoalInsights(body: any, res: ServerResponse) {
+  const { goal, weeklyData, totalHours, sessionsCount, streak, apiKey } = body
+  const weeksSummary = (weeklyData || []).map((w: any) => `${w.label}: ${w.hours}h`).join(', ')
+  const system = `You are a goal coaching AI for minutely, a time-blocking productivity app. Analyze the user's goal progress and provide 3 specific, actionable coaching insights.\n\nReturn ONLY a JSON object:\n{\n  "insights":[{\n    "icon":"emoji",\n    "title":"short punchy title (5-7 words)",\n    "body":"2-3 sentences with specific observations and concrete advice based on their data.",\n    "prompt":"a ready-to-use AI day builder scheduling prompt for this goal"\n  }]\n}`
+  const userMsg = `Goal: "${goal.name}"${goal.description ? ` — ${goal.description}` : ''}\nTarget: ${goal.targetHours}${goal.targetUnit || 'h'} ${goal.targetPeriod || 'weekly'}\nAll-time: ${totalHours}h across ${sessionsCount} sessions\nStreak: ${streak} consecutive weeks hitting target\nWeekly history (most recent last): ${weeksSummary}`
+  const client = getClient(apiKey)
+  const msg = await client.messages.create({ model: 'claude-haiku-4-5-20251001', max_tokens: 800, system, messages: [{ role: 'user', content: userMsg }] })
+  json(res, 200, parseJsonObject((msg.content[0] as any).text ?? ''))
+}
+
 async function handleWhatNow(body: any, res: ServerResponse) {
   const { currentTime, todayBlocks, profileContext, extraContext, apiKey } = body
   const scheduleLines = (todayBlocks || []).map((b: any) => `${b.start}–${b.end}: ${b.name} (${b.type}${b.completed ? ', ' + b.completed : ''})`).join('\n')
@@ -396,6 +406,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     if (path === '/api/habits') return await handleHabits(body, res)
     if (path === '/api/manage') return await handleManage(body, res)
     if (path === '/api/analytics-insights') return await handleAnalyticsInsights(body, res)
+    if (path === '/api/goal-insights') return await handleGoalInsights(body, res)
     if (path === '/api/what-now') return await handleWhatNow(body, res)
     if (path === '/api/verify-otp') return await handleVerifyOtp(body, res)
     if (path === '/api/get-profile') return await handleGetProfile(body, res)
