@@ -82,6 +82,7 @@ interface UIState {
   greetingOpen: boolean
   greetingType: 'morning' | 'evening' | 'eodcheck'
   checkinOpen: boolean
+  eodPlanOpen: boolean
 }
 
 // ── Persisted state ──
@@ -364,6 +365,9 @@ type Actions = {
   closeGreeting: () => void
   openCheckin: () => void
   closeCheckin: () => void
+  openEodPlan: () => void
+  closeEodPlan: () => void
+  bulkAddBlocks: (items: Array<{ name: string; start: string; end: string; type: Block['type']; date: string; customName?: string | null }>) => void
 }
 
 type Store = PersistedState & UIState & Actions
@@ -460,6 +464,7 @@ export const useStore = create<Store>()(
       greetingOpen: false,
       greetingType: 'morning' as const,
       checkinOpen: false,
+      eodPlanOpen: false,
 
       // ── Actions ──
       finishOnboarding: ({ mode, cfg, userName, userEmail, perfectDay, userProfile }) => {
@@ -1039,6 +1044,26 @@ export const useStore = create<Store>()(
       closeGreeting: () => set({ greetingOpen: false }),
       openCheckin: () => set({ checkinOpen: true }),
       closeCheckin: () => set({ checkinOpen: false }),
+      openEodPlan: () => set({ eodPlanOpen: true }),
+      closeEodPlan: () => set({ eodPlanOpen: false }),
+      bulkAddBlocks: (items) => {
+        const { nid, blocks } = get()
+        let id = nid
+        const newBlocks: Block[] = items.map(item => ({
+          id: id++,
+          date: item.date,
+          name: item.name,
+          type: item.type,
+          start: item.start,
+          end: item.end,
+          cc: null,
+          customName: item.customName ?? null,
+          repeat: 'none',
+          goalId: null,
+          note: null,
+        }))
+        set({ blocks: [...blocks, ...newBlocks], nid: id })
+      },
 
       addGoal: (goal) => set(s => ({ goals: [...s.goals, { ...goal, id: s.gid }], gid: s.gid + 1 })),
       updateGoal: (id, patch) => set(s => ({ goals: s.goals.map(g => g.id === id ? { ...g, ...patch } : g) })),

@@ -36,6 +36,7 @@ import MobileNav from './components/MobileNav'
 import CelebrationAnimal from './components/CelebrationAnimal'
 import UnlockCelebration from './components/UnlockCelebration'
 import CoachCheckin from './components/CoachCheckin'
+import EodPlanModal from './components/EodPlanModal'
 
 export default function App() {
   const {
@@ -63,6 +64,7 @@ export default function App() {
     showGreeting, cfg,
     seedRecurring, wOff,
     checkinOpen, openCheckin, closeCheckin,
+    eodPlanOpen, openEodPlan, closeEodPlan,
     openBlockModalNew,
   } = useStore()
 
@@ -462,6 +464,28 @@ export default function App() {
     return () => clearInterval(iv)
   }, [cfg.ds, cfg.de])
 
+  // End-of-day plan tomorrow prompt — fires once, 1 hour before cfg.de
+  const eodFiredRef = useRef<string | null>(null)
+  useEffect(() => {
+    const check = () => {
+      const now = new Date()
+      const m = now.getMinutes()
+      const h = now.getHours()
+      const [deH] = cfg.de.split(':').map(Number)
+      // Fire at deH-1 (1 hour before end of day), on the hour (minutes 0-2)
+      if (h !== deH - 1) return
+      if (m > 2) return
+      const key = now.toISOString().slice(0, 10) // once per day
+      if (eodFiredRef.current === key) return
+      if (useStore.getState().eodPlanOpen) return
+      eodFiredRef.current = key
+      openEodPlan()
+    }
+    check()
+    const iv = setInterval(check, 60000)
+    return () => clearInterval(iv)
+  }, [cfg.de, openEodPlan])
+
   if (authLoading) return null
   if (!onboarded && !session) return <Onboarding />
   if (!onboarded && session && !profile?.onboarding_completed) return <Onboarding />
@@ -526,6 +550,7 @@ export default function App() {
         </div>
       )}
       {checkinOpen && <CoachCheckin />}
+      {eodPlanOpen && <EodPlanModal />}
       <Confetti />
       <GoldRain />
       <MobileNav />
