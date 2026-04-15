@@ -193,6 +193,19 @@ export default function BlockModal() {
     setNewLabelVal('')
   }
 
+  const applySuggestion = useCallback(() => {
+    if (!suggestion) return
+    setType(suggestion.type as BType)
+    if (suggestion.customName) {
+      setCustomName(suggestion.customName)
+      const savedIdx = customLabelColors[suggestion.customName]
+      if (savedIdx !== undefined) setCcIdx(savedIdx)
+    } else {
+      setCustomName('')
+    }
+    setSuggestion(null)
+  }, [suggestion, customLabelColors])
+
   const handleSave = useCallback(() => {
     if (!name.trim()) { nameRef.current?.focus(); return }
     // Auto-save custom label with its current color
@@ -214,7 +227,13 @@ export default function BlockModal() {
     })
   }, [name, type, customName, ccIdx, start, end, repeat, goalId, note, nameRef, addCustomLabel, saveBlockModal])
 
-  // Global Enter to save — fires even when focus is on body (after clicking off an input)
+  // Enter: apply suggestion first, then save on second press
+  const handleEnter = useCallback(() => {
+    if (suggestion) { applySuggestion(); return }
+    handleSave()
+  }, [suggestion, applySuggestion, handleSave])
+
+  // Global Enter — fires even when focus is on body (after clicking off an input)
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key !== 'Enter' || e.shiftKey) return
@@ -222,11 +241,11 @@ export default function BlockModal() {
       if (tag === 'TEXTAREA') return
       if (tag === 'BUTTON') return
       e.preventDefault()
-      handleSave()
+      handleEnter()
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [handleSave])
+  }, [handleEnter])
 
   const isBuiltin = type !== 'custom' && ALL_BUILTIN.some(b => b.key === type)
 
@@ -259,7 +278,7 @@ export default function BlockModal() {
               }
             }, 420)
           }}
-          onKeyDown={e => { if (e.key === 'Enter') handleSave() }}
+          onKeyDown={e => { if (e.key === 'Enter') handleEnter() }}
         />
         {suggestion && (
           <button
