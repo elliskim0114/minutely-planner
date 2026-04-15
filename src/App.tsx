@@ -63,6 +63,7 @@ export default function App() {
     showGreeting, cfg,
     seedRecurring, wOff,
     checkinOpen, openCheckin, closeCheckin,
+    openBlockModalNew,
   } = useStore()
 
   const [quickAddOpen, setQuickAddOpen] = useState(false)
@@ -431,6 +432,13 @@ export default function App() {
     return () => clearInterval(iv)
   }, [cfg.ds, cfg.de])
 
+  // Collapse sidebar by default on mobile
+  useEffect(() => {
+    if (window.innerWidth <= 768 && !useStore.getState().sbCol) {
+      useStore.getState().toggleSidebar()
+    }
+  }, [])
+
   // Hourly coach check-in
   const checkinFiredRef = useRef<string | null>(null)
   useEffect(() => {
@@ -521,6 +529,19 @@ export default function App() {
       <Confetti />
       <GoldRain />
       <MobileNav />
+      {!blockModal.open && !captureOpen && !focusOpen && !coachOpen && !kbdOpen && !notifOpen && !shareOpen && !signInOpen && !goalsOpen && !settingsOpen && !templatesOpen && !weekReviewOpen && (
+        <button
+          className="mob-fab"
+          onClick={() => {
+            const now = new Date()
+            const startMins = Math.floor((now.getHours() * 60 + now.getMinutes()) / 15) * 15
+            const endMins = Math.min(startMins + 60, 23 * 60)
+            const fmt = (m: number) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
+            openBlockModalNew(todayStr(), fmt(startMins), fmt(endMins))
+          }}
+          title="add block"
+        >+</button>
+      )}
     </div>
   )
 }

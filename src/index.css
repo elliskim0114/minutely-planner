@@ -2739,8 +2739,8 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 @media (max-width: 768px) {
   /* Sidebar: fixed drawer */
   #sb{position:fixed;left:0;top:0;bottom:0;z-index:300;transform:translateX(0);transition:transform .3s cubic-bezier(.22,1,.36,1)}
-  #sb.col{transform:translateX(calc(-1 * var(--sb-w) + 56px))}
-  body.sbcol #sb{transform:translateX(calc(-1 * var(--sb-w) + 56px))}
+  #sb.col{transform:translateX(calc(-1 * var(--sb-w)))}
+  body.sbcol #sb{transform:translateX(calc(-1 * var(--sb-w)))}
   /* Overlay behind sidebar on mobile */
   body:not(.sbcol) #sb-overlay{display:block}
   #sb-overlay{display:none;position:fixed;inset:0;z-index:299;background:rgba(0,0,0,.35);backdrop-filter:blur(2px)}
@@ -2750,8 +2750,10 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
   #topbar{padding:0 12px;gap:6px}
   .tsb{display:none}
   .tsb.tsb-ai,.tsb.tsb-capture{display:flex}
-  /* Hide sidebar toggle on mobile (no sidebar) */
-  #sb-main-tog{display:none}
+  /* Show sidebar toggle on mobile */
+  #sb-main-tog{display:flex!important;padding:8px}
+  /* Sidebar above everything on mobile */
+  #sb{z-index:400}
   /* Hide undo/redo on mobile */
   .tnb-ur{display:none}
   /* Star buttons: icon-only on mobile */
@@ -2799,6 +2801,33 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
   /* Give content breathing room from nav */
   #main{padding-bottom:68px!important}
 }
+
+/* ── Mobile FAB ── */
+.mob-fab{display:none}
+@media(max-width:768px){
+  .mob-fab{
+    display:flex;align-items:center;justify-content:center;
+    position:fixed;right:20px;bottom:calc(72px + env(safe-area-inset-bottom,0px));
+    z-index:290;width:52px;height:52px;border-radius:50%;
+    background:var(--acc);border:none;color:#fff;font-size:28px;font-weight:300;
+    cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.35);
+    transition:transform .15s var(--spring),box-shadow .15s;line-height:1
+  }
+  .mob-fab:hover{transform:scale(1.08);box-shadow:0 6px 24px rgba(0,0,0,.4)}
+  /* safe area insets for bottom nav */
+  .mob-nav{padding-bottom:env(safe-area-inset-bottom,0px);height:calc(54px + env(safe-area-inset-bottom,0px))}
+  #main{padding-bottom:calc(70px + env(safe-area-inset-bottom,0px))!important}
+  /* Better topbar touch targets */
+  .tnb{min-width:36px;min-height:36px}
+  /* Checkin bubble on mobile */
+  .checkin-bubble{right:12px;left:12px;max-width:100%;bottom:calc(68px + env(safe-area-inset-bottom,0px))}
+}
+
+/* ── Checkin pattern suggestion ── */
+.checkin-pattern{margin-top:10px;padding-top:10px;border-top:1px solid var(--bd)}
+.checkin-pattern-msg{font-family:var(--font-u);font-size:12px;color:var(--ink2);line-height:1.5;margin-bottom:8px}
+.checkin-pattern-msg strong{color:var(--ink)}
+.checkin-pattern-acts{display:flex;gap:6px}
 
 @media (max-width: 480px) {
   .av-kpis{grid-template-columns:1fr 1fr}

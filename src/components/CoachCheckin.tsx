@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useStore } from '../store'
 import { todayStr, toM } from '../utils'
 
@@ -10,7 +11,8 @@ const MESSAGES = [
 ]
 
 export default function CoachCheckin() {
-  const { closeCheckin, openCoachAt, blocks, cfg } = useStore()
+  const { closeCheckin, openCoachAt, blocks, cfg, openBlockModalNew } = useStore()
+  const [suggestionDismissed, setSuggestionDismissed] = useState(false)
 
   const now = new Date()
   const hour = now.getHours()
@@ -31,6 +33,44 @@ export default function CoachCheckin() {
     ? 'day looks light — want help filling it in?'
     : null
 
+  // Pattern-based suggestion: look at blocks from last 30 days (NOT today)
+  const thirtyDaysAgo = new Date(now)
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+  const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().slice(0, 10)
+
+  const historicalBlocks = blocks.filter(b => b.date !== td && b.date >= thirtyDaysAgoStr)
+
+  // Group by name (case-insensitive), find blocks within 45 min of current time
+  const nameCounts: Record<string, { count: number; start: string; end: string; type: string }> = {}
+  for (const b of historicalBlocks) {
+    const bM = toM(b.start)
+    if (Math.abs(bM - nowM) <= 45) {
+      const key = b.name.toLowerCase()
+      if (!nameCounts[key]) {
+        nameCounts[key] = { count: 0, start: b.start, end: b.end, type: b.type }
+      }
+      nameCounts[key].count++
+    }
+  }
+
+  // Find top suggestion (count >= 2)
+  let suggestionBlock: { name: string; start: string; end: string; type: string; count: number } | null = null
+  for (const [key, val] of Object.entries(nameCounts)) {
+    if (val.count >= 2) {
+      if (!suggestionBlock || val.count > suggestionBlock.count) {
+        // Find the original block to get the proper-cased name
+        const orig = historicalBlocks.find(b => b.name.toLowerCase() === key)
+        suggestionBlock = { name: orig?.name ?? key, ...val }
+      }
+    }
+  }
+
+  // Don't suggest if a block with same name is already on today's schedule
+  if (suggestionBlock) {
+    const alreadyToday = todayBlocks.some(b => b.name.toLowerCase() === suggestionBlock!.name.toLowerCase())
+    if (alreadyToday) suggestionBlock = null
+  }
+
   const handleOpenCoach = () => {
     closeCheckin()
     openCoachAt('analyze')
@@ -48,6 +88,26 @@ export default function CoachCheckin() {
         <button className="checkin-btn checkin-btn-primary" onClick={handleOpenCoach}>open coach</button>
         <button className="checkin-btn checkin-btn-secondary" onClick={closeCheckin}>all good 👍</button>
       </div>
+      {suggestionBlock && !suggestionDismissed && (
+        <div className="checkin-pattern">
+          <div className="checkin-pattern-msg">
+            you usually schedule <strong>"{suggestionBlock.name}"</strong> around this time
+          </div>
+          <div className="checkin-pattern-acts">
+            <button
+              className="checkin-btn checkin-btn-primary"
+              onClick={() => {
+                closeCheckin()
+                openBlockModalNew(td, suggestionBlock!.start, suggestionBlock!.end)
+              }}
+            >add it →</button>
+            <button
+              className="checkin-btn checkin-btn-secondary"
+              onClick={() => setSuggestionDismissed(true)}
+            >not today</button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
