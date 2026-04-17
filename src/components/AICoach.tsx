@@ -263,22 +263,26 @@ export default function AICoach({ onClose }: { onClose: () => void }) {
     if (!studyGoal.trim()) return
     setStudyLoading(true); setStudyError(''); setStudyPlan(''); setStudyBlocks([]); setStudyFetched(false)
     try {
+      const today = todayStr()
+      // Only send blocks from today onwards so the AI plans around current/future events
       const ws = weekStart(0)
-      const weekDates = Array.from({ length: 7 }, (_, i) => dateStr(ws, i))
+      const weekDates = Array.from({ length: 7 }, (_, i) => dateStr(ws, i)).filter(d => d >= today)
       const weekBlocks = blocks.filter(b => weekDates.includes(b.date))
       const res = await fetch('/api/breakdown', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           goal: studyGoal, totalHours: parseFloat(studyHours) || undefined,
-          deadline: studyDeadline || undefined, date, dayStart: cfg.ds, dayEnd: cfg.de,
+          deadline: studyDeadline || undefined, date: today, dayStart: cfg.ds, dayEnd: cfg.de,
           existingWeekBlocks: weekBlocks.map(b => ({ date: b.date, start: b.start, end: b.end, name: b.name, type: b.type })),
           apiKey: anthropicKey || undefined,
         }),
       })
       const data = await res.json()
       if (data.error) throw new Error(data.error)
-      setStudyBlocks((data.blocks || []).map((b: any) => ({ ...b, selected: true })))
+      // Safety filter: drop any session the AI placed in the past
+      const sessions = (data.blocks || []).filter((b: any) => !b.date || b.date >= today)
+      setStudyBlocks(sessions.map((b: any) => ({ ...b, selected: true })))
       setStudyPlan(data.plan || '')
       setStudyFetched(true)
     } catch (e) { setStudyError(String(e).replace('Error: ', '')) }

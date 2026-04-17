@@ -423,14 +423,18 @@ export default function MPDView() {
           </div>
         </div>
 
-        {/* Profile switcher row */}
-        <div className="mpd-hero-inner" style={{ paddingTop: 0 }}>
+        {/* Profile switcher */}
+        <div className="mpd-profiles-section">
+          <div className="mpd-profiles-header">
+            <span className="mpd-profiles-label">saved profiles</span>
+          </div>
           <div className="mpd-profiles-row">
             {pdProfiles.map(p => (
               <span
                 key={p.id}
                 className={`mpd-profile-chip${activePdProfileId === p.id ? ' active' : ''}`}
                 onClick={() => handleLoadProfile(p.id)}
+                title={activePdProfileId === p.id ? 'active profile' : `load "${p.name}"`}
               >
                 {p.emoji} {p.name}
                 <button
@@ -461,7 +465,7 @@ export default function MPDView() {
               </span>
             ) : (
               <button className="mpd-profile-add-btn" onClick={() => setProfileSaveOpen(true)}>
-                + save as profile
+                + save current as profile
               </button>
             )}
           </div>
@@ -570,29 +574,35 @@ export default function MPDView() {
           {/* Adherence card */}
           {adherenceData && (
             <div className="mpd-adherence-card">
-              <div className="mpd-adh-ttl">blueprint adherence · last 7 days</div>
-              {adherenceData.days.every(d => d.score === null) ? (
-                <div className="mpd-adh-empty">start applying your blueprint to see adherence scores</div>
-              ) : (
-                <>
-                  <div className="mpd-adh-bars">
-                    {adherenceData.days.map((d, i) => (
-                      <div key={i} className="mpd-adh-col">
-                        <div className="mpd-adh-val">{d.score !== null ? `${d.score}%` : ''}</div>
-                        <div className="mpd-adh-track">
-                          <div
-                            className="mpd-adh-fill"
-                            style={{ height: d.score !== null ? `${d.score}%` : '0%' }}
-                          />
-                        </div>
-                        <div className="mpd-adh-lbl">{d.label}</div>
-                      </div>
-                    ))}
+              <div className="mpd-adh-header">
+                <div>
+                  <div className="mpd-adh-ttl">blueprint adherence</div>
+                  <div className="mpd-adh-sub">last 7 days — how closely you followed your blueprint</div>
+                </div>
+                {adherenceData.avg !== null && (
+                  <div className="mpd-adh-score">
+                    <div className="mpd-adh-score-num">{adherenceData.avg}%</div>
+                    <div className="mpd-adh-score-lbl">avg match</div>
                   </div>
-                  {adherenceData.avg !== null && (
-                    <div className="mpd-adh-avg">avg: <strong>{adherenceData.avg}%</strong></div>
-                  )}
-                </>
+                )}
+              </div>
+              {adherenceData.days.every(d => d.score === null) ? (
+                <div className="mpd-adh-empty">apply your blueprint to a day to start tracking how well you stick to it</div>
+              ) : (
+                <div className="mpd-adh-bars">
+                  {adherenceData.days.map((d, i) => (
+                    <div key={i} className="mpd-adh-col">
+                      <div className="mpd-adh-val">{d.score !== null ? `${d.score}%` : ''}</div>
+                      <div className="mpd-adh-track">
+                        <div
+                          className="mpd-adh-fill"
+                          style={{ height: d.score !== null ? `${Math.max(d.score, 4)}%` : '0%' }}
+                        />
+                      </div>
+                      <div className="mpd-adh-lbl">{d.label}</div>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           )}

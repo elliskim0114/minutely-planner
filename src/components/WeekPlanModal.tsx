@@ -79,18 +79,23 @@ export default function WeekPlanModal() {
       // Group blocks by name
       const grouped: Record<string, {
         starts: number[]; ends: number[]
-        type: Block['type']; customName: string | null
+        typeCounts: Record<string, number>
+        customNameCounts: Record<string, number>
         allDates: Set<string>; dowDates: Set<string>
       }> = {}
 
       historicBlocks.filter(b => !nextWeekDates.has(b.date)).forEach(b => {
         const key = b.name.toLowerCase().trim()
         if (!grouped[key]) grouped[key] = {
-          starts: [], ends: [], type: b.type, customName: b.customName ?? null,
+          starts: [], ends: [],
+          typeCounts: {}, customNameCounts: {},
           allDates: new Set(), dowDates: new Set(),
         }
         grouped[key].starts.push(toM(b.start))
         grouped[key].ends.push(toM(b.end))
+        grouped[key].typeCounts[b.type] = (grouped[key].typeCounts[b.type] || 0) + 1
+        const cn = b.customName ?? ''
+        grouped[key].customNameCounts[cn] = (grouped[key].customNameCounts[cn] || 0) + 1
         grouped[key].allDates.add(b.date)
         if (dowDates.has(b.date)) grouped[key].dowDates.add(b.date)
       })
@@ -108,12 +113,20 @@ export default function WeekPlanModal() {
           const original = historicBlocks
             .filter(b => b.name.toLowerCase().trim() === key)
             .sort((a, b) => b.date.localeCompare(a.date))[0]
+          // Pick most-frequently-used type
+          const type = (Object.entries(g.typeCounts)
+            .sort((a, b) => b[1] - a[1])[0]?.[0] ?? 'free') as Block['type']
+          // Pick most-frequently-used customName (ignore empty/null)
+          const cnEntries = Object.entries(g.customNameCounts)
+            .filter(([k]) => k !== '')
+            .sort((a, b) => b[1] - a[1])
+          const customName = cnEntries.length > 0 ? cnEntries[0][0] : null
           return {
             name: original?.name ?? key,
             start: formatTime(s),
             end: formatTime(e),
-            type: g.type,
-            customName: g.customName,
+            type,
+            customName,
             count: g.allDates.size,
             isDaily: g.allDates.size >= 10,
           }

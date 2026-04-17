@@ -99,11 +99,14 @@ export default function Sidebar() {
         <div id="sb-logo">
           <span className="logo-txt">minutely</span>
         </div>
+        {/* Desktop chevron */}
         <button id="sb-tog" className="sbibtn" onClick={toggleSidebar} title="toggle sidebar">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M9 2L4 7l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
+        {/* Mobile close ×  */}
+        <button className="sb-mob-close" onClick={toggleSidebar} title="close menu">×</button>
       </div>
 
       {/* User badge — click to open settings */}

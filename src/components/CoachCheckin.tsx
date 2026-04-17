@@ -42,26 +42,35 @@ export default function CoachCheckin() {
   const historicalBlocks = blocks.filter(b => b.date !== td && b.date >= thirtyDaysAgoStr)
 
   // Group by name (case-insensitive), find blocks within 45 min of current time
-  const nameCounts: Record<string, { count: number; start: string; end: string; type: string }> = {}
+  const nameCounts: Record<string, {
+    count: number; start: string; end: string; type: string
+    customNameCounts: Record<string, number>
+  }> = {}
   for (const b of historicalBlocks) {
     const bM = toM(b.start)
     if (Math.abs(bM - nowM) <= 45) {
       const key = b.name.toLowerCase()
       if (!nameCounts[key]) {
-        nameCounts[key] = { count: 0, start: b.start, end: b.end, type: b.type }
+        nameCounts[key] = { count: 0, start: b.start, end: b.end, type: b.type, customNameCounts: {} }
       }
       nameCounts[key].count++
+      const cn = b.customName ?? ''
+      nameCounts[key].customNameCounts[cn] = (nameCounts[key].customNameCounts[cn] || 0) + 1
     }
   }
 
   // Find top suggestion (count >= 2)
-  let suggestionBlock: { name: string; start: string; end: string; type: string; count: number } | null = null
+  let suggestionBlock: { name: string; start: string; end: string; type: string; count: number; customName: string | null } | null = null
   for (const [key, val] of Object.entries(nameCounts)) {
     if (val.count >= 2) {
       if (!suggestionBlock || val.count > suggestionBlock.count) {
-        // Find the original block to get the proper-cased name
         const orig = historicalBlocks.find(b => b.name.toLowerCase() === key)
-        suggestionBlock = { name: orig?.name ?? key, ...val }
+        // Pick most-frequently-used customName (ignore empty/null)
+        const cnEntries = Object.entries(val.customNameCounts)
+          .filter(([k]) => k !== '')
+          .sort((a, b) => b[1] - a[1])
+        const customName = cnEntries.length > 0 ? cnEntries[0][0] : null
+        suggestionBlock = { name: orig?.name ?? key, ...val, customName }
       }
     }
   }
@@ -104,7 +113,7 @@ export default function CoachCheckin() {
                   end: suggestionBlock!.end,
                   type: suggestionBlock!.type as Block['type'],
                   date: td,
-                  customName: null,
+                  customName: suggestionBlock!.customName,
                 }])
                 useStore.getState().showToast(`"${suggestionBlock!.name}" added to today`)
                 closeCheckin()
