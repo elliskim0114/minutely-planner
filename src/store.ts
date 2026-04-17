@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { supabase } from './supabase'
 import type {
-  Mode, View, Block, PDBlock, Config, Intentions,
+  Mode, View, Block, PDBlock, PDProfile, Config, Intentions,
   BlockModalState, CtxMenuState, NotifSettings, QueueItem, BlockTemplate, WeeklyTemplate, Goal, UserProfile,
 } from './types'
 import { todayStr, weekStart, dateStr, toM, toT, snap, setAppTz } from './utils'
@@ -134,6 +134,9 @@ interface PersistedState {
   profileSummary: string | null
   focusStreak: number
   focusStreakDate: string | null
+  pdProfiles: PDProfile[]
+  activePdProfileId: number | null
+  pdpid: number  // next profile id counter
 }
 
 const defaultBlockModal: BlockModalState = {
@@ -371,6 +374,12 @@ type Actions = {
   openWeekPlan: () => void
   closeWeekPlan: () => void
   bulkAddBlocks: (items: Array<{ name: string; start: string; end: string; type: Block['type']; date: string; customName?: string | null }>) => void
+  // PD Profiles
+  savePdProfile: (id: number | null, name: string, emoji: string) => void
+  loadPdProfile: (id: number) => void
+  deletePdProfile: (id: number) => void
+  // Smart apply
+  applyBlocksToDate: (date: string, newBlocks: Array<{ name: string; type: Block['type']; start: string; end: string; cc?: any; customName?: string | null }>) => void
 }
 
 type Store = PersistedState & UIState & Actions
@@ -425,6 +434,9 @@ export const useStore = create<Store>()(
       profileSummary: null,
       focusStreak: 0,
       focusStreakDate: null,
+      pdProfiles: [],
+      activePdProfileId: null,
+      pdpid: 1,
 
       // ── UI defaults (not persisted) ──
       toast: '',
@@ -1071,6 +1083,57 @@ export const useStore = create<Store>()(
         set({ blocks: [...blocks, ...newBlocks], nid: id })
       },
 
+      savePdProfile: (id, name, emoji) => {
+        const { perfectDay, pdProfiles, pdpid } = get()
+        if (id !== null) {
+          // Update existing profile's blocks
+          set(s => ({
+            pdProfiles: s.pdProfiles.map(p => p.id === id ? { ...p, name, emoji, blocks: [...perfectDay] } : p),
+            activePdProfileId: id,
+          }))
+        } else {
+          // Create new profile
+          const newId = pdpid
+          set(s => ({
+            pdProfiles: [...s.pdProfiles, { id: newId, name, emoji, blocks: [...perfectDay] }],
+            activePdProfileId: newId,
+            pdpid: s.pdpid + 1,
+          }))
+        }
+      },
+      loadPdProfile: (id) => {
+        const { pdProfiles } = get()
+        const profile = pdProfiles.find(p => p.id === id)
+        if (!profile) return
+        set({ perfectDay: [...profile.blocks], activePdProfileId: id })
+      },
+      deletePdProfile: (id) => {
+        set(s => ({
+          pdProfiles: s.pdProfiles.filter(p => p.id !== id),
+          activePdProfileId: s.activePdProfileId === id ? null : s.activePdProfileId,
+        }))
+      },
+      applyBlocksToDate: (date, newBlocks) => {
+        const { blocks, nid } = get()
+        const filtered = blocks.filter(b => b.date !== date)
+        let id = nid
+        const added: Block[] = newBlocks.map(b => ({
+          id: id++,
+          date,
+          name: b.name,
+          type: b.type,
+          start: b.start,
+          end: b.end,
+          cc: b.cc || null,
+          customName: b.customName ?? null,
+          repeat: 'none' as const,
+          goalId: null,
+          note: null,
+        }))
+        set({ blocks: [...filtered, ...added], nid: id })
+        get().showToast(`smart schedule applied to ${date === todayStr() ? 'today' : date}`)
+      },
+
       addGoal: (goal) => set(s => ({ goals: [...s.goals, { ...goal, id: s.gid }], gid: s.gid + 1 })),
       updateGoal: (id, patch) => set(s => ({ goals: s.goals.map(g => g.id === id ? { ...g, ...patch } : g) })),
       deleteGoal: (id) => set(s => ({ goals: s.goals.filter(g => g.id !== id) })),
@@ -1394,6 +1457,9 @@ export const useStore = create<Store>()(
         userProfile: state.userProfile,
         focusStreak: state.focusStreak,
         focusStreakDate: state.focusStreakDate,
+        pdProfiles: state.pdProfiles,
+        activePdProfileId: state.activePdProfileId,
+        pdpid: state.pdpid,
       }),
       onRehydrateStorage: () => (state) => {
         // Re-apply timezone on page load from persisted cfg

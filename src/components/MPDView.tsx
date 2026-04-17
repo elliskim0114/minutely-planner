@@ -27,6 +27,8 @@ export default function MPDView() {
     openBlockModalForPD, openBlockModalEditPD, setPerfectDay,
     openShare, showToast, pendingAIPrompt, setPendingAIPrompt,
     userProfile, goals, intentions, blocks, saveAsTemplate, templates,
+    pdProfiles, activePdProfileId, savePdProfile, loadPdProfile, deletePdProfile,
+    applyBlocksToDate, anthropicKey,
   } = useStore()
 
   const handleApplyToday = () => {
@@ -42,6 +44,14 @@ export default function MPDView() {
   const [aiLoading, setAiLoading] = useState(false)
   const [loadTmplOpen, setLoadTmplOpen] = useState(false)
   const aiInputRef = useRef<HTMLTextAreaElement>(null)
+
+  // Profile switcher state
+  const [profileSaveOpen, setProfileSaveOpen] = useState(false)
+  const [profileName, setProfileName] = useState('')
+  const [profileEmoji, setProfileEmoji] = useState('✨')
+
+  // Smart apply state
+  const [smartApplyLoading, setSmartApplyLoading] = useState(false)
 
   const loadTemplate = (id: number) => {
     const tmpl = templates.find(t => t.id === id)
@@ -156,7 +166,7 @@ export default function MPDView() {
       const res = await fetch('/api/perfect-day', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, dayStart: cfg.ds, dayEnd: cfg.de }),
+        body: JSON.stringify({ prompt, dayStart: cfg.ds, dayEnd: cfg.de, apiKey: anthropicKey || undefined }),
       })
       const raw = await res.text()
       let data: any
@@ -175,6 +185,46 @@ export default function MPDView() {
       else showToast('could not generate — try a different description')
     } finally {
       setAiLoading(false)
+    }
+  }
+
+  const handleSmartApply = async () => {
+    if (perfectDay.length === 0) { showToast('add blocks to your blueprint first'); return }
+    const today = todayStr()
+    const todayBlocks = blocks.filter(b => b.date === today)
+    if (todayBlocks.length > 0) {
+      if (!window.confirm("Today already has blocks — smart apply will replace them with an adapted schedule. Continue?")) return
+    }
+    setSmartApplyLoading(true)
+    try {
+      const todayDate = new Date()
+      const dayOfWeek = DAYS[todayDate.getDay()]
+      const energy = intentions[today]?.e ?? null
+      const res = await fetch('/api/adapt-day', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          blueprint: perfectDay,
+          existingBlocks: todayBlocks.map(b => ({ start: b.start, end: b.end, name: b.name })),
+          energy,
+          dayOfWeek,
+          dayStart: cfg.ds,
+          dayEnd: cfg.de,
+          apiKey: anthropicKey || undefined,
+        }),
+      })
+      const raw = await res.text()
+      let data: any
+      try { data = JSON.parse(raw) } catch { throw new Error('AI service unavailable') }
+      if (!res.ok) throw new Error(data?.error || 'HTTP ' + res.status)
+      if (!Array.isArray(data.blocks) || data.blocks.length === 0) throw new Error('empty schedule')
+      applyBlocksToDate(today, data.blocks)
+    } catch (err) {
+      const msg = String(err)
+      if (msg.includes('429')) showToast('rate limited — wait a moment')
+      else showToast('smart apply failed — try again')
+    } finally {
+      setSmartApplyLoading(false)
     }
   }
 
@@ -216,6 +266,70 @@ export default function MPDView() {
 
     return { personalizedPrompt: parts.length > 0 ? parts.join('. ') + '.' : '', recentEnergy: avgEnergy }
   }, [userProfile, goals, intentions, blocks])
+
+  // ── Feature 3: Adherence Score ──────────────────────────────────────────────
+  const adherenceData = useMemo(() => {
+    if (perfectDay.length === 0) return null
+    const today = new Date()
+    const days: Array<{ label: string; score: number | null }> = []
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today)
+      d.setDate(d.getDate() - i)
+      const dateKey = d.toISOString().slice(0, 10)
+      const dayLabel = DAYS[d.getDay()].slice(0, 3)
+      const dayBlocks = blocks.filter(b => b.date === dateKey)
+      if (dayBlocks.length === 0) {
+        days.push({ label: dayLabel, score: null })
+        continue
+      }
+      let matched = 0
+      for (const pb of perfectDay) {
+        const pbStartM = toM(pb.start)
+        const pbNameLower = pb.name.toLowerCase()
+        const found = dayBlocks.some(db => {
+          const nameLower = db.name.toLowerCase()
+          const nameMatch = nameLower.includes(pbNameLower) || pbNameLower.includes(nameLower)
+          const timeMatch = Math.abs(toM(db.start) - pbStartM) <= 60
+          return nameMatch && timeMatch
+        })
+        if (found) matched++
+      }
+      days.push({ label: dayLabel, score: Math.round((matched / perfectDay.length) * 100) })
+    }
+    const scored = days.filter(d => d.score !== null)
+    const avg = scored.length > 0 ? Math.round(scored.reduce((s, d) => s + (d.score ?? 0), 0) / scored.length) : null
+    return { days, avg }
+  }, [perfectDay, blocks])
+
+  // ── Profile save handler ────────────────────────────────────────────────────
+  const handleSaveProfile = () => {
+    if (!profileName.trim()) return
+    savePdProfile(null, profileName.trim(), profileEmoji)
+    setProfileSaveOpen(false)
+    setProfileName('')
+    setProfileEmoji('✨')
+    showToast(`profile "${profileName.trim()}" saved`)
+  }
+
+  const handleLoadProfile = (id: number) => {
+    const profile = pdProfiles.find(p => p.id === id)
+    if (!profile) return
+    if (activePdProfileId !== id && perfectDay.length > 0) {
+      if (!window.confirm(`Load "${profile.name}" profile? Your current blueprint will be replaced.`)) return
+    }
+    loadPdProfile(id)
+    showToast(`loaded "${profile.name}"`)
+  }
+
+  const handleDeleteProfile = (id: number, name: string) => {
+    if (!window.confirm(`Delete "${name}" profile?`)) return
+    deletePdProfile(id)
+    showToast(`"${name}" deleted`)
+  }
+
+  // suppress unused warning
+  void openShare
+  void MONTHS
 
   return (
     <div id="mpd-view" className={view === 'mpd' ? 'on' : ''}>
@@ -295,6 +409,61 @@ export default function MPDView() {
                 </div>
               )}
             </div>
+            <button
+              className="mpd-smart-apply"
+              disabled={smartApplyLoading}
+              onClick={handleSmartApply}
+              title="AI adapts blueprint around today's existing events and energy"
+            >
+              {smartApplyLoading
+                ? <><div className="ald" /><span>adapting…</span></>
+                : <><span>✦</span><span>smart apply</span></>
+              }
+            </button>
+          </div>
+        </div>
+
+        {/* Profile switcher row */}
+        <div className="mpd-hero-inner" style={{ paddingTop: 0 }}>
+          <div className="mpd-profiles-row">
+            {pdProfiles.map(p => (
+              <span
+                key={p.id}
+                className={`mpd-profile-chip${activePdProfileId === p.id ? ' active' : ''}`}
+                onClick={() => handleLoadProfile(p.id)}
+              >
+                {p.emoji} {p.name}
+                <button
+                  className="mpd-profile-chip-del"
+                  onClick={e => { e.stopPropagation(); handleDeleteProfile(p.id, p.name) }}
+                  title="delete profile"
+                >×</button>
+              </span>
+            ))}
+            {profileSaveOpen ? (
+              <span className="mpd-profile-save-form">
+                <input
+                  className="mpd-profile-emoji-inp"
+                  value={profileEmoji}
+                  onChange={e => setProfileEmoji(e.target.value)}
+                  maxLength={2}
+                />
+                <input
+                  className="mpd-profile-name-inp"
+                  placeholder="profile name…"
+                  value={profileName}
+                  onChange={e => setProfileName(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') handleSaveProfile(); if (e.key === 'Escape') setProfileSaveOpen(false) }}
+                  autoFocus
+                />
+                <button className="mpd-profile-save-btn" onClick={handleSaveProfile}>save</button>
+                <button className="mpd-profile-chip-del" style={{ fontSize: 16 }} onClick={() => setProfileSaveOpen(false)}>×</button>
+              </span>
+            ) : (
+              <button className="mpd-profile-add-btn" onClick={() => setProfileSaveOpen(true)}>
+                + save as profile
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -331,7 +500,7 @@ export default function MPDView() {
                     return (
                       <div
                         key={idx}
-                        className={`mpd-chip ${blkClass(b)}${dragPDIdx === idx ? ' dragging' : ''}${resizingIdx === idx ? ' resizing' : ''}`}
+                        className={`mpd-chip ${blkClass(b)}${dragPDIdx === idx ? ' dragging' : ''}${resizingIdx === idx ? ' resizing' : ''}${b.anchor ? ' anchored' : ''}`}
                         style={customStyle}
                         draggable
                         onDragStart={e => { e.stopPropagation(); setDragPDIdx(idx) }}
@@ -339,6 +508,16 @@ export default function MPDView() {
                         onClick={e => { e.stopPropagation(); if (dragPDIdx === null && resizingIdx === null) openBlockModalEditPD(idx) }}
                       >
                         <span className="mpd-drag">⠿</span>
+                        <span
+                          className={`mpd-anchor${b.anchor ? ' on' : ''}`}
+                          title={b.anchor ? 'anchored — click to unlock' : 'click to anchor this block'}
+                          onClick={e => {
+                            e.stopPropagation()
+                            const pd = [...perfectDay]
+                            pd[idx] = { ...pd[idx], anchor: !b.anchor }
+                            setPerfectDay(pd)
+                          }}
+                        >🔒</span>
                         {b.name}
                         <span className="mpd-ct">{fmt(b.start, cfg.tf)}–{fmt(b.end, cfg.tf)}</span>
                         <span
@@ -369,6 +548,7 @@ export default function MPDView() {
                         >↕</span>
                       </div>
                     )
+                    void relIdx
                   })}
                   <div
                     className="mpd-add"
@@ -387,6 +567,36 @@ export default function MPDView() {
 
         {/* Right panel */}
         <div id="mpd-r">
+          {/* Adherence card */}
+          {adherenceData && (
+            <div className="mpd-adherence-card">
+              <div className="mpd-adh-ttl">blueprint adherence · last 7 days</div>
+              {adherenceData.days.every(d => d.score === null) ? (
+                <div className="mpd-adh-empty">start applying your blueprint to see adherence scores</div>
+              ) : (
+                <>
+                  <div className="mpd-adh-bars">
+                    {adherenceData.days.map((d, i) => (
+                      <div key={i} className="mpd-adh-col">
+                        <div className="mpd-adh-val">{d.score !== null ? `${d.score}%` : ''}</div>
+                        <div className="mpd-adh-track">
+                          <div
+                            className="mpd-adh-fill"
+                            style={{ height: d.score !== null ? `${d.score}%` : '0%' }}
+                          />
+                        </div>
+                        <div className="mpd-adh-lbl">{d.label}</div>
+                      </div>
+                    ))}
+                  </div>
+                  {adherenceData.avg !== null && (
+                    <div className="mpd-adh-avg">avg: <strong>{adherenceData.avg}%</strong></div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
           {/* AI input */}
           <div id="mpd-ai">
             <div className="ai-ttl-row">

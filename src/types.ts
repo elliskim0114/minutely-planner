@@ -43,6 +43,14 @@ export interface PDBlock {
   end: string
   cc?: CustomColor | null
   customName?: string | null
+  anchor?: boolean
+}
+
+export interface PDProfile {
+  id: number
+  name: string
+  emoji: string
+  blocks: PDBlock[]
 }
 
 export interface Intentions {

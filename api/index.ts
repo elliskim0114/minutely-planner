@@ -374,6 +374,31 @@ async function handleSendDailySummary(_body: any, res: ServerResponse) {
   json(res, 200, { sent, failed })
 }
 
+async function handleAdaptDay(body: any, res: ServerResponse) {
+  const { blueprint, existingBlocks, energy, dayOfWeek, dayStart, dayEnd, apiKey } = body
+  const bpSummary = blueprint.map((b: any) => `${b.name} (${b.type}, ${b.start}-${b.end}${b.anchor ? ', ANCHOR—keep fixed' : ''})`).join('\n')
+  const existingSummary = existingBlocks?.length
+    ? existingBlocks.map((b: any) => `${b.start}-${b.end}: ${b.name}`).join('\n')
+    : 'none'
+  const energyDesc = energy !== null && energy !== undefined
+    ? (['', 'low energy', 'moderate energy', 'high energy'][Math.min(3, Math.max(1, Math.round(energy)))] ?? null)
+    : null
+
+  const system = `You are a smart scheduling assistant. Adapt the user's perfect day blueprint to fit around their existing events and energy level.\n\nRules:\n- Preserve ANCHOR blocks at their exact times\n- Work around existing blocks (no overlaps)\n- Keep block durations the same\n- Adjust start times by up to 90 minutes to avoid conflicts\n- Match energy: schedule focus/study blocks when energy is highest\n- Day runs ${dayStart} to ${dayEnd}\n\nReturn ONLY a JSON array of blocks: [{name, type, start, end, cc?, customName?}]`
+
+  const userMsg = `Today is ${dayOfWeek}.\nEnergy level: ${energyDesc ?? 'unknown'}.\n\nBlueprint:\n${bpSummary}\n\nExisting blocks to work around:\n${existingSummary}`
+
+  const client = getClient(apiKey)
+  const msg = await client.messages.create({
+    model: 'claude-haiku-4-5-20251001', max_tokens: 800, system,
+    messages: [{ role: 'user', content: userMsg }]
+  })
+  const text = (msg.content[0] as any).text ?? ''
+  const match = text.match(/\[[\s\S]*\]/)
+  if (!match) throw new Error('no schedule in response')
+  json(res, 200, { blocks: JSON.parse(match[0]) })
+}
+
 // ── Main handler ─────────────────────────────────────────────────────────────
 
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
@@ -414,6 +439,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     if (path === '/api/subscribe-push') return await handleSubscribePush(body, res)
     if (path === '/api/unsubscribe-push') return await handleUnsubscribePush(body, res)
     if (path === '/api/send-daily-summary') return await handleSendDailySummary(body, res)
+    if (path === '/api/adapt-day') return await handleAdaptDay(body, res)
     return json(res, 404, { error: 'not found' })
   } catch (err: any) {
     return json(res, 500, { error: String(err) })
