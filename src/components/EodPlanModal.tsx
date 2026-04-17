@@ -20,6 +20,7 @@ interface Suggestion {
   type: Block['type']
   customName: string | null
   count: number
+  isDaily: boolean
   dayLabels: string[]
 }
 
@@ -33,57 +34,72 @@ export default function EodPlanModal() {
     return { date: getLocalDateStr(d), dow: d.getDay(), label: DAY_NAMES[d.getDay()] }
   }, [])
 
-  // Pattern detection: look at last 28 days (4 weeks), same day-of-week as tomorrow
+  // Pattern detection: same day-of-week habits AND daily habits
   const suggestions = useMemo<Suggestion[]>(() => {
     const now = new Date()
     const since = new Date(now); since.setDate(since.getDate() - 28)
     const sinceStr = getLocalDateStr(since)
 
-    // Collect all dates in last 28 days matching tomorrow's day-of-week
-    const matchingDates: string[] = []
+    // All dates in last 28 days (excluding tomorrow)
+    const allPastDates: string[] = []
     for (let i = 1; i <= 28; i++) {
       const d = new Date(now); d.setDate(d.getDate() - i)
-      if (d.getDay() === tomorrow.dow) matchingDates.push(getLocalDateStr(d))
+      allPastDates.push(getLocalDateStr(d))
     }
+    // Same-DOW dates in last 28 days
+    const dowDates = new Set(allPastDates.filter(d => new Date(d + 'T12:00').getDay() === tomorrow.dow))
 
-    if (matchingDates.length === 0) return []
+    // All recent blocks (not from tomorrow)
+    const historicBlocks = blocks.filter(b => b.date >= sinceStr && b.date !== tomorrow.date)
 
-    // Get blocks on those dates
-    const historicBlocks = blocks.filter(b => b.date >= sinceStr && matchingDates.includes(b.date))
+    // Group by name: track all-day occurrences and same-DOW occurrences separately
+    const grouped: Record<string, {
+      starts: number[]; ends: number[]
+      type: Block['type']; customName: string | null
+      allDates: Set<string>; dowDates: Set<string>
+    }> = {}
 
-    // Group by name (case-insensitive), average start/end time
-    const grouped: Record<string, { starts: number[]; ends: number[]; type: Block['type']; customName: string | null; dates: Set<string> }> = {}
     historicBlocks.forEach(b => {
       const key = b.name.toLowerCase().trim()
-      if (!grouped[key]) grouped[key] = { starts: [], ends: [], type: b.type, customName: b.customName ?? null, dates: new Set() }
+      if (!grouped[key]) grouped[key] = {
+        starts: [], ends: [], type: b.type, customName: b.customName ?? null,
+        allDates: new Set(), dowDates: new Set(),
+      }
       grouped[key].starts.push(toM(b.start))
       grouped[key].ends.push(toM(b.end))
-      grouped[key].dates.add(b.date)
+      grouped[key].allDates.add(b.date)
+      if (dowDates.has(b.date)) grouped[key].dowDates.add(b.date)
     })
 
-    // Already on tomorrow's schedule
     const tomorrowNames = new Set(
       blocks.filter(b => b.date === tomorrow.date).map(b => b.name.toLowerCase().trim())
     )
 
     return Object.entries(grouped)
-      .filter(([key, g]) => g.dates.size >= 2 && !tomorrowNames.has(key))
+      .filter(([key, g]) => {
+        if (tomorrowNames.has(key)) return false
+        // Include: ≥2 occurrences on same DOW (weekly habit)
+        //       OR ≥10 occurrences across all days in 28d window (daily habit, ~35%+ of days)
+        return g.dowDates.size >= 2 || g.allDates.size >= 10
+      })
       .map(([key, g]) => {
         const avgStart = Math.round(g.starts.reduce((a, b) => a + b, 0) / g.starts.length)
         const avgEnd = Math.round(g.ends.reduce((a, b) => a + b, 0) / g.ends.length)
         const roundStart = Math.round(avgStart / 15) * 15
         const roundEnd = Math.round(avgEnd / 15) * 15
-        // Find the actual block name (preserve casing from most recent occurrence)
-        const original = historicBlocks.filter(b => b.name.toLowerCase().trim() === key)
+        const original = historicBlocks
+          .filter(b => b.name.toLowerCase().trim() === key)
           .sort((a, b) => b.date.localeCompare(a.date))[0]
+        const isDaily = g.allDates.size >= 10
         return {
           name: original?.name ?? key,
           start: formatTime(roundStart),
           end: formatTime(Math.max(roundEnd, roundStart + 15)),
           type: g.type,
           customName: g.customName,
-          count: g.dates.size,
-          dayLabels: [...g.dates].sort().slice(-3).map(d => DAY_NAMES[new Date(d + 'T12:00').getDay()]),
+          count: g.allDates.size,
+          isDaily,
+          dayLabels: [...g.dowDates].sort().slice(-3).map(d => DAY_NAMES[new Date(d + 'T12:00').getDay()]),
         }
       })
       .sort((a, b) => b.count - a.count)
@@ -149,7 +165,9 @@ export default function EodPlanModal() {
                     <div className="eod-item-name">{s.name}</div>
                     <div className="eod-item-meta">
                       {s.start}–{s.end}
-                      <span className="eod-item-freq"> · {s.count}× in last 4 weeks</span>
+                      <span className="eod-item-freq">
+                        {s.isDaily ? ' · daily habit' : ` · every ${tomorrow.label}, ${s.count}× recently`}
+                      </span>
                     </div>
                   </div>
                 </label>

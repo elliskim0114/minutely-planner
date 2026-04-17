@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useStore } from '../store'
 import { todayStr, toM } from '../utils'
+import type { Block } from '../types'
 
 const MESSAGES = [
   "hey — how's the day going?",
@@ -11,7 +12,7 @@ const MESSAGES = [
 ]
 
 export default function CoachCheckin() {
-  const { closeCheckin, openCoachAt, blocks, cfg, openBlockModalNew } = useStore()
+  const { closeCheckin, openCoachAt, blocks, cfg, bulkAddBlocks } = useStore()
   const [suggestionDismissed, setSuggestionDismissed] = useState(false)
 
   const now = new Date()
@@ -97,8 +98,16 @@ export default function CoachCheckin() {
             <button
               className="checkin-btn checkin-btn-primary"
               onClick={() => {
+                bulkAddBlocks([{
+                  name: suggestionBlock!.name,
+                  start: suggestionBlock!.start,
+                  end: suggestionBlock!.end,
+                  type: suggestionBlock!.type as Block['type'],
+                  date: td,
+                  customName: null,
+                }])
+                useStore.getState().showToast(`"${suggestionBlock!.name}" added to today`)
                 closeCheckin()
-                openBlockModalNew(td, suggestionBlock!.start, suggestionBlock!.end)
               }}
             >add it →</button>
             <button
