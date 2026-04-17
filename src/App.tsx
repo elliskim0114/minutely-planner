@@ -37,6 +37,7 @@ import CelebrationAnimal from './components/CelebrationAnimal'
 import UnlockCelebration from './components/UnlockCelebration'
 import CoachCheckin from './components/CoachCheckin'
 import EodPlanModal from './components/EodPlanModal'
+import WeekPlanModal from './components/WeekPlanModal'
 
 export default function App() {
   const {
@@ -65,6 +66,7 @@ export default function App() {
     seedRecurring, wOff,
     checkinOpen, openCheckin, closeCheckin,
     eodPlanOpen, openEodPlan, closeEodPlan,
+    weekPlanOpen, openWeekPlan, closeWeekPlan,
     openBlockModalNew,
   } = useStore()
 
@@ -486,6 +488,33 @@ export default function App() {
     return () => clearInterval(iv)
   }, [cfg.de, openEodPlan])
 
+  // End-of-week plan next week prompt — fires on the last day of the user's week, 2 hours before cfg.de
+  const weekPlanFiredRef = useRef<string | null>(null)
+  useEffect(() => {
+    const check = () => {
+      const now = new Date()
+      const m = now.getMinutes()
+      const h = now.getHours()
+      const [deH] = cfg.de.split(':').map(Number)
+      const ws = cfg.ws ?? 0
+      // Last day of week = day before week start
+      const lastDayOfWeek = (ws + 6) % 7
+      if (now.getDay() !== lastDayOfWeek) return
+      // Fire 2 hours before end of day
+      if (h !== deH - 2) return
+      if (m > 2) return
+      // Once per week — key is year+week number
+      const weekKey = `${now.getFullYear()}-w${Math.floor((now.getDate() - 1 + new Date(now.getFullYear(), 0, 1).getDay()) / 7)}`
+      if (weekPlanFiredRef.current === weekKey) return
+      if (useStore.getState().weekPlanOpen) return
+      weekPlanFiredRef.current = weekKey
+      openWeekPlan()
+    }
+    check()
+    const iv = setInterval(check, 60000)
+    return () => clearInterval(iv)
+  }, [cfg.de, cfg.ws, openWeekPlan])
+
   if (authLoading) return null
   if (!onboarded && !session) return <Onboarding />
   if (!onboarded && session && !profile?.onboarding_completed) return <Onboarding />
@@ -551,6 +580,7 @@ export default function App() {
       )}
       {checkinOpen && <CoachCheckin />}
       {eodPlanOpen && <EodPlanModal />}
+      {weekPlanOpen && <WeekPlanModal />}
       <Confetti />
       <GoldRain />
       <MobileNav />

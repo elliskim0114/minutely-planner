@@ -83,6 +83,7 @@ interface UIState {
   greetingType: 'morning' | 'evening' | 'eodcheck'
   checkinOpen: boolean
   eodPlanOpen: boolean
+  weekPlanOpen: boolean
 }
 
 // ── Persisted state ──
@@ -367,6 +368,8 @@ type Actions = {
   closeCheckin: () => void
   openEodPlan: () => void
   closeEodPlan: () => void
+  openWeekPlan: () => void
+  closeWeekPlan: () => void
   bulkAddBlocks: (items: Array<{ name: string; start: string; end: string; type: Block['type']; date: string; customName?: string | null }>) => void
 }
 
@@ -465,6 +468,7 @@ export const useStore = create<Store>()(
       greetingType: 'morning' as const,
       checkinOpen: false,
       eodPlanOpen: false,
+      weekPlanOpen: false,
 
       // ── Actions ──
       finishOnboarding: ({ mode, cfg, userName, userEmail, perfectDay, userProfile }) => {
@@ -1046,6 +1050,8 @@ export const useStore = create<Store>()(
       closeCheckin: () => set({ checkinOpen: false }),
       openEodPlan: () => set({ eodPlanOpen: true }),
       closeEodPlan: () => set({ eodPlanOpen: false }),
+      openWeekPlan: () => set({ weekPlanOpen: true }),
+      closeWeekPlan: () => set({ weekPlanOpen: false }),
       bulkAddBlocks: (items) => {
         const { nid, blocks } = get()
         let id = nid
