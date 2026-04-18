@@ -1,14 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useStore } from '../store'
 import { todayStr, toM, fmt } from '../utils'
+import TypedText from './TypedText'
 
-const FOLLOW_UPS = [
+const QUICK_PROMPTS = [
   "I'm running behind",
   "I need a short break",
-  "what's coming up next?",
+  "I finished early — what now?",
   "I'm feeling overwhelmed",
   "help me refocus",
-  "I finished early — what now?",
 ]
 
 function nowTimeStr() {
@@ -16,20 +16,14 @@ function nowTimeStr() {
   return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
 }
 
-function fmtMins(m: number, tf: '12' | '24') {
-  const h = Math.floor(m / 60)
-  const min = m % 60
-  const t = `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`
-  return fmt(t, tf)
-}
-
 export default function WhatNowModal({ onClose }: { onClose: () => void }) {
   const { blocks, cfg, anthropicKey, userProfile, goals } = useStore()
 
+  const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([])
+  const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const [text, setText] = useState('')
   const [error, setError] = useState('')
-  const [followUpLoading, setFollowUpLoading] = useState(false)
+  const threadEndRef = useRef<HTMLDivElement>(null)
 
   const date = todayStr()
   const nowStr = nowTimeStr()
@@ -41,12 +35,18 @@ export default function WhatNowModal({ onClose }: { onClose: () => void }) {
 
   const currentBlock = todayBlocks.find(b => toM(b.start) <= nowMins && toM(b.end) > nowMins)
   const nextBlock = todayBlocks.find(b => toM(b.start) > nowMins)
-  const prevBlock = [...todayBlocks].reverse().find(b => toM(b.end) <= nowMins)
 
-  const fetchWhatNow = async (extraContext?: string) => {
-    if (loading || followUpLoading) return
-    extraContext ? setFollowUpLoading(true) : setLoading(true)
+  useEffect(() => {
+    threadEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, loading])
+
+  const sendMessage = async (userText: string) => {
+    if (loading || !userText.trim()) return
     setError('')
+    const newMessages = [...messages, { role: 'user' as const, content: userText }]
+    setMessages(newMessages)
+    setInput('')
+    setLoading(true)
 
     try {
       const profileParts: string[] = []
@@ -54,36 +54,36 @@ export default function WhatNowModal({ onClose }: { onClose: () => void }) {
       if (userProfile?.energyPattern) profileParts.push(`Energy: ${userProfile.energyPattern} person`)
       if (goals?.length) profileParts.push(`Goals: ${goals.map(g => g.name).join(', ')}`)
 
-      const res = await fetch('/api/what-now', {
+      const res = await fetch('/api/coach-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          messages: newMessages,
+          schedule: todayBlocks.map(b => ({ name: b.name, start: b.start, end: b.end, type: b.type, completed: b.completed })),
+          date,
           currentTime: nowStr,
-          todayBlocks: todayBlocks.map(b => ({ name: b.name, start: b.start, end: b.end, type: b.type, completed: b.completed })),
-          profileContext: profileParts.length ? profileParts.join(', ') : undefined,
-          extraContext,
+          userProfile: userProfile ? { occupation: userProfile.occupation, energyPattern: userProfile.energyPattern } : undefined,
+          goals: goals?.map(g => ({ name: g.name })),
+          apiKey: anthropicKey || undefined,
         }),
       })
       const raw = await res.text()
       let data: any
-      try { data = JSON.parse(raw) } catch { throw new Error('AI service unavailable — try again shortly') }
+      try { data = JSON.parse(raw) } catch { throw new Error('AI service unavailable') }
       if (data.error) throw new Error(data.error)
-      if (!data.message) throw new Error('no response from AI')
-      setText(data.message)
+      setMessages(prev => [...prev, { role: 'assistant', content: data.message }])
     } catch (e: any) {
       setError(e.message || 'something went wrong')
+      setMessages(prev => prev.slice(0, -1)) // remove the user message if call failed
     } finally {
       setLoading(false)
-      setFollowUpLoading(false)
     }
   }
 
-  useEffect(() => { fetchWhatNow() }, [])
-
-  const handleFollowUp = (prompt: string) => {
-    setText('')
-    fetchWhatNow(prompt)
-  }
+  // Auto-send initial "what now?" on mount
+  useEffect(() => {
+    sendMessage('what should I focus on right now?')
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="wn-overlay" onClick={e => { if (e.target === e.currentTarget) onClose() }}>
@@ -124,34 +124,57 @@ export default function WhatNowModal({ onClose }: { onClose: () => void }) {
           )}
         </div>
 
-        {/* AI response */}
-        <div className="wn-body">
+        {/* Conversation thread */}
+        <div className="wn-thread">
+          {messages.map((msg, i) => (
+            msg.role === 'assistant' ? (
+              <div key={i} className="wn-msg wn-msg-ai">
+                <TypedText text={msg.content} speed={10} delay={0} />
+              </div>
+            ) : i > 0 ? ( // skip showing the initial system message
+              <div key={i} className="wn-msg wn-msg-user">{msg.content}</div>
+            ) : null
+          ))}
           {loading && (
-            <div className="wn-loading">
+            <div className="wn-msg wn-msg-ai wn-loading-msg">
               <div className="wn-dot-row">
                 <div className="wn-dot" /><div className="wn-dot" /><div className="wn-dot" />
               </div>
-              <div className="wn-loading-lbl">reading your day…</div>
             </div>
           )}
           {error && <div className="wn-error">{error}</div>}
-          {text && !loading && (
-            <div className="wn-text">{text}</div>
-          )}
+          <div ref={threadEndRef} />
         </div>
 
-        {/* Follow-up prompts */}
+        {/* Quick prompts */}
         <div className="wn-followups">
-          {FOLLOW_UPS.map(f => (
+          {QUICK_PROMPTS.map(f => (
             <button
               key={f}
               className="wn-followup-btn"
-              onClick={() => handleFollowUp(f)}
-              disabled={loading || followUpLoading}
-            >
-              {followUpLoading ? '…' : f}
-            </button>
+              onClick={() => sendMessage(f)}
+              disabled={loading}
+            >{f}</button>
           ))}
+        </div>
+
+        {/* Free-text input */}
+        <div className="wn-input-row">
+          <input
+            className="wn-inp"
+            placeholder="ask anything…"
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input) } }}
+            disabled={loading}
+          />
+          <button
+            className={`wn-send${loading ? ' loading' : ''}`}
+            onClick={() => sendMessage(input)}
+            disabled={loading || !input.trim()}
+          >
+            {loading ? '…' : '↑'}
+          </button>
         </div>
       </div>
     </div>

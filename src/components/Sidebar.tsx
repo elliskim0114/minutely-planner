@@ -24,6 +24,8 @@ export default function Sidebar() {
 
   const [lateMenuOpen, setLateMenuOpen] = useState(false)
   const [dismissedPatterns, setDismissedPatterns] = useState<Set<string>>(new Set())
+  const [qcInput, setQcInput] = useState('')
+  const [qcLoading, setQcLoading] = useState(false)
 
 
   // Mini calendar
@@ -85,6 +87,51 @@ export default function Sidebar() {
 
   const handleEnergyAI = () => {
     openCoachAt('design')
+  }
+
+  const handleQuickCapture = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const text = qcInput.trim()
+    if (!text || qcLoading) return
+    setQcLoading(true)
+    try {
+      const s = useStore.getState()
+      const res = await fetch('/api/capture', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, today: td, apiKey: s.anthropicKey || undefined }),
+      })
+      if (!res.ok) throw new Error('HTTP ' + res.status)
+      const data = await res.json()
+      if (Array.isArray(data) && data.length > 0) {
+        const timed = data.filter((b: any) => b.start && b.end)
+        if (timed.length > 0) {
+          timed.forEach((b: any) => {
+            addBlock({
+              name: b.name,
+              date: b.date || td,
+              start: b.start,
+              end: b.end,
+              type: b.type || 'routine',
+              cc: null,
+              customName: null,
+            })
+          })
+          s.showToast(`${timed.length} block${timed.length !== 1 ? 's' : ''} added ✓`)
+          setQcInput('')
+        } else {
+          s.showToast('no time found — opening smart capture')
+          s.openCapture()
+          setQcInput('')
+        }
+      } else {
+        s.showToast('nothing parsed — try e.g. "standup 9am 30min"')
+      }
+    } catch {
+      useStore.getState().showToast('capture failed — check server')
+    } finally {
+      setQcLoading(false)
+    }
   }
 
   // Live block
@@ -413,6 +460,21 @@ export default function Sidebar() {
             </div>
           </div>
 
+          {/* Quick NLP capture */}
+          <div className="sb-quick-cap">
+            <form className="sb-qc-form" onSubmit={handleQuickCapture}>
+              <span className="sb-qc-icon">⚡</span>
+              <input
+                className="sb-qc-inp"
+                placeholder="quick add… standup 9am 30min"
+                value={qcInput}
+                onChange={e => setQcInput(e.target.value)}
+                disabled={qcLoading}
+              />
+              {qcLoading && <span className="sb-qc-spin">…</span>}
+            </form>
+          </div>
+
           {/* Nav buttons */}
           <div id="sb-nav">
             <button className={`snb${view === 'week' ? ' on' : ''}`} onClick={() => setView('week')}>
@@ -430,6 +492,17 @@ export default function Sidebar() {
               </svg>
               <span className="snb-t">day</span>
               <span className="snb-k">D</span>
+            </button>
+            <button className={`snb${view === 'month' ? ' on' : ''}`} onClick={() => setView('month')}>
+              <svg viewBox="0 0 15 15" fill="none">
+                <rect x="1" y="2" width="13" height="12" rx="2" stroke="currentColor" strokeWidth="1.3"/>
+                <path d="M1 6h13M5 2V0M10 2V0" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+                <rect x="3" y="8" width="2" height="2" rx=".5" fill="currentColor" opacity=".6"/>
+                <rect x="6.5" y="8" width="2" height="2" rx=".5" fill="currentColor" opacity=".6"/>
+                <rect x="10" y="8" width="2" height="2" rx=".5" fill="currentColor" opacity=".6"/>
+              </svg>
+              <span className="snb-t">month</span>
+              <span className="snb-k">M</span>
             </button>
           </div>
         </>

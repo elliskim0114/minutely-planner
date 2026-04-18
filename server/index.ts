@@ -1114,6 +1114,63 @@ Keep the total response under 160 words. Do not use markdown headers or bullet s
   }
 })
 
+// POST /api/coach-chat
+// Body: { messages, schedule, goals?, energy?, priorities?, date, currentTime, userProfile?, apiKey? }
+// Returns: { message: string }
+app.post('/api/coach-chat', async (req, res) => {
+  const { messages, schedule, goals, energy, priorities, date, currentTime, userProfile, apiKey } = req.body as {
+    messages: Array<{ role: 'user' | 'assistant'; content: string }>
+    schedule: Array<{ name: string; start: string; end: string; type: string; completed?: string | null }>
+    goals?: Array<{ name: string; targetAmount?: number; actualAmount?: number; targetUnit?: string }>
+    energy?: string
+    priorities?: string[]
+    date: string
+    currentTime: string
+    userProfile?: { occupation?: string; energyPattern?: string }
+    apiKey?: string
+  }
+
+  if (!messages?.length) return res.status(400).json({ error: 'messages required' })
+
+  const scheduleLines = (schedule || [])
+    .map(b => `  ${b.start}–${b.end}: ${b.name} (${b.type}${b.completed ? ', ' + b.completed : ''})`)
+    .join('\n')
+
+  const goalsLine = goals?.length
+    ? goals.map(g => g.targetAmount ? `${g.name} (${g.actualAmount ?? '?'}/${g.targetAmount}${g.targetUnit ?? 'h'})` : g.name).join(', ')
+    : ''
+
+  const profileLine = userProfile?.occupation
+    ? `${userProfile.occupation}${userProfile.energyPattern ? `, ${userProfile.energyPattern} person` : ''}`
+    : ''
+
+  const system = `You are an AI coaching assistant built into minutely, a personal day planner. You help users think through their schedule, optimize their day, manage priorities, and stay on track.
+
+Today: ${date}. Current time: ${currentTime}.
+${scheduleLines ? `Schedule:\n${scheduleLines}` : 'No blocks scheduled today.'}
+${energy && energy !== 'not set' ? `Energy: ${energy}` : ''}
+${priorities?.length ? `Priorities: ${priorities.join(', ')}` : ''}
+${goalsLine ? `Goals: ${goalsLine}` : ''}
+${profileLine ? `User: ${profileLine}` : ''}
+
+Be conversational, warm, and specific. Reference actual block names and times when relevant. Keep responses under 180 words unless the user asks for something detailed. Write naturally — no markdown headers or bullet symbols.`
+
+  try {
+    const client = getClient(apiKey)
+    const msg = await client.messages.create({
+      model: 'claude-3-5-haiku-20241022',
+      max_tokens: 500,
+      system,
+      messages: messages as any,
+    })
+    const message = (msg.content[0] as { type: string; text: string }).text?.trim() ?? ''
+    return res.json({ message })
+  } catch (err: any) {
+    console.error('coach-chat error:', err)
+    return res.status(500).json({ error: String(err) })
+  }
+})
+
 // Diagnostic — visits /api/ping to test key + live Anthropic call
 app.get('/api/ping', async (_req, res) => {
   const hasKey = !!process.env.ANTHROPIC_API_KEY

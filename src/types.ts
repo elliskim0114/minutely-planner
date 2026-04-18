@@ -1,5 +1,5 @@
 export type Mode = 'light' | 'dark' | 'night' | 'ember' | 'ocean' | 'forest' | 'aurora' | 'crimson' | 'nebula' | 'gold'
-export type View = 'week' | 'day' | 'mpd' | 'analytics' | 'goals'
+export type View = 'week' | 'day' | 'mpd' | 'analytics' | 'goals' | 'month'
 
 export interface Goal {
   id: number
@@ -114,6 +114,16 @@ export interface QueueItem {
   cc?: CustomColor | null
   customName?: string | null
 }
+
+export interface Habit {
+  id: number
+  name: string        // matches block name case-insensitively
+  kind: 'good' | 'bad'
+  emoji: string
+}
+
+// date → habitId → outcome
+export type HabitOutcome = 'kept' | 'broke'
 
 export interface BlockTemplate {
   id: number

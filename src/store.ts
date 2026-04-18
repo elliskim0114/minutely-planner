@@ -4,6 +4,7 @@ import { supabase } from './supabase'
 import type {
   Mode, View, Block, PDBlock, PDProfile, Config, Intentions,
   BlockModalState, CtxMenuState, NotifSettings, QueueItem, BlockTemplate, WeeklyTemplate, Goal, UserProfile,
+  Habit, HabitOutcome,
 } from './types'
 import { todayStr, weekStart, dateStr, toM, toT, snap, setAppTz } from './utils'
 import { CCOLS } from './constants'
@@ -82,6 +83,7 @@ interface UIState {
   greetingOpen: boolean
   greetingType: 'morning' | 'evening' | 'eodcheck'
   checkinOpen: boolean
+  habitClassifyPending: string | null  // block name awaiting habit classification via coach
   eodPlanOpen: boolean
   weekPlanOpen: boolean
 }
@@ -138,6 +140,9 @@ interface PersistedState {
   activePdProfileId: number | null
   pdpid: number  // next profile id counter
   blueprintVisible: boolean
+  habits: Habit[]
+  hid: number
+  habitLogs: Record<string, Record<number, HabitOutcome>>  // date → habitId → outcome
 }
 
 const defaultBlockModal: BlockModalState = {
@@ -370,6 +375,7 @@ type Actions = {
   closeGreeting: () => void
   openCheckin: () => void
   closeCheckin: () => void
+  setHabitClassifyPending: (name: string | null) => void
   openEodPlan: () => void
   closeEodPlan: () => void
   openWeekPlan: () => void
@@ -378,6 +384,10 @@ type Actions = {
   // Blueprint overlay
   toggleBlueprintView: () => void
   newDayPreset: () => void
+  // Habits
+  addHabit: (name: string, kind: 'good' | 'bad', emoji: string) => void
+  removeHabit: (id: number) => void
+  logHabit: (date: string, habitId: number, outcome: HabitOutcome) => void
   // PD Profiles
   savePdProfile: (id: number | null, name: string, emoji: string) => void
   loadPdProfile: (id: number) => void
@@ -442,6 +452,9 @@ export const useStore = create<Store>()(
       activePdProfileId: null,
       pdpid: 1,
       blueprintVisible: true,
+      habits: [],
+      hid: 1,
+      habitLogs: {},
 
       // ── UI defaults (not persisted) ──
       toast: '',
@@ -484,6 +497,7 @@ export const useStore = create<Store>()(
       greetingOpen: false,
       greetingType: 'morning' as const,
       checkinOpen: false,
+      habitClassifyPending: null,
       eodPlanOpen: false,
       weekPlanOpen: false,
 
@@ -738,10 +752,13 @@ export const useStore = create<Store>()(
             }
           }
 
+          // After adding block: if name not yet tracked as a habit, trigger classify popup
+          const alreadyHabit = get().habits.some(h => h.name.toLowerCase() === name.toLowerCase())
           set({
             blocks: [...blocks, ...newBlocks],
             nid: nextNid,
             confettiKey: get().confettiKey + 1,
+            ...(alreadyHabit ? {} : { habitClassifyPending: name, checkinOpen: true }),
           })
         } else if (blockModal.block) {
           set({
@@ -1064,7 +1081,8 @@ export const useStore = create<Store>()(
       showGreeting: (type) => set({ greetingOpen: true, greetingType: type }),
       closeGreeting: () => set({ greetingOpen: false }),
       openCheckin: () => set({ checkinOpen: true }),
-      closeCheckin: () => set({ checkinOpen: false }),
+      closeCheckin: () => set({ checkinOpen: false, habitClassifyPending: null }),
+      setHabitClassifyPending: (name) => set({ habitClassifyPending: name }),
       openEodPlan: () => set({ eodPlanOpen: true }),
       closeEodPlan: () => set({ eodPlanOpen: false }),
       openWeekPlan: () => set({ weekPlanOpen: true }),
@@ -1090,6 +1108,22 @@ export const useStore = create<Store>()(
 
       toggleBlueprintView: () => set(s => ({ blueprintVisible: !s.blueprintVisible })),
       newDayPreset: () => set({ perfectDay: [], activePdProfileId: null }),
+
+      addHabit: (name, kind, emoji) => set(s => {
+        // Update existing habit with same name if present, else create new
+        const existing = s.habits.find(h => h.name.toLowerCase() === name.toLowerCase())
+        if (existing) {
+          return { habits: s.habits.map(h => h.id === existing.id ? { ...h, kind, emoji } : h) }
+        }
+        return { habits: [...s.habits, { id: s.hid, name, kind, emoji }], hid: s.hid + 1 }
+      }),
+      removeHabit: (id) => set(s => ({ habits: s.habits.filter(h => h.id !== id) })),
+      logHabit: (date, habitId, outcome) => set(s => ({
+        habitLogs: {
+          ...s.habitLogs,
+          [date]: { ...(s.habitLogs[date] || {}), [habitId]: outcome },
+        },
+      })),
 
       savePdProfile: (id, name, emoji) => {
         const { perfectDay, pdProfiles, pdpid } = get()
@@ -1469,6 +1503,9 @@ export const useStore = create<Store>()(
         activePdProfileId: state.activePdProfileId,
         pdpid: state.pdpid,
         blueprintVisible: state.blueprintVisible,
+        habits: state.habits,
+        hid: state.hid,
+        habitLogs: state.habitLogs,
       }),
       onRehydrateStorage: () => (state) => {
         // Re-apply timezone on page load from persisted cfg

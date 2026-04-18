@@ -38,6 +38,7 @@ import UnlockCelebration from './components/UnlockCelebration'
 import CoachCheckin from './components/CoachCheckin'
 import EodPlanModal from './components/EodPlanModal'
 import WeekPlanModal from './components/WeekPlanModal'
+import MonthView from './components/MonthView'
 
 export default function App() {
   const {
@@ -210,6 +211,7 @@ export default function App() {
       else if (k === 'd') setView('day')
       else if (k === 'p') setView('mpd')
       else if (k === 'a') setView('analytics')
+      else if (k === 'm') setView('month')
       else if (k === 't') { goToday(); setView('day') }
       else if (k === 'n') setQuickAddOpen(true)
       else if (k === 'i') openCapture()
@@ -531,6 +533,7 @@ export default function App() {
         <MPDView />
         <AnalyticsView />
         <GoalsView />
+        <MonthView />
       </div>
 
       {blockModal.open && <BlockModal />}

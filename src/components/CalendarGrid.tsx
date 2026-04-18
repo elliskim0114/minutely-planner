@@ -363,6 +363,9 @@ export default function CalendarGrid({ scrollId, numDays, getDate }: Props) {
               {isToday && nowSlot !== null && nowSlot >= startM && nowSlot < endM && (
                 <div className="nss" style={{ top: m2y(nowSlot, cfg.ds), height: SH }} />
               )}
+              {!isPast && blocks.filter(b => b.date === date).length === 0 && (
+                <div className="dc-empty-hint">click or drag to add a block</div>
+              )}
             </div>
           )
         })}
@@ -427,7 +430,12 @@ export default function CalendarGrid({ scrollId, numDays, getDate }: Props) {
                   <div className="bt">{fmt(b.start, cfg.tf)} – {fmt(b.end, cfg.tf)}</div>
                 )}
                 {blockMoods[b.id] && <span className="blk-mood">{blockMoods[b.id]}</span>}
-                {b.note && !isCompact && <span className="blk-note-dot" title={b.note}>·</span>}
+                {b.note && !isCompact && (
+                  <span className="blk-note-dot">
+                    ·
+                    <span className="blk-note-tip">{b.note}</span>
+                  </span>
+                )}
                 {b.timerStart && !isCompact && (
                   <div className="bt blk-timer">
                     {fmtElapsed(Math.floor((Date.now() - b.timerStart) / 1000) + (b.totalTracked || 0))}

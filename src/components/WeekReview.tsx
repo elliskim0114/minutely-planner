@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useStore } from '../store'
 import { todayStr, toM, weekStart, dateStr, totalDayMinutes } from '../utils'
 
@@ -7,7 +8,12 @@ const TYPE_COLORS: Record<string, string> = {
 }
 
 export default function WeekReview() {
-  const { blocks, cfg, closeWeekReview } = useStore()
+  const { blocks, cfg, closeWeekReview, setNote, intentions } = useStore()
+
+  const [wellText, setWellText] = useState('')
+  const [offText, setOffText] = useState('')
+  const [protectText, setProtectText] = useState('')
+  const [saved, setSaved] = useState(false)
 
   const ws = weekStart(0)
   const weekDates = Array.from({ length: 7 }, (_, i) => dateStr(ws, i))
@@ -102,6 +108,60 @@ export default function WeekReview() {
         </div>
 
         <div className="wr-busiest">busiest day: <strong>{busiestDay}</strong></div>
+
+        {/* Guided reflection */}
+        <div className="wr-section wr-reflect">
+          <div className="wr-sec-ttl">weekly reflection</div>
+
+          <div className="wr-reflect-q">
+            <div className="wr-reflect-lbl">✓ what worked well this week?</div>
+            <textarea
+              className="wr-reflect-inp"
+              placeholder="wins, habits that stuck, moments of flow…"
+              value={wellText}
+              onChange={e => { setWellText(e.target.value); setSaved(false) }}
+            />
+          </div>
+
+          <div className="wr-reflect-q">
+            <div className="wr-reflect-lbl">↓ what felt off or drained you?</div>
+            <textarea
+              className="wr-reflect-inp"
+              placeholder="friction, distractions, energy drains…"
+              value={offText}
+              onChange={e => { setOffText(e.target.value); setSaved(false) }}
+            />
+          </div>
+
+          <div className="wr-reflect-q">
+            <div className="wr-reflect-lbl">→ one thing to protect next week</div>
+            <textarea
+              className="wr-reflect-inp"
+              placeholder="a habit, a time block, a boundary…"
+              value={protectText}
+              onChange={e => { setProtectText(e.target.value); setSaved(false) }}
+            />
+          </div>
+
+          {(wellText.trim() || offText.trim() || protectText.trim()) && (
+            <button
+              className={`wr-reflect-save${saved ? ' saved' : ''}`}
+              onClick={() => {
+                const lines = []
+                if (wellText.trim()) lines.push(`✓ worked well: ${wellText.trim()}`)
+                if (offText.trim()) lines.push(`↓ felt off: ${offText.trim()}`)
+                if (protectText.trim()) lines.push(`→ protect: ${protectText.trim()}`)
+                const entry = `[week review]\n${lines.join('\n')}`
+                const td = todayStr()
+                const existing = intentions[td]?.note || ''
+                setNote(td, existing ? `${existing}\n\n${entry}` : entry)
+                setSaved(true)
+              }}
+            >
+              {saved ? '✓ saved to today\'s journal' : 'save to journal'}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )

@@ -105,7 +105,7 @@ export default function BlockModal() {
     customLabels, customLabelColors, addCustomLabel, removeCustomLabel, reorderCustomLabels, saveAsTemplate,
     blocks, cfg, setTypeColorOverride, hideBuiltinCustom, setHideBuiltinCustom,
     hiddenBuiltinTypes, hideBuiltinType, showBuiltinType,
-    goals,
+    goals, habits,
   } = useStore()
   const { isNew, isForPD, block, initStart, initEnd } = blockModal
 

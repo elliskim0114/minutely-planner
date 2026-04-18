@@ -29,6 +29,7 @@ export default function MPDView() {
     userProfile, goals, intentions, blocks,
     pdProfiles, activePdProfileId, savePdProfile, loadPdProfile, deletePdProfile, newDayPreset,
     applyBlocksToDate, anthropicKey,
+    blueprintVisible, toggleBlueprintView, focusStreak,
   } = useStore()
 
   const handleApplyToday = () => {
@@ -324,6 +325,11 @@ export default function MPDView() {
             <span className="mpd-tag">blueprint</span>
             <h1>my perfect day</h1>
             <p>design your ideal daily rhythm — apply it to any day.</p>
+            {focusStreak > 0 && (
+              <div className="mpd-streak-badge">
+                🔥 {focusStreak} day focus streak
+              </div>
+            )}
           </div>
           <div className="mpd-hero-acts">
             <div className="mpd-apply-wrap">
@@ -363,6 +369,20 @@ export default function MPDView() {
                 : <><span>✦</span><span>smart apply</span></>
               }
             </button>
+            {perfectDay.length > 0 && (
+              <button
+                className={`mpd-overlay-tog${blueprintVisible ? ' on' : ''}`}
+                onClick={toggleBlueprintView}
+                title={blueprintVisible ? 'hide blueprint overlay on calendar' : 'show blueprint as ghost blocks on calendar'}
+              >
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                  <rect x="1" y="2.5" width="11" height="2" rx="0.5" stroke="currentColor" strokeWidth="1.2" fill="none" strokeDasharray="2 1.2"/>
+                  <rect x="1" y="6" width="11" height="2" rx="0.5" stroke="currentColor" strokeWidth="1.2" fill="none" strokeDasharray="2 1.2"/>
+                  <rect x="1" y="9.5" width="7" height="2" rx="0.5" stroke="currentColor" strokeWidth="1.2" fill="none" strokeDasharray="2 1.2"/>
+                </svg>
+                {blueprintVisible ? 'overlay on' : 'calendar overlay'}
+              </button>
+            )}
           </div>
         </div>
 

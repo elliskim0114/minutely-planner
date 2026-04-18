@@ -31,16 +31,19 @@ function getDateStr(d: Date) {
 }
 
 export default function AnalyticsView() {
-  const { view, blocks, goals, intentions, blockMoveCounts, openGoals, anthropicKey, setView, setPendingAIPrompt, typeIcons } = useStore()
+  const { view, blocks, goals, intentions, openGoals, anthropicKey, setView, setPendingAIPrompt, typeIcons, habits, habitLogs, removeHabit, addHabit } = useStore()
   const [insights, setInsights] = useState<Insight[]>([])
   const [insightsLoading, setInsightsLoading] = useState(false)
   const [insightsError, setInsightsError] = useState('')
   const [appliedIdx, setAppliedIdx] = useState<number | null>(null)
-  const [habits, setHabits] = useState<Array<{ pattern: string; suggestion: string; confidence: string; type: string }>>([])
+  const [aiPatterns, setAiPatterns] = useState<Array<{ pattern: string; suggestion: string; confidence: string; type: string }>>([])
   const [habitsLoading, setHabitsLoading] = useState(false)
   const [habitsError, setHabitsError] = useState('')
   const [habitsFetched, setHabitsFetched] = useState(false)
   const [showAllTypes, setShowAllTypes] = useState(false)
+  const [editingHabits, setEditingHabits] = useState(false)
+  const [newHabitName, setNewHabitName] = useState('')
+  const [newHabitKind, setNewHabitKind] = useState<'good' | 'bad'>('good')
 
   // Build last 14 days
   const today = new Date()
@@ -112,12 +115,6 @@ export default function AnalyticsView() {
     else break
   }
 
-  // Most moved blocks
-  const topMoved = Object.entries(blockMoveCounts)
-    .filter(([, c]) => c > 0)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-
   // Goal hours this week (last 7 days)
   const goalHours = (gid: number) => {
     const mins = blocks
@@ -138,6 +135,41 @@ export default function AnalyticsView() {
     mins: blocks.filter(b => b.date === date).reduce((s, b) => s + toM(b.end) - toM(b.start), 0),
   }))
   const busiestDay = dayTotals.reduce((a, b) => b.mins > a.mins ? b : a, dayTotals[0])
+
+  // Habit stats — last 30 days
+  const last30: string[] = []
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(today); d.setDate(d.getDate() - i)
+    last30.push(getDateStr(d))
+  }
+  const habitStats = habits.map(h => {
+    let kept = 0, broke = 0
+    for (const date of last30) {
+      const outcome = habitLogs[date]?.[h.id]
+      if (outcome === 'kept') kept++
+      else if (outcome === 'broke') broke++
+    }
+    const total = kept + broke
+    const pct = total > 0 ? Math.round((kept / total) * 100) : null
+    // streak: consecutive days kept ending today
+    let streak = 0
+    for (let i = last30.length - 1; i >= 0; i--) {
+      const outcome = habitLogs[last30[i]]?.[h.id]
+      if (outcome === 'kept') streak++
+      else if (outcome === 'broke') break
+      else if (i === last30.length - 1) break // today not logged yet — don't break streak
+    }
+    // trend: last 7 days vs prior 7 days
+    const l7 = last30.slice(-7), p7 = last30.slice(-14, -7)
+    const l7k = l7.filter(d => habitLogs[d]?.[h.id] === 'kept').length
+    const p7k = p7.filter(d => habitLogs[d]?.[h.id] === 'kept').length
+    const l7t = l7.filter(d => habitLogs[d]?.[h.id] !== undefined).length
+    const p7t = p7.filter(d => habitLogs[d]?.[h.id] !== undefined).length
+    const trend = (l7t === 0 && p7t === 0) ? null : l7k > p7k ? 'up' : l7k < p7k ? 'down' : 'flat'
+    return { ...h, kept, broke, total, pct, streak, trend }
+  })
+  const goodHabits = habitStats.filter(h => h.kind === 'good')
+  const badHabits = habitStats.filter(h => h.kind === 'bad')
 
   const runInsights = async () => {
     setInsightsLoading(true)
@@ -160,7 +192,6 @@ export default function AnalyticsView() {
         })),
         avgHealth,
         currentStreak,
-        topMoved,
         weekFocusH,
         energy: last7.map(({ date }) => ({ date, level: (intentions[date] || { e: 0 }).e })),
       }
@@ -199,7 +230,7 @@ export default function AnalyticsView() {
       })
       const data = await res.json()
       if (data.error) throw new Error(data.error)
-      setHabits(data.habits || [])
+      setAiPatterns(data.habits || [])
       setHabitsFetched(true)
     } catch (e) { setHabitsError(String(e).replace('Error: ', '')) }
     finally { setHabitsLoading(false) }
@@ -345,9 +376,9 @@ export default function AnalyticsView() {
                 </button>
               </div>
               {habitsError && <div className="av-ins-error">{habitsError}</div>}
-              {habitsFetched && habits.length > 0 && (
+              {habitsFetched && aiPatterns.length > 0 && (
                 <div className="av-insight-cards">
-                  {habits.map((h, i) => (
+                  {aiPatterns.map((h, i) => (
                     <div key={i} className={`av-insight-card coach-habit-card coach-chip-${h.type}`}>
                       <div className="av-ins-top">
                         <span className="av-ins-icon">◷</span>
@@ -361,7 +392,7 @@ export default function AnalyticsView() {
                   ))}
                 </div>
               )}
-              {habitsFetched && habits.length === 0 && (
+              {habitsFetched && aiPatterns.length === 0 && (
                 <div className="av-ins-placeholder">
                   <div className="av-ins-ph-icon">◷</div>
                   <div className="av-ins-ph-text">no clear patterns yet — add more blocks over the next few days and scan again</div>
@@ -378,6 +409,135 @@ export default function AnalyticsView() {
 
           {/* ── Right column ── */}
           <div className="av-col-side">
+
+            {/* Habit tracker — shown first so it's above the fold */}
+            <div className="av-card av-habits-card">
+              <div className="av-card-hdr">
+                <div className="av-card-ttl">habit tracker · last 30 days</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {!editingHabits && (() => {
+                    const onTrack = habitStats.filter(h => h.pct !== null && h.pct >= 70).length
+                    const total = habitStats.filter(h => h.total > 0).length
+                    return total > 0 ? <span className="av-habit-score">{onTrack}/{total} on track</span> : null
+                  })()}
+                  <button className="av-goals-btn" onClick={() => { setEditingHabits(e => !e); setNewHabitName('') }}>
+                    {editingHabits ? 'done' : 'manage'}
+                  </button>
+                </div>
+              </div>
+
+              {habits.length === 0 && !editingHabits && (
+                <div className="av-empty" style={{ fontSize: 11 }}>
+                  no habits yet — hit <strong>manage</strong> to add one, or create any block and the coach will ask if it's a habit
+                </div>
+              )}
+
+              {goodHabits.length > 0 && (
+                <div className="av-habit-section">
+                  <div className="av-habit-section-lbl">✅ good habits</div>
+                  {goodHabits.map(h => (
+                    <div key={h.id} className={`av-habit-row${editingHabits ? ' editing' : ''}`}>
+                      <div className="av-habit-hdr">
+                        <span className="av-habit-name">{h.name}</span>
+                        <span className="av-habit-stat">
+                          {!editingHabits && h.pct !== null ? `${h.pct}% done` : !editingHabits ? 'no logs yet' : null}
+                          {!editingHabits && h.trend === 'up' && <span className="av-habit-trend up">↑</span>}
+                          {!editingHabits && h.trend === 'down' && <span className="av-habit-trend down">↓</span>}
+                          {!editingHabits && h.streak > 1 && <span className="av-habit-streak">{h.streak}🔥</span>}
+                          {editingHabits && (
+                            <button className="av-habit-del" onClick={() => { removeHabit(h.id); useStore.getState().showToast(`"${h.name}" removed`) }}>✕</button>
+                          )}
+                        </span>
+                      </div>
+                      {!editingHabits && h.total > 0 && (
+                        <div className="av-habit-bar">
+                          <div className="av-habit-fill av-habit-fill-good" style={{ width: `${h.pct ?? 0}%` }} />
+                        </div>
+                      )}
+                      {!editingHabits && h.total > 0 && (
+                        <div className="av-habit-counts">
+                          <span className="av-habit-kept">{h.kept} kept</span>
+                          <span className="av-habit-broke">{h.broke} skipped</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {badHabits.length > 0 && (
+                <div className="av-habit-section">
+                  <div className="av-habit-section-lbl">🚫 bad habits to avoid</div>
+                  {badHabits.map(h => (
+                    <div key={h.id} className={`av-habit-row${editingHabits ? ' editing' : ''}`}>
+                      <div className="av-habit-hdr">
+                        <span className="av-habit-name">{h.name}</span>
+                        <span className="av-habit-stat">
+                          {!editingHabits && h.pct !== null ? `${h.pct}% avoided` : !editingHabits ? 'no logs yet' : null}
+                          {!editingHabits && h.trend === 'up' && <span className="av-habit-trend up">↑</span>}
+                          {!editingHabits && h.trend === 'down' && <span className="av-habit-trend down">↓</span>}
+                          {!editingHabits && h.streak > 1 && <span className="av-habit-streak">{h.streak}🔥</span>}
+                          {editingHabits && (
+                            <button className="av-habit-del" onClick={() => { removeHabit(h.id); useStore.getState().showToast(`"${h.name}" removed`) }}>✕</button>
+                          )}
+                        </span>
+                      </div>
+                      {!editingHabits && h.total > 0 && (
+                        <div className="av-habit-bar">
+                          <div className="av-habit-fill av-habit-fill-bad" style={{ width: `${h.pct ?? 0}%` }} />
+                        </div>
+                      )}
+                      {!editingHabits && h.total > 0 && (
+                        <div className="av-habit-counts">
+                          <span className="av-habit-kept">{h.kept} avoided</span>
+                          <span className="av-habit-broke">{h.broke} gave in</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Inline add-habit form — edit mode only */}
+              {editingHabits && (
+                <div className="av-habit-add-row">
+                  <input
+                    className="av-habit-add-inp"
+                    placeholder="habit name…"
+                    value={newHabitName}
+                    onChange={e => setNewHabitName(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' && newHabitName.trim()) {
+                        addHabit(newHabitName.trim(), newHabitKind, newHabitKind === 'good' ? '✅' : '🚫')
+                        useStore.getState().showToast(`"${newHabitName.trim()}" added`)
+                        setNewHabitName('')
+                      }
+                    }}
+                  />
+                  <div className="av-habit-kind-seg">
+                    <button className={newHabitKind === 'good' ? 'active' : ''} onClick={() => setNewHabitKind('good')}>✅ good</button>
+                    <button className={newHabitKind === 'bad' ? 'active' : ''} onClick={() => setNewHabitKind('bad')}>🚫 bad</button>
+                  </div>
+                  <button
+                    className="av-habit-add-submit"
+                    disabled={!newHabitName.trim()}
+                    onClick={() => {
+                      if (!newHabitName.trim()) return
+                      addHabit(newHabitName.trim(), newHabitKind, newHabitKind === 'good' ? '✅' : '🚫')
+                      useStore.getState().showToast(`"${newHabitName.trim()}" added`)
+                      setNewHabitName('')
+                    }}
+                  >+ add</button>
+                </div>
+              )}
+
+              {!editingHabits && habits.length > 0 && habitStats.every(h => h.total === 0) && (
+                <div className="av-empty" style={{ fontSize: 11 }}>
+                  log habits from the coach check-in to see stats here
+                </div>
+              )}
+            </div>
+
             <div className="av-card">
               <div className="av-card-ttl">time by type · this week</div>
               {totalMins === 0 ? <div className="av-empty">no blocks this week</div> : (
@@ -437,19 +597,6 @@ export default function AnalyticsView() {
               )}
             </div>
 
-            {topMoved.length > 0 && (
-              <div className="av-card">
-                <div className="av-card-ttl">most rescheduled</div>
-                <div className="av-moved">
-                  {topMoved.map(([name, count]) => (
-                    <div key={name} className="av-moved-row">
-                      <span className="av-moved-name">{name}</span>
-                      <span className="av-moved-count">{count}×</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
         </div>

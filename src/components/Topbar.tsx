@@ -6,14 +6,14 @@ export default function Topbar() {
   const {
     view, wOff, selDate,
     toggleSidebar, navWeek, navDay,
-    openCoach, openFocus, openCapture, openWhatNow,
-    blueprintVisible, toggleBlueprintView, perfectDay,
+    openCoach, openFocus, openCapture, openWhatNow, openCoachAt,
   } = useStore()
 
   const getLabel = () => {
     if (view === 'mpd') return 'my perfect day'
     if (view === 'analytics') return 'stats'
     if (view === 'goals') return 'goals & projects'
+    if (view === 'month') return 'month overview'
     if (view === 'day') {
       const d = parseLocalDate(selDate || todayStr())
       return `${MONTHS[d.getMonth()]} ${d.getDate()}`
@@ -55,23 +55,15 @@ export default function Topbar() {
 
       <div className="tsp" />
 
+      {/* Running late pill — visible on calendar views */}
+      {isCalendar && (
+        <button className="tb-late-btn" onClick={() => openCoachAt('manage')} title="shift remaining blocks">
+          ⏱ running late?
+        </button>
+      )}
+
       {/* ── STAR FEATURE BUTTONS ── */}
       <div className="tb-stars">
-        {/* Blueprint toggle — lives on the right with the action buttons */}
-        {isCalendar && perfectDay.length > 0 && (
-          <button
-            className={`tb-blueprint-tog${blueprintVisible ? ' on' : ''}`}
-            onClick={toggleBlueprintView}
-            title={blueprintVisible ? 'hide blueprint overlay' : 'show blueprint overlay'}
-          >
-            <svg className="tb-bp-icon" width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <rect x="1.5" y="3" width="11" height="2" rx="0.5" stroke="currentColor" strokeWidth="1.3" fill="none" strokeDasharray="2 1"/>
-              <rect x="1.5" y="6.5" width="11" height="2" rx="0.5" stroke="currentColor" strokeWidth="1.3" fill="none" strokeDasharray="2 1"/>
-              <rect x="1.5" y="10" width="7" height="2" rx="0.5" stroke="currentColor" strokeWidth="1.3" fill="none" strokeDasharray="2 1"/>
-            </svg>
-            <span>blueprint</span>
-          </button>
-        )}
         {/* What Now — primary star button */}
         <button className="tb-star tb-star-whatnow" onClick={openWhatNow} title="what should I do right now?">
           <svg className="tb-star-icon" width="15" height="15" viewBox="0 0 15 15" fill="none">

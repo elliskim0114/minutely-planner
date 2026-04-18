@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { useStore } from '../store'
 import TypedText from './TypedText'
 import { todayStr, fmt, toM, toT, weekStart, dateStr } from '../utils'
@@ -27,7 +27,7 @@ interface ProposedBlock {
   selected: boolean
 }
 
-type Tab = 'analyze' | 'design' | 'plan' | 'manage' | 'study' | 'review'
+type Tab = 'analyze' | 'design' | 'plan' | 'manage' | 'study' | 'review' | 'chat'
 
 function computeFreeSlots(
   blocks: Array<{ start: string; end: string }>,
@@ -115,6 +115,16 @@ export default function AICoach({ onClose }: { onClose: () => void }) {
   const [inlineEnd, setInlineEnd] = useState('')
   const [moveDateId, setMoveDateId] = useState<number | null>(null)
   const inlineRef = useRef<HTMLInputElement>(null)
+
+  // Chat tab
+  const [chatMessages, setChatMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([])
+  const [chatInput, setChatInput] = useState('')
+  const [chatLoading, setChatLoading] = useState(false)
+  const chatEndRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [chatMessages, chatLoading])
 
   const int = intentions[date] || { e: 0, p: ['', '', ''] }
   const energyLabels = ['not set', 'low', 'medium', 'peak']
@@ -398,6 +408,40 @@ export default function AICoach({ onClose }: { onClose: () => void }) {
     }
   }
 
+  const sendChatMessage = async (overrideInput?: string) => {
+    const input = (overrideInput ?? chatInput).trim()
+    if (!input || chatLoading) return
+    const newMessages = [...chatMessages, { role: 'user' as const, content: input }]
+    setChatMessages(newMessages)
+    setChatInput('')
+    setChatLoading(true)
+    try {
+      const now = new Date()
+      const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+      const res = await fetch('/api/coach-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: newMessages,
+          schedule: todayBlocks.map(b => ({ name: b.name, start: b.start, end: b.end, type: b.type })),
+          goals: goalsContext,
+          energy: energyLabels[int.e],
+          priorities: int.p.filter(Boolean),
+          date,
+          currentTime,
+          apiKey: anthropicKey || undefined,
+        }),
+      })
+      const data = await res.json()
+      if (data.error) throw new Error(data.error)
+      setChatMessages(prev => [...prev, { role: 'assistant', content: data.message }])
+    } catch (e) {
+      setChatMessages(prev => [...prev, { role: 'assistant', content: `something went wrong — ${String(e).replace('Error: ', '')}` }])
+    } finally {
+      setChatLoading(false)
+    }
+  }
+
   const commitInlineName = (b: typeof todayBlocks[0]) => {
     const val = inlineEditVal.trim()
     if (val && val !== b.name) { updateBlock(b.id, { name: val }); showToast('renamed') }
@@ -419,6 +463,7 @@ export default function AICoach({ onClose }: { onClose: () => void }) {
   const dur = (b: { start: string; end: string }) => toM(b.end) - toM(b.start)
 
   const MODES: Array<{ id: Tab; icon: string; label: string; desc: string }> = [
+    { id: 'chat',     icon: '💬', label: 'ask anything',  desc: 'chat with your coach' },
     { id: 'analyze',  icon: '✦',  label: 'check in',      desc: 'feedback on today\'s plan' },
     { id: 'design',   icon: '◎',  label: 'design my day', desc: 'build schedule from goals' },
     { id: 'plan',     icon: '＋',  label: 'fill my gaps',  desc: 'fit tasks into free slots' },
@@ -442,7 +487,7 @@ export default function AICoach({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* ── Mode picker cards ── */}
-        <div className="coach-mode-grid coach-mode-grid-6">
+        <div className="coach-mode-grid coach-mode-grid-7">
           {MODES.map(m => (
             <button key={m.id}
               className={`coach-mode-card${tab === m.id ? ' on' : ''}`}
@@ -453,6 +498,63 @@ export default function AICoach({ onClose }: { onClose: () => void }) {
             </button>
           ))}
         </div>
+
+        {/* ── CHAT ── */}
+        {tab === 'chat' && (
+          <div className="coach-chat">
+            {chatMessages.length === 0 ? (
+              <div className="coach-chat-empty">
+                <div className="coach-chat-empty-icon">💬</div>
+                <div className="coach-chat-empty-text">ask me anything about your schedule, priorities, or day</div>
+                <div className="coach-chat-starters">
+                  {["how's my day looking?", "what should I focus on now?", "am I overloaded?", "help me plan tomorrow"].map(s => (
+                    <button key={s} className="coach-chat-starter" onClick={() => sendChatMessage(s)}>{s}</button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="coach-chat-thread">
+                {chatMessages.map((msg, i) => (
+                  <div key={i} className={`coach-chat-msg ${msg.role}`}>
+                    {msg.role === 'assistant' && <div className="coach-chat-avatar">✦</div>}
+                    <div className="coach-chat-bubble">
+                      {msg.role === 'assistant'
+                        ? <TypedText text={msg.content} speed={10} delay={0} />
+                        : msg.content}
+                    </div>
+                  </div>
+                ))}
+                {chatLoading && (
+                  <div className="coach-chat-msg assistant">
+                    <div className="coach-chat-avatar">✦</div>
+                    <div className="coach-chat-bubble loading">
+                      <div className="coach-chat-dots"><span /><span /><span /></div>
+                    </div>
+                  </div>
+                )}
+                <div ref={chatEndRef} />
+              </div>
+            )}
+            <div className="coach-chat-input-row">
+              <input
+                className="coach-chat-inp"
+                placeholder="ask anything…"
+                value={chatInput}
+                onChange={e => setChatInput(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage() } }}
+                disabled={chatLoading}
+                autoFocus
+              />
+              <button
+                className={`coach-chat-send${chatLoading ? ' loading' : ''}`}
+                onClick={() => sendChatMessage()}
+                disabled={chatLoading || !chatInput.trim()}
+              >
+                {chatLoading ? <span className="coach-spin" /> : '↑'}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* ── ANALYZE ── */}
         {tab === 'analyze' && (
