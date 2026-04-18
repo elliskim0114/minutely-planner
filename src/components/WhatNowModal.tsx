@@ -129,7 +129,7 @@ export default function WhatNowModal({ onClose }: { onClose: () => void }) {
           {messages.map((msg, i) => (
             msg.role === 'assistant' ? (
               <div key={i} className="wn-msg wn-msg-ai">
-                <TypedText text={msg.content} speed={10} delay={0} />
+                <TypedText text={msg.content} speed={10} delay={0} markdown />
               </div>
             ) : i > 0 ? ( // skip showing the initial system message
               <div key={i} className="wn-msg wn-msg-user">{msg.content}</div>

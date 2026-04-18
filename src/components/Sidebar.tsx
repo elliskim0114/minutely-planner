@@ -24,25 +24,6 @@ export default function Sidebar() {
 
   const [lateMenuOpen, setLateMenuOpen] = useState(false)
   const [dismissedPatterns, setDismissedPatterns] = useState<Set<string>>(new Set())
-  const [qcInput, setQcInput] = useState('')
-  const [qcLoading, setQcLoading] = useState(false)
-
-
-  // Mini calendar
-  const [miniCalMonth, setMiniCalMonth] = useState(() => new Date())
-  const miniCalFirst = new Date(miniCalMonth.getFullYear(), miniCalMonth.getMonth(), 1).getDay()
-  const miniCalDays = new Date(miniCalMonth.getFullYear(), miniCalMonth.getMonth() + 1, 0).getDate()
-  const blockDates = new Set(blocks.map(b => b.date))
-  const blockCountByDate = blocks.reduce<Record<string, number>>((acc, b) => {
-    acc[b.date] = (acc[b.date] || 0) + 1; return acc
-  }, {})
-  const todayDate = new Date()
-
-  const goToMiniCalDate = (day: number) => {
-    const ds = `${miniCalMonth.getFullYear()}-${String(miniCalMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-    useStore.getState().setSelDate(ds)
-    setView('day')
-  }
 
   const today = new Date()
   const td = todayStr()
@@ -87,51 +68,6 @@ export default function Sidebar() {
 
   const handleEnergyAI = () => {
     openCoachAt('design')
-  }
-
-  const handleQuickCapture = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const text = qcInput.trim()
-    if (!text || qcLoading) return
-    setQcLoading(true)
-    try {
-      const s = useStore.getState()
-      const res = await fetch('/api/capture', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, today: td, apiKey: s.anthropicKey || undefined }),
-      })
-      if (!res.ok) throw new Error('HTTP ' + res.status)
-      const data = await res.json()
-      if (Array.isArray(data) && data.length > 0) {
-        const timed = data.filter((b: any) => b.start && b.end)
-        if (timed.length > 0) {
-          timed.forEach((b: any) => {
-            addBlock({
-              name: b.name,
-              date: b.date || td,
-              start: b.start,
-              end: b.end,
-              type: b.type || 'routine',
-              cc: null,
-              customName: null,
-            })
-          })
-          s.showToast(`${timed.length} block${timed.length !== 1 ? 's' : ''} added ✓`)
-          setQcInput('')
-        } else {
-          s.showToast('no time found — opening smart capture')
-          s.openCapture()
-          setQcInput('')
-        }
-      } else {
-        s.showToast('nothing parsed — try e.g. "standup 9am 30min"')
-      }
-    } catch {
-      useStore.getState().showToast('capture failed — check server')
-    } finally {
-      setQcLoading(false)
-    }
   }
 
   // Live block
@@ -434,46 +370,6 @@ export default function Sidebar() {
               )}
             </div>
           )}
-
-          {/* Mini calendar */}
-          <div id="mini-cal">
-            <div className="mc2-hdr">
-              <button className="mc2-nav" onClick={() => setMiniCalMonth(d => new Date(d.getFullYear(), d.getMonth() - 1, 1))}>‹</button>
-              <span className="mc2-title">{MONTHS[miniCalMonth.getMonth()]} {miniCalMonth.getFullYear()}</span>
-              <button className="mc2-nav" onClick={() => setMiniCalMonth(d => new Date(d.getFullYear(), d.getMonth() + 1, 1))}>›</button>
-            </div>
-            <div className="mc2-grid">
-              {['S','M','T','W','T','F','S'].map((d, i) => <div key={i} className="mc2-dow">{d}</div>)}
-              {Array.from({ length: miniCalFirst }).map((_, i) => <div key={`e${i}`} className="mc2-empty" />)}
-              {Array.from({ length: miniCalDays }, (_, i) => i + 1).map(day => {
-                const ds = `${miniCalMonth.getFullYear()}-${String(miniCalMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-                const isToday = day === todayDate.getDate() && miniCalMonth.getMonth() === todayDate.getMonth() && miniCalMonth.getFullYear() === todayDate.getFullYear()
-                const isSel = ds === (selDate || td)
-                const hasBlocks = blockDates.has(ds)
-                return (
-                  <button key={day} className={`mc2-day${isToday ? ' today' : ''}${isSel ? ' sel' : ''}${hasBlocks ? ' has-blocks' : ''}`} onClick={() => goToMiniCalDate(day)} title={ds}>
-                    <span>{day}</span>
-                    {hasBlocks && <span className="mc2-dot" title={`${blockCountByDate[ds]} blocks`}>{blockCountByDate[ds]}</span>}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Quick NLP capture */}
-          <div className="sb-quick-cap">
-            <form className="sb-qc-form" onSubmit={handleQuickCapture}>
-              <span className="sb-qc-icon">⚡</span>
-              <input
-                className="sb-qc-inp"
-                placeholder="quick add… standup 9am 30min"
-                value={qcInput}
-                onChange={e => setQcInput(e.target.value)}
-                disabled={qcLoading}
-              />
-              {qcLoading && <span className="sb-qc-spin">…</span>}
-            </form>
-          </div>
 
           {/* Nav buttons */}
           <div id="sb-nav">

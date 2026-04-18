@@ -2,17 +2,25 @@ import { useState, useEffect, useRef } from 'react'
 
 interface Props {
   text: string
-  speed?: number   // ms per character
-  delay?: number   // ms before starting
-  cursor?: boolean // show blinking cursor while typing
+  speed?: number
+  delay?: number
+  cursor?: boolean
+  markdown?: boolean
   className?: string
 }
 
-/**
- * Renders text with a character-by-character typewriter effect.
- * Re-triggers whenever `text` changes.
- */
-export default function TypedText({ text, speed = 16, delay = 0, cursor = true, className }: Props) {
+// Simple inline markdown → HTML (bold, italic, code, line breaks)
+export function renderMd(s: string): string {
+  return s
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*\n]+?)\*/g, '<em>$1</em>')
+    .replace(/`([^`]+?)`/g, '<code>$1</code>')
+    .replace(/\n/g, '<br/>')
+}
+
+export default function TypedText({ text, speed = 16, delay = 0, cursor = true, markdown = false, className }: Props) {
   const [displayed, setDisplayed] = useState('')
   const [done, setDone] = useState(false)
   const ivRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -48,6 +56,15 @@ export default function TypedText({ text, speed = 16, delay = 0, cursor = true, 
       if (toRef.current) clearTimeout(toRef.current)
     }
   }, [text, speed, delay])
+
+  if (markdown) {
+    return (
+      <span className={className}>
+        <span dangerouslySetInnerHTML={{ __html: renderMd(displayed) }} />
+        {cursor && !done && <span className="tw-cursor">▋</span>}
+      </span>
+    )
+  }
 
   return (
     <span className={className}>

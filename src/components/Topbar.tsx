@@ -55,13 +55,6 @@ export default function Topbar() {
 
       <div className="tsp" />
 
-      {/* Running late pill — visible on calendar views */}
-      {isCalendar && (
-        <button className="tb-late-btn" onClick={() => openCoachAt('manage')} title="shift remaining blocks">
-          ⏱ running late?
-        </button>
-      )}
-
       {/* ── STAR FEATURE BUTTONS ── */}
       <div className="tb-stars">
         {/* What Now — primary star button */}

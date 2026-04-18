@@ -519,7 +519,7 @@ export default function AICoach({ onClose }: { onClose: () => void }) {
                     {msg.role === 'assistant' && <div className="coach-chat-avatar">✦</div>}
                     <div className="coach-chat-bubble">
                       {msg.role === 'assistant'
-                        ? <TypedText text={msg.content} speed={10} delay={0} />
+                        ? <TypedText text={msg.content} speed={10} delay={0} markdown />
                         : msg.content}
                     </div>
                   </div>
@@ -566,7 +566,7 @@ export default function AICoach({ onClose }: { onClose: () => void }) {
                   <div key={i} className={`coach-suggestion${applied.has(i) ? ' applied' : ''}`}>
                     <span className="coach-sug-icon">{s.icon || '●'}</span>
                     <span className="coach-sug-text">
-                      <TypedText text={s.text} speed={12} delay={i * 180} />
+                      <TypedText text={s.text} speed={12} delay={i * 180} markdown />
                     </span>
                     {s.action && !applied.has(i) && (
                       <button className="coach-sug-apply" onClick={() => applySuggestion(i, s.action!)}
@@ -626,7 +626,7 @@ export default function AICoach({ onClose }: { onClose: () => void }) {
             {designFetched && designBlocks.length > 0 && (
               <div className="coach-proposed">
                 <div className="coach-proposed-lbl">your designed day</div>
-                {designMsg && <div className="coach-plan-msg"><TypedText text={designMsg} speed={14} /></div>}
+                {designMsg && <div className="coach-plan-msg"><TypedText text={designMsg} speed={14} markdown /></div>}
                 {designBlocks.map((b, i) => (
                   <div key={i} className={`coach-proposed-block coach-chip-${b.type}${b.selected ? ' selected' : ''}`}
                     onClick={() => setDesignBlocks(prev => prev.map((pb, idx) => idx === i ? { ...pb, selected: !pb.selected } : pb))}>
@@ -665,7 +665,7 @@ export default function AICoach({ onClose }: { onClose: () => void }) {
             {planFetched && proposed.length > 0 && (
               <div className="coach-proposed">
                 <div className="coach-proposed-lbl">proposed slots</div>
-                {planMessage && <div className="coach-plan-msg"><TypedText text={planMessage} speed={14} /></div>}
+                {planMessage && <div className="coach-plan-msg"><TypedText text={planMessage} speed={14} markdown /></div>}
                 {proposed.map((b, i) => (
                   <div key={i} className={`coach-proposed-block coach-chip-${b.type}${b.selected ? ' selected' : ''}`}
                     onClick={() => setProposed(prev => prev.map((pb, idx) => idx === i ? { ...pb, selected: !pb.selected } : pb))}>
@@ -715,7 +715,7 @@ export default function AICoach({ onClose }: { onClose: () => void }) {
             {studyFetched && studyBlocks.length > 0 && (
               <div className="coach-proposed">
                 <div className="coach-proposed-lbl">study plan · {studyBlocks.length} sessions</div>
-                {studyPlan && <div className="coach-plan-msg"><TypedText text={studyPlan} speed={10} /></div>}
+                {studyPlan && <div className="coach-plan-msg"><TypedText text={studyPlan} speed={10} markdown /></div>}
                 {studyBlocks.map((b, i) => (
                   <div key={i} className={`coach-proposed-block coach-chip-study${b.selected ? ' selected' : ''}`}
                     onClick={() => setStudyBlocks(prev => prev.map((sb, idx) => idx === i ? { ...sb, selected: !sb.selected } : sb))}>
@@ -777,7 +777,7 @@ export default function AICoach({ onClose }: { onClose: () => void }) {
             </div>
             {reviewFetched && reviewText && (
               <div className="coach-review-output">
-                <TypedText text={reviewText} speed={10} />
+                <TypedText text={reviewText} speed={10} markdown />
               </div>
             )}
             {reviewError && <div className="coach-error">{reviewError}</div>}
@@ -805,7 +805,7 @@ export default function AICoach({ onClose }: { onClose: () => void }) {
             </div>
             {aiEditResult && (
               <div className="cmg-ai-result">
-                <span className="cmg-ai-check">✓</span> <TypedText text={aiEditResult} speed={14} />
+                <span className="cmg-ai-check">✓</span> <TypedText text={aiEditResult} speed={14} markdown />
                 <button className="cmg-ai-dismiss" onClick={() => setAiEditResult('')}>×</button>
               </div>
             )}
