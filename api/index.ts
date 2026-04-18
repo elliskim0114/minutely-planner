@@ -374,6 +374,41 @@ async function handleSendDailySummary(_body: any, res: ServerResponse) {
   json(res, 200, { sent, failed })
 }
 
+async function handleCoachChat(body: any, res: ServerResponse) {
+  const { messages, schedule, goals, energy, priorities, date, currentTime, userProfile, apiKey } = body
+  if (!messages?.length) return json(res, 400, { error: 'messages required' })
+
+  const scheduleLines = (schedule || [])
+    .map((b: any) => `  ${b.start}–${b.end}: ${b.name} (${b.type}${b.completed ? ', ' + b.completed : ''})`)
+    .join('\n')
+  const goalsLine = goals?.length
+    ? goals.map((g: any) => g.targetAmount ? `${g.name} (${g.actualAmount ?? '?'}/${g.targetAmount}${g.targetUnit ?? 'h'})` : g.name).join(', ')
+    : ''
+  const profileLine = userProfile?.occupation
+    ? `${userProfile.occupation}${userProfile.energyPattern ? `, ${userProfile.energyPattern} person` : ''}`
+    : ''
+
+  const system = `You are an AI coaching assistant built into minutely, a personal day planner. You help users think through their schedule, optimize their day, manage priorities, and stay on track.
+
+Today: ${date}. Current time: ${currentTime}.
+${scheduleLines ? `Schedule:\n${scheduleLines}` : 'No blocks scheduled today.'}
+${energy && energy !== 'not set' ? `Energy: ${energy}` : ''}
+${priorities?.length ? `Priorities: ${priorities.join(', ')}` : ''}
+${goalsLine ? `Goals: ${goalsLine}` : ''}
+${profileLine ? `User: ${profileLine}` : ''}
+
+Be conversational, warm, and specific. Reference actual block names and times when relevant. Keep responses under 180 words unless the user asks for something detailed. Write naturally — no markdown headers or bullet symbols.`
+
+  const client = getClient(apiKey)
+  const msg = await client.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 500,
+    system,
+    messages: messages as any,
+  })
+  json(res, 200, { message: ((msg.content[0] as any).text ?? '').trim() })
+}
+
 async function handleAdaptDay(body: any, res: ServerResponse) {
   const { blueprint, existingBlocks, energy, dayOfWeek, dayStart, dayEnd, apiKey } = body
   const bpSummary = blueprint.map((b: any) => `${b.name} (${b.type}, ${b.start}-${b.end}${b.anchor ? ', ANCHOR—keep fixed' : ''})`).join('\n')
@@ -440,6 +475,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     if (path === '/api/unsubscribe-push') return await handleUnsubscribePush(body, res)
     if (path === '/api/send-daily-summary') return await handleSendDailySummary(body, res)
     if (path === '/api/adapt-day') return await handleAdaptDay(body, res)
+    if (path === '/api/coach-chat') return await handleCoachChat(body, res)
     return json(res, 404, { error: 'not found' })
   } catch (err: any) {
     return json(res, 500, { error: String(err) })

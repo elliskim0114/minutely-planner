@@ -39,6 +39,7 @@ import CoachCheckin from './components/CoachCheckin'
 import EodPlanModal from './components/EodPlanModal'
 import WeekPlanModal from './components/WeekPlanModal'
 import MonthView from './components/MonthView'
+import QuickCapture from './components/QuickCapture'
 
 export default function App() {
   const {
@@ -73,6 +74,7 @@ export default function App() {
 
   const [quickAddOpen, setQuickAddOpen] = useState(false)
   const [paletteOpen, setPaletteOpen] = useState(false)
+  const [quickCaptureOpen, setQuickCaptureOpen] = useState(false)
 
   const [session, setSession] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
@@ -207,6 +209,7 @@ export default function App() {
       }
       if (blockModal.open) return
       const k = e.key.toLowerCase()
+      if (e.key === ' ') { e.preventDefault(); setQuickCaptureOpen(true); return }
       if (k === 'w') setView('week')
       else if (k === 'd') setView('day')
       else if (k === 'p') setView('mpd')
@@ -587,19 +590,14 @@ export default function App() {
       <Confetti />
       <GoldRain />
       <MobileNav />
-      {!blockModal.open && !captureOpen && !focusOpen && !coachOpen && !kbdOpen && !notifOpen && !shareOpen && !signInOpen && !goalsOpen && !settingsOpen && !templatesOpen && !weekReviewOpen && (
+      {!blockModal.open && !captureOpen && !focusOpen && !coachOpen && !kbdOpen && !notifOpen && !shareOpen && !signInOpen && !goalsOpen && !settingsOpen && !templatesOpen && !weekReviewOpen && !quickCaptureOpen && (
         <button
           className="mob-fab"
-          onClick={() => {
-            const now = new Date()
-            const startMins = Math.floor((now.getHours() * 60 + now.getMinutes()) / 15) * 15
-            const endMins = Math.min(startMins + 60, 23 * 60)
-            const fmt = (m: number) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
-            openBlockModalNew(todayStr(), fmt(startMins), fmt(endMins))
-          }}
-          title="add block"
-        >+</button>
+          onClick={() => setQuickCaptureOpen(true)}
+          title="quick add (Space)"
+        >⚡</button>
       )}
+      {quickCaptureOpen && <QuickCapture onClose={() => setQuickCaptureOpen(false)} />}
     </div>
   )
 }
