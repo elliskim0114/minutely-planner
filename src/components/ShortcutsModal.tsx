@@ -27,7 +27,7 @@ export default function ShortcutsModal() {
           <div className="kbd-r"><span className="kbd-d">ai coach</span><span className="kk">C</span></div>
           <div className="kbd-r"><span className="kbd-d">focus mode</span><span className="kk">F</span></div>
           <div className="kbd-r">
-            <span className="kbd-d">templates</span>
+            <span className="kbd-d">routines</span>
             <div className="kbd-ks"><span className="kk">⇧</span><span className="kk">T</span></div>
           </div>
 

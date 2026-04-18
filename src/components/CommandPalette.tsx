@@ -79,7 +79,7 @@ export default function CommandPalette({ onClose }: { onClose: () => void }) {
       action: () => { store.setView('week'); onClose() },
     },
     {
-      id: 'templates', label: 'Templates', sub: 'apply or manage', icon: '⊡', group: 'Actions',
+      id: 'routines', label: 'Routines', sub: 'apply or manage block routines', icon: '⊡', group: 'Actions',
       action: () => { store.openTemplates(); onClose() },
     },
     {
@@ -116,14 +116,14 @@ export default function CommandPalette({ onClose }: { onClose: () => void }) {
     }))
   , [store.goals])
 
-  // ── Templates as commands ────────────────────────────────────────────────────
+  // ── Routines as commands ─────────────────────────────────────────────────────
   const templateCmds: Cmd[] = useMemo(() =>
     store.templates.map(t => ({
       id: `tmpl-${t.id}`,
       label: `Apply "${t.name}"`,
       sub: `${t.blocks.length} blocks → today`,
       icon: '⊡',
-      group: 'Templates',
+      group: 'Routines',
       action: () => { store.applyTemplate(t.id, today, 0); store.showToast(`"${t.name}" applied`); onClose() },
     }))
   , [store.templates, today])

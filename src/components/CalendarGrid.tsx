@@ -483,18 +483,23 @@ export default function CalendarGrid({ scrollId, numDays, getDate }: Props) {
         const colW = (contW - 56) / numDays
         return perfectDay
           .filter(pb => {
-            const sm = toM(pb.start)
-            const em2 = toM(pb.end)
+            const pbStart = toM(pb.start)
+            const pbEnd = toM(pb.end)
             // Skip if out of day range
-            if (sm < startM || em2 > endM) return false
-            // Skip if a block with same name already exists on blueprint date
-            return !blocks.some(b => b.date === blueprintDate && b.name.toLowerCase() === pb.name.toLowerCase())
+            if (pbStart < startM || pbEnd > endM) return false
+            // Hide ghost wherever any real block occupies that time slot (overlap check)
+            return !blocks.some(b => {
+              if (b.date !== blueprintDate) return false
+              const bStart = toM(b.start)
+              const bEnd = toM(b.end)
+              return bStart < pbEnd && bEnd > pbStart
+            })
           })
           .map((pb, i) => {
-            const sm = toM(pb.start)
-            const em2 = toM(pb.end)
-            const top = m2y(sm, cfg.ds)
-            const height = Math.max(m2y(em2, cfg.ds) - top, SH - 2)
+            const pbStart = toM(pb.start)
+            const pbEnd = toM(pb.end)
+            const top = m2y(pbStart, cfg.ds)
+            const height = Math.max(m2y(pbEnd, cfg.ds) - top, SH - 2)
             const left = 56 + di * colW + 2
             const width = colW - 4
             const isCompact = height < 50

@@ -35,7 +35,7 @@ export default function TemplatesModal({ onClose }: { onClose: () => void }) {
     })))
     setSaveName('')
     setSaving(false)
-    useStore.getState().showToast(`template "${saveName.trim()}" saved`)
+    useStore.getState().showToast(`routine "${saveName.trim()}" saved`)
   }
 
   // Current week blocks (Mon–Sun based on weekStart(0))
@@ -59,26 +59,26 @@ export default function TemplatesModal({ onClose }: { onClose: () => void }) {
     <div className="tmpl-overlay" onClick={e => { if (e.target === e.currentTarget) onClose() }}>
       <div className="tmpl-box">
         <div className="tmpl-hdr">
-          <div className="tmpl-title">templates</div>
+          <div className="tmpl-title">routines</div>
           <button className="tmpl-close" onClick={onClose}>×</button>
         </div>
 
         <div className="tmpl-tabs">
-          <button className={`tmpl-tab${tab === 'day' ? ' on' : ''}`} onClick={() => setTab('day')}>day</button>
-          <button className={`tmpl-tab${tab === 'week' ? ' on' : ''}`} onClick={() => setTab('week')}>week</button>
+          <button className={`tmpl-tab${tab === 'day' ? ' on' : ''}`} onClick={() => setTab('day')}>block routines</button>
+          <button className={`tmpl-tab${tab === 'week' ? ' on' : ''}`} onClick={() => setTab('week')}>weekly routines</button>
         </div>
 
         {/* ── DAY TAB ── */}
         {tab === 'day' && (
           <>
-            <div className="tmpl-sub">save a day as a reusable template · edit templates visually in the <strong>perfect day</strong> view</div>
+            <div className="tmpl-sub">save block sequences as reusable routines — drop them onto any day at any start time</div>
             {todayBlocks.length > 0 && (
               <div className="tmpl-save-row">
                 {saving ? (
                   <>
                     <input
                       className="tmpl-save-inp"
-                      placeholder="template name…"
+                      placeholder="routine name…"
                       value={saveName}
                       onChange={e => setSaveName(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter') handleSaveToday(); if (e.key === 'Escape') setSaving(false) }}
@@ -89,7 +89,7 @@ export default function TemplatesModal({ onClose }: { onClose: () => void }) {
                   </>
                 ) : (
                   <button className="tmpl-save-today" onClick={() => setSaving(true)}>
-                    + save today as template
+                    + save today as routine
                   </button>
                 )}
               </div>
@@ -101,7 +101,7 @@ export default function TemplatesModal({ onClose }: { onClose: () => void }) {
             </div>
 
             {templates.length === 0 ? (
-              <div className="tmpl-empty">no templates yet — use "save today as template" or right-click blocks to save a group</div>
+              <div className="tmpl-empty">no routines yet — use "+ routine" when editing a block, or save today's schedule above</div>
             ) : (
               <div className="tmpl-list">
                 {templates.map(t => (
@@ -134,7 +134,7 @@ export default function TemplatesModal({ onClose }: { onClose: () => void }) {
                   <>
                     <input
                       className="tmpl-save-inp"
-                      placeholder="weekly template name…"
+                      placeholder="weekly routine name…"
                       value={weekSaveName}
                       onChange={e => setWeekSaveName(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter') handleSaveWeek(); if (e.key === 'Escape') setSavingWeek(false) }}
@@ -145,7 +145,7 @@ export default function TemplatesModal({ onClose }: { onClose: () => void }) {
                   </>
                 ) : (
                   <button className="tmpl-save-today" onClick={() => setSavingWeek(true)}>
-                    + save this week as template
+                    + save this week as routine
                   </button>
                 )}
               </div>
@@ -157,7 +157,7 @@ export default function TemplatesModal({ onClose }: { onClose: () => void }) {
             </div>
 
             {weeklyTemplates.length === 0 ? (
-              <div className="tmpl-empty">no weekly templates yet — plan a full week and save it here</div>
+              <div className="tmpl-empty">no weekly routines yet — plan a full week and save it here</div>
             ) : (
               <div className="tmpl-list">
                 {weeklyTemplates.map(t => {

@@ -324,14 +324,14 @@ export default function Sidebar() {
               </div>
             )}
 
-            {/* Templates section */}
+            {/* Routines section */}
             <div className="sb-tmpl-section">
               <div className="sb-goals-hdr">
-                <span className="sblbl">templates</span>
+                <span className="sblbl">routines</span>
                 <button className="sb-goals-edit" onClick={openTemplates}>manage</button>
               </div>
               <div className="sb-tmpl-list">
-                <button className="sb-tmpl-save" onClick={openTemplates}>+ save day</button>
+                <button className="sb-tmpl-save" onClick={openTemplates}>+ save routine</button>
                 {templates.map(t => (
                   <button key={t.id} className="sb-tmpl-chip" onClick={() => { applyTemplate(t.id, selDate || td, 0); useStore.getState().showToast(`"${t.name}" applied`) }} title={`apply "${t.name}" to ${selDate || td}`}>
                     {t.name}

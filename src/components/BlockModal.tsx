@@ -585,7 +585,7 @@ export default function BlockModal() {
             {!isForPD && name.trim() && (
               <button
                 className={`mact-btn mtmpl-btn${savedTmpl ? ' tmpl-saved' : ''}`}
-                title="save as a reusable template"
+                title="save as a reusable routine"
                 onClick={() => {
                   const dur = toM(end) - toM(start)
                   saveAsTemplate(name.trim(), [{ name: name.trim(), type: type === 'custom' ? 'custom' : type, duration: dur, cc: type === 'custom' ? CCOLS[ccIdx] : undefined, customName: type === 'custom' ? customName || undefined : undefined }])
@@ -593,7 +593,7 @@ export default function BlockModal() {
                   setTimeout(() => setSavedTmpl(false), 2000)
                 }}
               >
-                {savedTmpl ? '✓ saved!' : '+ template'}
+                {savedTmpl ? '✓ saved!' : '+ routine'}
               </button>
             )}
             <div className="msave-wrap">
