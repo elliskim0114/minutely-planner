@@ -29,7 +29,7 @@ export default function MPDView() {
     userProfile, goals, intentions, blocks,
     pdProfiles, activePdProfileId, savePdProfile, loadPdProfile, deletePdProfile, newDayPreset,
     applyBlocksToDate, anthropicKey,
-    blueprintVisible, toggleBlueprintView, focusStreak,
+    blueprintVisible, toggleBlueprintView,
   } = useStore()
 
   const handleApplyToday = () => {
@@ -325,11 +325,6 @@ export default function MPDView() {
             <span className="mpd-tag">blueprint</span>
             <h1>my perfect day</h1>
             <p>design your ideal daily rhythm — apply it to any day.</p>
-            {focusStreak > 0 && (
-              <div className="mpd-streak-badge">
-                🔥 {focusStreak} day focus streak
-              </div>
-            )}
           </div>
           <div className="mpd-hero-acts">
             <div className="mpd-apply-wrap">

@@ -22,10 +22,11 @@ export default function CoachCheckin() {
     bulkAddBlocks, habits, habitLogs, logHabit, addHabit,
     habitClassifyPending, setHabitClassifyPending,
     habitNotAHabit, dismissHabitClassify,
+    suppressCheckinThisHour,
+    dismissedSuggestions, dismissSuggestion,
   } = useStore()
 
   const [qIdx, setQIdx] = useState(0)
-  const [suggestionDismissed, setSuggestionDismissed] = useState(false)
 
   const now = new Date()
   const hour = now.getHours()
@@ -44,28 +45,41 @@ export default function CoachCheckin() {
     ? 'day looks light — want help filling it in?'
     : null
 
-  // ── Retroactive classify: untracked block names from last 30 days (max 5) ──
+  // ── Retroactive classify: only blocks that appear 3+ times in all history ──
   const unclassifiedNames = useMemo(() => {
-    const cutoff = new Date(now)
-    cutoff.setDate(cutoff.getDate() - 30)
-    const cutoffStr = cutoff.toISOString().slice(0, 10)
-    const seen = new Set<string>()
-    const names: string[] = []
+    const sevenDaysAgo = new Date(now)
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+    const cutoffStr = sevenDaysAgo.toISOString().slice(0, 10)
+
+    // Count total occurrences of each block name (all time)
+    const totalCounts: Record<string, { count: number; canonical: string }> = {}
     for (const b of blocks) {
-      if (b.date < cutoffStr || b.type === 'gcal') continue
+      if (b.type === 'gcal') continue
       const lower = b.name.toLowerCase()
-      if (seen.has(lower)) continue
-      seen.add(lower)
-      if (
-        !habits.some(h => h.name.toLowerCase() === lower) &&
-        !habitNotAHabit.includes(lower)
-      ) {
-        names.push(b.name)
-        if (names.length >= 5) break
-      }
+      if (!totalCounts[lower]) totalCounts[lower] = { count: 0, canonical: b.name }
+      totalCounts[lower].count++
+    }
+
+    // Which names appeared in the last 7 days?
+    const recentNames = new Set<string>()
+    for (const b of blocks) {
+      if (b.date >= cutoffStr && b.type !== 'gcal') recentNames.add(b.name.toLowerCase())
+    }
+
+    // Only suggest names with 3+ total occurrences that are recent and unclassified
+    const names: string[] = []
+    for (const [lower, { count, canonical }] of Object.entries(totalCounts)) {
+      if (count < 3) continue
+      if (!recentNames.has(lower)) continue
+      if (habits.some(h => h.name.toLowerCase() === lower)) continue
+      if (habitNotAHabit.includes(lower)) continue
+      // Don't include the explicit pending classify (it'll show first)
+      if (habitClassifyPending && lower === habitClassifyPending.toLowerCase()) continue
+      names.push(canonical)
+      if (names.length >= 2) break  // max 2 retroactive suggestions
     }
     return names
-  }, [blocks, habits, habitNotAHabit]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [blocks, habits, habitNotAHabit, habitClassifyPending]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Pending habit logs ──
   const todayLogs = habitLogs[td] || {}
@@ -81,16 +95,14 @@ export default function CoachCheckin() {
   // ── Build question queue ──
   const steps: Step[] = useMemo(() => {
     const q: Step[] = []
-    // 1. Explicit just-saved classify prompt first
-    if (habitClassifyPending) q.push({ kind: 'classify', name: habitClassifyPending })
-    // 2. Retroactive classify for untracked names (skip if already in explicit prompt)
-    for (const name of unclassifiedNames) {
-      if (habitClassifyPending && name.toLowerCase() === habitClassifyPending.toLowerCase()) continue
-      q.push({ kind: 'classify', name })
+    if (habitClassifyPending) {
+      // Just added a block — ask only about that one, nothing else
+      q.push({ kind: 'classify', name: habitClassifyPending })
+      return q
     }
-    // 3. Pending bad habit checks
+    // Hourly check-in: at most 1 retroactive classify, then habit logs
+    if (unclassifiedNames.length > 0) q.push({ kind: 'classify', name: unclassifiedNames[0] })
     for (const h of pendingBad) q.push({ kind: 'habit-bad', id: h.id, name: h.name })
-    // 4. Pending good habit checks
     for (const h of pendingGood) q.push({ kind: 'habit-good', id: h.id, name: h.name })
     return q
   }, [habitClassifyPending, unclassifiedNames, pendingBad, pendingGood]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -105,7 +117,6 @@ export default function CoachCheckin() {
     if (kind) {
       addHabit(name, kind, kind === 'good' ? '✅' : '🚫')
     } else {
-      // Persist "not a habit" so coach never asks again
       dismissHabitClassify(name)
     }
     if (habitClassifyPending && name.toLowerCase() === habitClassifyPending.toLowerCase()) {
@@ -119,7 +130,12 @@ export default function CoachCheckin() {
     advance()
   }
 
-  // ── Pattern suggestion (separate from question queue) ──
+  const handleAllGood = () => {
+    suppressCheckinThisHour()
+    closeCheckin()
+  }
+
+  // ── Pattern suggestion ──
   const thirtyDaysAgoStr = (() => {
     const d = new Date(now); d.setDate(d.getDate() - 30); return d.toISOString().slice(0, 10)
   })()
@@ -142,7 +158,12 @@ export default function CoachCheckin() {
       suggestionBlock = { name: orig?.name ?? key, ...val, customName: cnEntries[0]?.[0] ?? null }
     }
   }
+  // Hide if already on today's schedule or dismissed today
+  const dismissedToday = dismissedSuggestions[td] || []
   if (suggestionBlock && todayBlocks.some(b => b.name.toLowerCase() === suggestionBlock!.name.toLowerCase())) {
+    suggestionBlock = null
+  }
+  if (suggestionBlock && dismissedToday.includes(suggestionBlock.name.toLowerCase())) {
     suggestionBlock = null
   }
 
@@ -155,7 +176,7 @@ export default function CoachCheckin() {
       <div className="checkin-hdr">
         <span className="checkin-icon">🤖</span>
         <span className="checkin-msg">{msg}</span>
-        <button className="checkin-dismiss" onClick={closeCheckin}>×</button>
+        <button className="checkin-dismiss" onClick={handleAllGood}>×</button>
       </div>
 
       {hint && !currentStep && <div className="checkin-hint">{hint}</div>}
@@ -163,7 +184,6 @@ export default function CoachCheckin() {
       {/* ── Step-through question card ── */}
       {currentStep && (
         <div className="checkin-step-card">
-          {/* Progress dots */}
           {steps.length > 1 && (
             <div className="checkin-step-dots">
               {steps.map((_, i) => (
@@ -215,14 +235,14 @@ export default function CoachCheckin() {
         </div>
       )}
 
-      {/* Main actions — always visible */}
+      {/* Main actions */}
       <div className="checkin-acts">
         <button className="checkin-btn checkin-btn-primary" onClick={handleOpenCoach}>open coach</button>
-        <button className="checkin-btn checkin-btn-secondary" onClick={closeCheckin}>all good 👍</button>
+        <button className="checkin-btn checkin-btn-secondary" onClick={handleAllGood}>all good 👍</button>
       </div>
 
-      {/* Pattern suggestion — separate, at the bottom */}
-      {suggestionBlock && !suggestionDismissed && (
+      {/* Pattern suggestion */}
+      {suggestionBlock && (
         <div className="checkin-pattern">
           <div className="checkin-pattern-msg">
             you usually schedule <strong>"{suggestionBlock.name}"</strong> around this time
@@ -243,7 +263,10 @@ export default function CoachCheckin() {
                 closeCheckin()
               }}
             >add it →</button>
-            <button className="checkin-btn checkin-btn-secondary" onClick={() => setSuggestionDismissed(true)}>not today</button>
+            <button
+              className="checkin-btn checkin-btn-secondary"
+              onClick={() => dismissSuggestion(td, suggestionBlock!.name)}
+            >not today</button>
           </div>
         </div>
       )}

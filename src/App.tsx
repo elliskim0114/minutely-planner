@@ -448,7 +448,7 @@ export default function App() {
     }
   }, [])
 
-  // Hourly coach check-in
+  // Hourly coach check-in — fires exactly on the hour (:00 only), once per hour
   const checkinFiredRef = useRef<string | null>(null)
   useEffect(() => {
     const check = () => {
@@ -457,17 +457,19 @@ export default function App() {
       const h = now.getHours()
       const [dsH] = cfg.ds.split(':').map(Number)
       const [deH] = cfg.de.split(':').map(Number)
-      // Only fire during the day, on the hour (minutes 0-2), not when coach is already open
       if (h < dsH || h >= deH) return
-      if (m > 2) return
+      if (m !== 0) return   // exactly on the hour only
       const key = `${now.toISOString().slice(0, 13)}` // YYYY-MM-DDTHH
       if (checkinFiredRef.current === key) return
-      if (useStore.getState().coachOpen) return
+      if (useStore.getState().checkinSuppressedHour === key) return
+      if (useStore.getState().coachOpen || useStore.getState().checkinOpen) return
       checkinFiredRef.current = key
+      // Mark as suppressed immediately so a page refresh within the same minute won't re-fire
+      useStore.getState().suppressCheckinThisHour()
       openCheckin()
     }
     check()
-    const iv = setInterval(check, 60000)
+    const iv = setInterval(check, 30000)  // check every 30s so we don't miss :00
     return () => clearInterval(iv)
   }, [cfg.ds, cfg.de])
 

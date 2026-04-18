@@ -6,12 +6,18 @@ import { totalDayMinutes, toM, todayStr } from '../utils'
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 const TYPE_LABELS: Record<string, string> = {
-  focus: 'focus', routine: 'routine', study: 'study', free: 'free', gcal: 'calendar', custom: 'custom',
+  focus: 'focus', routine: 'routine', study: 'study', free: 'free',
 }
 const TYPE_CLASS: Record<string, string> = {
   focus: 'tf', routine: 'tr', study: 'ts', free: 'tl', gcal: 'tg2', custom: 'td',
 }
 const FILTER_TYPES = ['focus', 'routine', 'study', 'free']
+const TYPE_ORDER = ['focus', 'routine', 'study', 'free', 'gcal', 'custom']
+
+// Emoji for each type used in filter buttons
+const TYPE_EMOJI: Record<string, string> = {
+  focus: '🎯', routine: '⚡', study: '📖', free: '☁️',
+}
 
 export default function MonthView() {
   const { blocks, cfg, view, setView } = useStore()
@@ -28,19 +34,34 @@ export default function MonthView() {
   const blockMinsByDate: Record<string, number> = {}
   const blockCountByDate: Record<string, number> = {}
   const blockTypesByDate: Record<string, Set<string>> = {}
+  // Minutes per type per date
+  const blockMinsByDateByType: Record<string, Record<string, number>> = {}
+
   blocks.forEach(b => {
+    const mins = toM(b.end) - toM(b.start)
     blockCountByDate[b.date] = (blockCountByDate[b.date] || 0) + 1
-    blockMinsByDate[b.date] = (blockMinsByDate[b.date] || 0) + (toM(b.end) - toM(b.start))
+    blockMinsByDate[b.date] = (blockMinsByDate[b.date] || 0) + mins
     if (!blockTypesByDate[b.date]) blockTypesByDate[b.date] = new Set()
     blockTypesByDate[b.date].add(b.type)
+    if (!blockMinsByDateByType[b.date]) blockMinsByDateByType[b.date] = {}
+    blockMinsByDateByType[b.date][b.type] = (blockMinsByDateByType[b.date][b.type] || 0) + mins
   })
 
-  // Month stats
+  // Month stats (per-type totals)
   const monthDates = Array.from({ length: new Date(year, month + 1, 0).getDate() }, (_, i) => {
     return `${year}-${String(month + 1).padStart(2, '0')}-${String(i + 1).padStart(2, '0')}`
   })
   const monthMins = monthDates.reduce((s, d) => s + (blockMinsByDate[d] || 0), 0)
   const scheduledDays = monthDates.filter(d => (blockCountByDate[d] || 0) > 0).length
+
+  // Per-type totals for the month stats bar
+  const monthTypeHours: Record<string, number> = {}
+  for (const d of monthDates) {
+    const typeMap = blockMinsByDateByType[d] || {}
+    for (const [t, m] of Object.entries(typeMap)) {
+      monthTypeHours[t] = (monthTypeHours[t] || 0) + m / 60
+    }
+  }
 
   const navMonth = (dir: number) => {
     let nm = month + dir
@@ -83,15 +104,28 @@ export default function MonthView() {
           <button className="mv-nav-btn" onClick={() => navMonth(1)}>›</button>
         </div>
 
-        {/* Filter pills */}
+        {/* Month type breakdown */}
+        {monthMins > 0 && (
+          <div className="mv-type-summary">
+            {TYPE_ORDER.filter(t => monthTypeHours[t]).map(t => (
+              <div key={t} className={`mv-type-sum-item mv-tsi-${t}`}>
+                <span className="mv-tsi-dot" />
+                <span className="mv-tsi-label">{TYPE_LABELS[t] || t}</span>
+                <span className="mv-tsi-val">{monthTypeHours[t].toFixed(1)}h</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Filter pills — colored by type */}
         <div className="mv-filters">
           {FILTER_TYPES.map(t => (
             <button
               key={t}
-              className={`mv-filter-btn${filter === t ? ' active' : ''}`}
+              className={`mv-filter-btn mv-fb-${t}${filter === t ? ' active' : ''}`}
               onClick={() => setFilter(filter === t ? null : t)}
             >
-              <span className={`mv-filter-dot tc ${TYPE_CLASS[t]}`} />
+              <span className="mv-fb-emoji">{TYPE_EMOJI[t]}</span>
               {TYPE_LABELS[t]}
             </button>
           ))}
@@ -118,6 +152,16 @@ export default function MonthView() {
             const matchesFilter = !filter || types.includes(filter)
             const dimmed = filter !== null && !matchesFilter
 
+            // Type bars — proportional horizontal segments
+            const typeMap = blockMinsByDateByType[ds] || {}
+            const totalCellMins = Object.values(typeMap).reduce((a, b) => a + b, 0)
+            const typeBars = TYPE_ORDER
+              .filter(t => (typeMap[t] || 0) > 0)
+              .map(t => ({
+                type: t,
+                pct: totalCellMins > 0 ? (typeMap[t] / totalCellMins) * 100 : 0,
+              }))
+
             return (
               <div
                 key={i}
@@ -127,23 +171,23 @@ export default function MonthView() {
               >
                 <div className="mv-day-num">{day}</div>
 
-                {types.length > 0 && (
-                  <div className="mv-type-dots">
-                    {types.slice(0, 4).map(t => (
-                      <span
-                        key={t}
-                        className={`mv-tdot tc ${TYPE_CLASS[t] || 'td'}${filter === t ? ' highlight' : ''}`}
+                {/* Colored type stack bars */}
+                {typeBars.length > 0 && (
+                  <div className="mv-type-stack">
+                    {typeBars.map(({ type, pct: p }) => (
+                      <div
+                        key={type}
+                        className={`mv-type-seg ${TYPE_CLASS[type] || 'td'}${filter === type ? ' hl' : ''}`}
+                        style={{ width: `${p}%` }}
                       />
                     ))}
                   </div>
                 )}
 
+                {/* Density fill bar at bottom */}
                 {count > 0 && (
                   <div className="mv-bar-wrap">
-                    <div
-                      className="mv-bar-fill"
-                      style={{ width: `${pct}%` }}
-                    />
+                    <div className="mv-bar-fill" style={{ width: `${pct}%` }} />
                   </div>
                 )}
               </div>

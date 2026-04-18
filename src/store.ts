@@ -144,6 +144,8 @@ interface PersistedState {
   hid: number
   habitLogs: Record<string, Record<number, HabitOutcome>>  // date → habitId → outcome
   habitNotAHabit: string[]  // lowercase block names the user said are not habits
+  checkinSuppressedHour: string | null  // YYYY-MM-DDTHH — persists "All good" suppression across refresh
+  dismissedSuggestions: Record<string, string[]>  // date → lowercase block names dismissed for that day
 }
 
 const defaultBlockModal: BlockModalState = {
@@ -390,6 +392,8 @@ type Actions = {
   removeHabit: (id: number) => void
   logHabit: (date: string, habitId: number, outcome: HabitOutcome) => void
   dismissHabitClassify: (name: string) => void
+  suppressCheckinThisHour: () => void
+  dismissSuggestion: (date: string, name: string) => void
   // PD Profiles
   savePdProfile: (id: number | null, name: string, emoji: string) => void
   loadPdProfile: (id: number) => void
@@ -458,6 +462,8 @@ export const useStore = create<Store>()(
       hid: 1,
       habitLogs: {},
       habitNotAHabit: [],
+      checkinSuppressedHour: null,
+      dismissedSuggestions: {},
 
       // ── UI defaults (not persisted) ──
       toast: '',
@@ -755,13 +761,17 @@ export const useStore = create<Store>()(
             }
           }
 
-          // After adding block: if name not yet tracked as a habit, trigger classify popup
-          const alreadyHabit = get().habits.some(h => h.name.toLowerCase() === name.toLowerCase())
+          // Only trigger habit classify popup if block name appears 3+ times total and isn't already known
+          const nameLower = name.toLowerCase()
+          const alreadyHabit = get().habits.some(h => h.name.toLowerCase() === nameLower)
+          const notAHabit = (get().habitNotAHabit || []).includes(nameLower)
+          const occurrences = blocks.filter(b => b.name.toLowerCase() === nameLower).length
+          const shouldClassify = !alreadyHabit && !notAHabit && occurrences >= 2  // 2 existing + this new = 3 total
           set({
             blocks: [...blocks, ...newBlocks],
             nid: nextNid,
             confettiKey: get().confettiKey + 1,
-            ...(alreadyHabit ? {} : { habitClassifyPending: name, checkinOpen: true }),
+            ...(shouldClassify ? { habitClassifyPending: name, checkinOpen: true } : {}),
           })
         } else if (blockModal.block) {
           set({
@@ -1125,6 +1135,16 @@ export const useStore = create<Store>()(
         habitNotAHabit: s.habitNotAHabit.includes(name.toLowerCase())
           ? s.habitNotAHabit
           : [...s.habitNotAHabit, name.toLowerCase()],
+      })),
+      suppressCheckinThisHour: () => {
+        const key = new Date().toISOString().slice(0, 13)  // YYYY-MM-DDTHH
+        set({ checkinSuppressedHour: key })
+      },
+      dismissSuggestion: (date, name) => set(s => ({
+        dismissedSuggestions: {
+          ...s.dismissedSuggestions,
+          [date]: [...(s.dismissedSuggestions[date] || []), name.toLowerCase()],
+        },
       })),
       logHabit: (date, habitId, outcome) => set(s => ({
         habitLogs: {
@@ -1515,6 +1535,8 @@ export const useStore = create<Store>()(
         hid: state.hid,
         habitLogs: state.habitLogs,
         habitNotAHabit: state.habitNotAHabit,
+        checkinSuppressedHour: state.checkinSuppressedHour,
+        dismissedSuggestions: state.dismissedSuggestions,
       }),
       onRehydrateStorage: () => (state) => {
         // Re-apply timezone on page load from persisted cfg
