@@ -377,6 +377,7 @@ type Actions = {
   bulkAddBlocks: (items: Array<{ name: string; start: string; end: string; type: Block['type']; date: string; customName?: string | null }>) => void
   // Blueprint overlay
   toggleBlueprintView: () => void
+  newDayPreset: () => void
   // PD Profiles
   savePdProfile: (id: number | null, name: string, emoji: string) => void
   loadPdProfile: (id: number) => void
@@ -1088,6 +1089,7 @@ export const useStore = create<Store>()(
       },
 
       toggleBlueprintView: () => set(s => ({ blueprintVisible: !s.blueprintVisible })),
+      newDayPreset: () => set({ perfectDay: [], activePdProfileId: null }),
 
       savePdProfile: (id, name, emoji) => {
         const { perfectDay, pdProfiles, pdpid } = get()

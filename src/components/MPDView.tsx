@@ -27,7 +27,7 @@ export default function MPDView() {
     openBlockModalForPD, openBlockModalEditPD, setPerfectDay,
     openShare, showToast, pendingAIPrompt, setPendingAIPrompt,
     userProfile, goals, intentions, blocks,
-    pdProfiles, activePdProfileId, savePdProfile, loadPdProfile, deletePdProfile,
+    pdProfiles, activePdProfileId, savePdProfile, loadPdProfile, deletePdProfile, newDayPreset,
     applyBlocksToDate, anthropicKey,
   } = useStore()
 
@@ -289,11 +289,10 @@ export default function MPDView() {
     if (!profileName.trim()) return
     const savedName = profileName.trim()
     savePdProfile(null, savedName, profileEmoji)
-    setPerfectDay([])  // clear canvas so user can build the next preset fresh
     setProfileSaveOpen(false)
     setProfileName('')
     setProfileEmoji('✨')
-    showToast(`"${savedName}" saved — canvas cleared for next preset`)
+    showToast(`"${savedName}" saved`)
   }
 
   const handleLoadProfile = (id: number) => {
@@ -395,6 +394,21 @@ export default function MPDView() {
                 >×</button>
               </span>
             ))}
+            {/* New preset button — shown when canvas has content so user can start fresh */}
+            {!profileSaveOpen && perfectDay.length > 0 && (
+              <button
+                className="mpd-profile-new-btn"
+                onClick={() => {
+                  if (activePdProfileId !== null || perfectDay.length > 0) {
+                    if (!window.confirm('Start a new preset? Your current canvas will be cleared.')) return
+                  }
+                  newDayPreset()
+                }}
+                title="clear canvas and start a new day preset"
+              >
+                + new preset
+              </button>
+            )}
             {profileSaveOpen ? (
               <span className="mpd-profile-save-form">
                 <input

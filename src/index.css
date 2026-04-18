@@ -1325,6 +1325,8 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .mpd-profile-save-btn:hover { filter:brightness(1.1); }
 .mpd-profile-add-btn { padding:5px 11px; background:none; border:1.5px dashed var(--bd2); border-radius:20px; font-family:var(--font-u); font-size:11px; color:var(--ink3); cursor:pointer; transition:all .14s; }
 .mpd-profile-add-btn:hover { border-color:var(--acc); color:var(--acc); }
+.mpd-profile-new-btn { padding:5px 11px; background:none; border:1.5px dashed var(--bd2); border-radius:20px; font-family:var(--font-u); font-size:11px; color:var(--ink3); cursor:pointer; transition:all .14s; }
+.mpd-profile-new-btn:hover { border-color:var(--ink3); color:var(--ink); }
 
 /* ── MPD: Adherence card ── */
 .mpd-adherence-card { background:var(--bg2); border:1px solid var(--bd); border-radius:14px; padding:16px; margin-bottom:14px; }
