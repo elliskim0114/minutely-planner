@@ -3683,12 +3683,13 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .blk-ghost:hover .blk-ghost-add{opacity:1}
 
 /* ── Blueprint toggle button ─────────────────────────────── */
-.tb-blueprint-tog{display:flex;align-items:center;gap:5px;height:28px;padding:0 10px;border-radius:14px;border:1.5px solid var(--bd);background:none;cursor:pointer;color:var(--ink3);font-family:var(--font-u);font-size:11px;font-weight:600;transition:all .15s var(--spring);white-space:nowrap}
-.tb-blueprint-tog:hover{border-color:var(--bd2);color:var(--ink);background:var(--bg2);transform:translateY(-1px)}
-.tb-blueprint-tog.on{border-color:rgba(99,102,241,.45);background:rgba(99,102,241,.08);color:#6366f1}
+.tb-blueprint-tog{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:8px;border:1.5px solid var(--bd);background:none;cursor:pointer;color:var(--ink3);font-family:var(--font-u);font-size:11px;font-weight:600;transition:all .15s var(--spring);white-space:nowrap;position:relative}
+.tb-blueprint-tog::before{content:'';position:absolute;inset:0;border-radius:inherit;background:transparent;transition:background .15s}
+.tb-blueprint-tog:hover{border-color:var(--bd2);color:var(--ink);background:var(--bg2);transform:translateY(-2px)}
+.tb-blueprint-tog.on{border-color:rgba(99,102,241,.5);background:rgba(99,102,241,.1);color:#6366f1}
 .tb-blueprint-tog.on .tb-bp-icon{color:#6366f1}
 .tb-blueprint-tog .tb-bp-icon{flex-shrink:0;transition:color .15s}
-@media(max-width:640px){.tb-blueprint-tog span{display:none}.tb-blueprint-tog{padding:0 8px;width:32px;border-radius:50%}}
+@media(max-width:640px){.tb-blueprint-tog span{display:none}.tb-blueprint-tog{padding:5px 7px}}
 
 /* ── MPD Profiles hint label ─────────────────────────────── */
 .mpd-profiles-hint{display:flex;align-items:center;gap:4px;font-size:10.5px;color:var(--ink4);font-family:var(--font-u);line-height:1.3}
