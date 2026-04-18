@@ -25,6 +25,7 @@ export default function CalendarGrid({ scrollId, numDays, getDate }: Props) {
     openBlockModalNew, openBlockModalEdit, updateBlock, completeBlock,
     showCtxMenu, scheduleQueueItem, trackTime, stopTimer, applyRecurring,
     setHoveredBlock, typeColorOverrides, blockMoods,
+    blueprintVisible, perfectDay, addBlock,
   } = useStore()
 
   // Ticker for live timer display
@@ -471,7 +472,55 @@ export default function CalendarGrid({ scrollId, numDays, getDate }: Props) {
           )
         })}
 
-      {/* Ghost blocks removed — seedRecurring handles forward population */}
+      {/* Blueprint ghost blocks — show blueprint items not already on the schedule */}
+      {blueprintVisible && perfectDay.length > 0 && (() => {
+        // In week view: show ghosts on today's column. In day view: show on the displayed date.
+        const blueprintDate = numDays === 1 ? dates[0] : (dates.includes(td) ? td : null)
+        if (!blueprintDate) return null
+        const di = dates.indexOf(blueprintDate)
+        if (di < 0) return null
+        const contW = containerRef.current?.offsetWidth ?? 756
+        const colW = (contW - 56) / numDays
+        return perfectDay
+          .filter(pb => {
+            const sm = toM(pb.start)
+            const em2 = toM(pb.end)
+            // Skip if out of day range
+            if (sm < startM || em2 > endM) return false
+            // Skip if a block with same name already exists on blueprint date
+            return !blocks.some(b => b.date === blueprintDate && b.name.toLowerCase() === pb.name.toLowerCase())
+          })
+          .map((pb, i) => {
+            const sm = toM(pb.start)
+            const em2 = toM(pb.end)
+            const top = m2y(sm, cfg.ds)
+            const height = Math.max(m2y(em2, cfg.ds) - top, SH - 2)
+            const left = 56 + di * colW + 2
+            const width = colW - 4
+            const isCompact = height < 50
+            return (
+              <div
+                key={`ghost-${i}`}
+                className={`blk-ghost blk-ghost-${pb.type}`}
+                style={{ top, left, width, height }}
+                title={`Add "${pb.name}" from blueprint`}
+                onClick={() => addBlock({
+                  date: blueprintDate,
+                  name: pb.name,
+                  type: pb.type,
+                  start: pb.start,
+                  end: pb.end,
+                  cc: pb.cc ? { ...pb.cc } : null,
+                  customName: pb.customName ?? null,
+                })}
+              >
+                <div className="blk-ghost-name">{pb.name}</div>
+                {!isCompact && <div className="blk-ghost-time">{fmt(pb.start, cfg.tf)} – {fmt(pb.end, cfg.tf)}</div>}
+                <div className="blk-ghost-add">+ add</div>
+              </div>
+            )
+          })
+      })()}
     </div>
   )
 }

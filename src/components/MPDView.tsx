@@ -308,21 +308,21 @@ export default function MPDView() {
     setProfileSaveOpen(false)
     setProfileName('')
     setProfileEmoji('✨')
-    showToast(`profile "${profileName.trim()}" saved`)
+    showToast(`preset "${profileName.trim()}" saved`)
   }
 
   const handleLoadProfile = (id: number) => {
     const profile = pdProfiles.find(p => p.id === id)
     if (!profile) return
     if (activePdProfileId !== id && perfectDay.length > 0) {
-      if (!window.confirm(`Load "${profile.name}" profile? Your current blueprint will be replaced.`)) return
+      if (!window.confirm(`Load "${profile.name}" preset? Your current blueprint will be replaced.`)) return
     }
     loadPdProfile(id)
     showToast(`loaded "${profile.name}"`)
   }
 
   const handleDeleteProfile = (id: number, name: string) => {
-    if (!window.confirm(`Delete "${name}" profile?`)) return
+    if (!window.confirm(`Delete "${name}" preset?`)) return
     deletePdProfile(id)
     showToast(`"${name}" deleted`)
   }
@@ -423,10 +423,17 @@ export default function MPDView() {
           </div>
         </div>
 
-        {/* Profile switcher */}
+        {/* Day presets */}
         <div className="mpd-profiles-section">
           <div className="mpd-profiles-header">
-            <span className="mpd-profiles-label">saved profiles</span>
+            <span className="mpd-profiles-label">day presets</span>
+            <span className="mpd-profiles-hint" title="Save different versions of your perfect day — e.g. a 'work day', 'rest day', or 'travel day'. Switch between them any time.">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2"/>
+                <path d="M6 5.5v3M6 4h.01" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+              </svg>
+              save different versions of your perfect day to switch between
+            </span>
           </div>
           <div className="mpd-profiles-row">
             {pdProfiles.map(p => (
@@ -434,13 +441,13 @@ export default function MPDView() {
                 key={p.id}
                 className={`mpd-profile-chip${activePdProfileId === p.id ? ' active' : ''}`}
                 onClick={() => handleLoadProfile(p.id)}
-                title={activePdProfileId === p.id ? 'active profile' : `load "${p.name}"`}
+                title={activePdProfileId === p.id ? 'active preset' : `load "${p.name}"`}
               >
                 {p.emoji} {p.name}
                 <button
                   className="mpd-profile-chip-del"
                   onClick={e => { e.stopPropagation(); handleDeleteProfile(p.id, p.name) }}
-                  title="delete profile"
+                  title="delete preset"
                 >×</button>
               </span>
             ))}
@@ -454,7 +461,7 @@ export default function MPDView() {
                 />
                 <input
                   className="mpd-profile-name-inp"
-                  placeholder="profile name…"
+                  placeholder="preset name…"
                   value={profileName}
                   onChange={e => setProfileName(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') handleSaveProfile(); if (e.key === 'Escape') setProfileSaveOpen(false) }}
@@ -465,7 +472,7 @@ export default function MPDView() {
               </span>
             ) : (
               <button className="mpd-profile-add-btn" onClick={() => setProfileSaveOpen(true)}>
-                + save current as profile
+                + save as day preset
               </button>
             )}
           </div>

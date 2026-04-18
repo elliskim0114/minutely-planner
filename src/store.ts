@@ -137,6 +137,7 @@ interface PersistedState {
   pdProfiles: PDProfile[]
   activePdProfileId: number | null
   pdpid: number  // next profile id counter
+  blueprintVisible: boolean
 }
 
 const defaultBlockModal: BlockModalState = {
@@ -374,6 +375,8 @@ type Actions = {
   openWeekPlan: () => void
   closeWeekPlan: () => void
   bulkAddBlocks: (items: Array<{ name: string; start: string; end: string; type: Block['type']; date: string; customName?: string | null }>) => void
+  // Blueprint overlay
+  toggleBlueprintView: () => void
   // PD Profiles
   savePdProfile: (id: number | null, name: string, emoji: string) => void
   loadPdProfile: (id: number) => void
@@ -437,6 +440,7 @@ export const useStore = create<Store>()(
       pdProfiles: [],
       activePdProfileId: null,
       pdpid: 1,
+      blueprintVisible: true,
 
       // ── UI defaults (not persisted) ──
       toast: '',
@@ -1083,6 +1087,8 @@ export const useStore = create<Store>()(
         set({ blocks: [...blocks, ...newBlocks], nid: id })
       },
 
+      toggleBlueprintView: () => set(s => ({ blueprintVisible: !s.blueprintVisible })),
+
       savePdProfile: (id, name, emoji) => {
         const { perfectDay, pdProfiles, pdpid } = get()
         if (id !== null) {
@@ -1460,6 +1466,7 @@ export const useStore = create<Store>()(
         pdProfiles: state.pdProfiles,
         activePdProfileId: state.activePdProfileId,
         pdpid: state.pdpid,
+        blueprintVisible: state.blueprintVisible,
       }),
       onRehydrateStorage: () => (state) => {
         // Re-apply timezone on page load from persisted cfg

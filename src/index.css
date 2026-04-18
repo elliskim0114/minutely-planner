@@ -3651,4 +3651,29 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .sm-signout-btn{flex:1;padding:8px;border-radius:8px;border:1.5px solid rgba(251,146,60,.3);background:rgba(251,146,60,.06);color:#fb923c;font-size:12px;cursor:pointer;transition:background .15s,border-color .15s}
 .sm-signout-btn:hover{background:rgba(251,146,60,.14);border-color:rgba(251,146,60,.5)}
 .sm-delete-btn{flex:1;padding:8px;border-radius:8px;border:1.5px solid rgba(239,68,68,.25);background:rgba(239,68,68,.05);color:#ef4444;font-size:12px;cursor:pointer;transition:background .15s,border-color .15s}
+
+/* ── Blueprint Ghost Blocks ───────────────────────────────── */
+.blk-ghost{position:absolute;border-radius:var(--r-sm);padding:5px 8px;z-index:3;overflow:hidden;cursor:pointer;border:1.5px dashed;opacity:0.38;transition:opacity .18s,transform .15s var(--spring);display:flex;flex-direction:column;gap:2px;pointer-events:all;user-select:none}
+.blk-ghost:hover{opacity:0.75;transform:translateY(-1px) scale(1.01);z-index:6}
+.blk-ghost-focus{background:var(--bfbg);border-color:var(--bfbd);color:var(--bfink)}
+.blk-ghost-routine{background:var(--brbg);border-color:var(--brbd);color:var(--brink)}
+.blk-ghost-study{background:var(--bsbg);border-color:var(--bsbd);color:var(--bsink)}
+.blk-ghost-free{background:var(--blbg);border-color:var(--blbd);color:var(--blink)}
+.blk-ghost-custom{background:var(--bdbg);border-color:var(--bdbd);color:var(--bdink)}
+.blk-ghost-name{font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
+.blk-ghost-time{font-size:9.5px;opacity:.75;font-family:var(--font-m);line-height:1.2}
+.blk-ghost-add{font-size:9px;font-weight:700;letter-spacing:.04em;opacity:0;transition:opacity .15s;margin-top:auto}
+.blk-ghost:hover .blk-ghost-add{opacity:1}
+
+/* ── Blueprint toggle button ─────────────────────────────── */
+.tb-blueprint-tog{display:flex;align-items:center;gap:5px;height:28px;padding:0 10px;border-radius:14px;border:1.5px solid var(--bd);background:none;cursor:pointer;color:var(--ink3);font-family:var(--font-u);font-size:11px;font-weight:600;transition:all .15s var(--spring);white-space:nowrap}
+.tb-blueprint-tog:hover{border-color:var(--bd2);color:var(--ink);background:var(--bg2);transform:translateY(-1px)}
+.tb-blueprint-tog.on{border-color:rgba(99,102,241,.45);background:rgba(99,102,241,.08);color:#6366f1}
+.tb-blueprint-tog.on .tb-bp-icon{color:#6366f1}
+.tb-blueprint-tog .tb-bp-icon{flex-shrink:0;transition:color .15s}
+@media(max-width:640px){.tb-blueprint-tog span{display:none}.tb-blueprint-tog{padding:0 8px;width:32px;border-radius:50%}}
+
+/* ── MPD Profiles hint label ─────────────────────────────── */
+.mpd-profiles-hint{display:flex;align-items:center;gap:4px;font-size:10.5px;color:var(--ink4);font-family:var(--font-u);line-height:1.3}
+.mpd-profiles-hint svg{flex-shrink:0;opacity:.7}
 .sm-delete-btn:hover{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.45)}

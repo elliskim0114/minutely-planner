@@ -7,6 +7,7 @@ export default function Topbar() {
     view, wOff, selDate,
     toggleSidebar, navWeek, navDay,
     openCoach, openFocus, openCapture, openWhatNow,
+    blueprintVisible, toggleBlueprintView, perfectDay,
   } = useStore()
 
   const getLabel = () => {
@@ -50,6 +51,22 @@ export default function Topbar() {
       {/* Right arrow */}
       {isCalendar && (
         <button className="tnb tnb-nav" onClick={() => handleNav(1)}>›</button>
+      )}
+
+      {/* Blueprint toggle — only shown in week/day view when blueprint has blocks */}
+      {isCalendar && perfectDay.length > 0 && (
+        <button
+          className={`tnb tb-blueprint-tog${blueprintVisible ? ' on' : ''}`}
+          onClick={toggleBlueprintView}
+          title={blueprintVisible ? 'hide blueprint overlay' : 'show blueprint overlay'}
+        >
+          <svg className="tb-bp-icon" width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <rect x="1.5" y="3" width="11" height="2" rx="0.5" stroke="currentColor" strokeWidth="1.3" fill="none" strokeDasharray="2 1"/>
+            <rect x="1.5" y="6.5" width="11" height="2" rx="0.5" stroke="currentColor" strokeWidth="1.3" fill="none" strokeDasharray="2 1"/>
+            <rect x="1.5" y="10" width="7" height="2" rx="0.5" stroke="currentColor" strokeWidth="1.3" fill="none" strokeDasharray="2 1"/>
+          </svg>
+          <span>blueprint</span>
+        </button>
       )}
 
       <div className="tsp" />
