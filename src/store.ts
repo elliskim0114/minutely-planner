@@ -143,6 +143,7 @@ interface PersistedState {
   habits: Habit[]
   hid: number
   habitLogs: Record<string, Record<number, HabitOutcome>>  // date → habitId → outcome
+  habitNotAHabit: string[]  // lowercase block names the user said are not habits
 }
 
 const defaultBlockModal: BlockModalState = {
@@ -388,6 +389,7 @@ type Actions = {
   addHabit: (name: string, kind: 'good' | 'bad', emoji: string) => void
   removeHabit: (id: number) => void
   logHabit: (date: string, habitId: number, outcome: HabitOutcome) => void
+  dismissHabitClassify: (name: string) => void
   // PD Profiles
   savePdProfile: (id: number | null, name: string, emoji: string) => void
   loadPdProfile: (id: number) => void
@@ -455,6 +457,7 @@ export const useStore = create<Store>()(
       habits: [],
       hid: 1,
       habitLogs: {},
+      habitNotAHabit: [],
 
       // ── UI defaults (not persisted) ──
       toast: '',
@@ -1118,6 +1121,11 @@ export const useStore = create<Store>()(
         return { habits: [...s.habits, { id: s.hid, name, kind, emoji }], hid: s.hid + 1 }
       }),
       removeHabit: (id) => set(s => ({ habits: s.habits.filter(h => h.id !== id) })),
+      dismissHabitClassify: (name) => set(s => ({
+        habitNotAHabit: s.habitNotAHabit.includes(name.toLowerCase())
+          ? s.habitNotAHabit
+          : [...s.habitNotAHabit, name.toLowerCase()],
+      })),
       logHabit: (date, habitId, outcome) => set(s => ({
         habitLogs: {
           ...s.habitLogs,
@@ -1506,6 +1514,7 @@ export const useStore = create<Store>()(
         habits: state.habits,
         hid: state.hid,
         habitLogs: state.habitLogs,
+        habitNotAHabit: state.habitNotAHabit,
       }),
       onRehydrateStorage: () => (state) => {
         // Re-apply timezone on page load from persisted cfg

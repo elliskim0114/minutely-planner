@@ -21,10 +21,10 @@ export default function CoachCheckin() {
     closeCheckin, openCoachAt, blocks, cfg,
     bulkAddBlocks, habits, habitLogs, logHabit, addHabit,
     habitClassifyPending, setHabitClassifyPending,
+    habitNotAHabit, dismissHabitClassify,
   } = useStore()
 
   const [qIdx, setQIdx] = useState(0)
-  const [skippedNames, setSkippedNames] = useState<string[]>([])
   const [suggestionDismissed, setSuggestionDismissed] = useState(false)
 
   const now = new Date()
@@ -56,13 +56,16 @@ export default function CoachCheckin() {
       const lower = b.name.toLowerCase()
       if (seen.has(lower)) continue
       seen.add(lower)
-      if (!habits.some(h => h.name.toLowerCase() === lower) && !skippedNames.includes(lower)) {
+      if (
+        !habits.some(h => h.name.toLowerCase() === lower) &&
+        !habitNotAHabit.includes(lower)
+      ) {
         names.push(b.name)
         if (names.length >= 5) break
       }
     }
     return names
-  }, [blocks, habits, skippedNames]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [blocks, habits, habitNotAHabit]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Pending habit logs ──
   const todayLogs = habitLogs[td] || {}
@@ -99,8 +102,12 @@ export default function CoachCheckin() {
   const advance = () => setQIdx(i => i + 1)
 
   const handleClassify = (name: string, kind: 'good' | 'bad' | null) => {
-    if (kind) addHabit(name, kind, kind === 'good' ? '✅' : '🚫')
-    setSkippedNames(prev => [...prev, name.toLowerCase()])
+    if (kind) {
+      addHabit(name, kind, kind === 'good' ? '✅' : '🚫')
+    } else {
+      // Persist "not a habit" so coach never asks again
+      dismissHabitClassify(name)
+    }
     if (habitClassifyPending && name.toLowerCase() === habitClassifyPending.toLowerCase()) {
       setHabitClassifyPending(null)
     }
