@@ -287,11 +287,13 @@ export default function MPDView() {
   // ── Profile save handler ────────────────────────────────────────────────────
   const handleSaveProfile = () => {
     if (!profileName.trim()) return
-    savePdProfile(null, profileName.trim(), profileEmoji)
+    const savedName = profileName.trim()
+    savePdProfile(null, savedName, profileEmoji)
+    setPerfectDay([])  // clear canvas so user can build the next preset fresh
     setProfileSaveOpen(false)
     setProfileName('')
     setProfileEmoji('✨')
-    showToast(`preset "${profileName.trim()}" saved`)
+    showToast(`"${savedName}" saved — canvas cleared for next preset`)
   }
 
   const handleLoadProfile = (id: number) => {
