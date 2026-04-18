@@ -415,11 +415,6 @@ export default function AnalyticsView() {
               <div className="av-card-hdr">
                 <div className="av-card-ttl">habit tracker · last 30 days</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {!editingHabits && (() => {
-                    const onTrack = habitStats.filter(h => h.pct !== null && h.pct >= 70).length
-                    const total = habitStats.filter(h => h.total > 0).length
-                    return total > 0 ? <span className="av-habit-score">{onTrack}/{total} on track</span> : null
-                  })()}
                   <button className="av-goals-btn" onClick={() => { setEditingHabits(e => !e); setNewHabitName('') }}>
                     {editingHabits ? 'done' : 'manage'}
                   </button>
