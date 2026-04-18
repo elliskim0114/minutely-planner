@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { useStore } from '../store'
 import { CCOLS } from '../constants'
 import { toM, getFreeSlots } from '../utils'
-import type { Block } from '../types'
+import type { Block, Goal } from '../types'
 
 // ── Smart type prediction ──────────────────────────────────────────────────
 type Prediction = { type: string; customName?: string; label: string }
@@ -56,6 +56,34 @@ function predictType(
   return null
 }
 
+// ── Smart goal prediction ──────────────────────────────────────────────────
+function predictGoal(
+  name: string,
+  recentBlocks: Array<{ name: string; goalId?: number | null }>,
+  goals: Goal[],
+): { id: number; name: string; color: string } | null {
+  if (!name.trim() || name.length < 3 || goals.length === 0) return null
+  const n = name.toLowerCase().trim()
+
+  // Count how often each goalId has been used with blocks of the same name
+  const counts: Record<number, number> = {}
+  for (const b of recentBlocks) {
+    if (b.goalId && b.name.toLowerCase() === n) {
+      counts[b.goalId] = (counts[b.goalId] || 0) + 1
+    }
+  }
+
+  const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]
+  if (!top) return null
+  const [idStr, count] = top
+  // Require at least 2 uses before suggesting (more conservative than type)
+  if (count < 2) return null
+  const goalId = parseInt(idStr)
+  const goal = goals.find(g => g.id === goalId)
+  if (!goal) return null
+  return { id: goalId, name: goal.name, color: goal.color }
+}
+
 const DARK_THRESHOLD = ['midnight', 'forest', 'espresso', 'galaxy']
 
 type BType = Block['type'] | 'custom'
@@ -101,6 +129,7 @@ export default function BlockModal() {
   const [showNewLabelInput, setShowNewLabelInput] = useState(false)
   const [newLabelVal, setNewLabelVal] = useState('')
   const [suggestion, setSuggestion] = useState<Prediction | null>(null)
+  const [goalSuggestion, setGoalSuggestion] = useState<{ id: number; name: string; color: string } | null>(null)
   const suggestTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // ── Drag-to-reorder: only active when user explicitly unlocks label order ──
@@ -269,12 +298,17 @@ export default function BlockModal() {
             const val = e.target.value
             setName(val)
             setSuggestion(null)
+            setGoalSuggestion(null)
             if (suggestTimer.current) clearTimeout(suggestTimer.current)
             suggestTimer.current = setTimeout(() => {
               const pred = predictType(val, customLabels, blocks)
-              // Only suggest if it differs from current selection
               if (pred && !(pred.type === type && pred.customName === customName)) {
                 setSuggestion(pred)
+              }
+              // Only suggest a goal if none is already set and user hasn't picked one
+              if (!goalId) {
+                const gPred = predictGoal(val, blocks, goals)
+                if (gPred) setGoalSuggestion(gPred)
               }
             }, 420)
           }}
@@ -479,18 +513,26 @@ export default function BlockModal() {
           <>
             <span className="mlbl">goal</span>
             <div className="mtyps goal-chips">
-              <button className={`mtyp${!goalId ? ' af' : ''}`} onClick={() => setGoalId(null)}>none</button>
+              <button className={`mtyp${!goalId ? ' af' : ''}`} onClick={() => { setGoalId(null); setGoalSuggestion(null) }}>none</button>
               {goals.map(g => (
                 <button
                   key={g.id}
                   className={`mtyp goal-chip${goalId === g.id ? ' af' : ''}`}
                   style={goalId === g.id ? { background: g.color, borderColor: g.color, color: '#fff' } : { borderColor: g.color, color: g.color }}
-                  onClick={() => setGoalId(goalId === g.id ? null : g.id)}
+                  onClick={() => { setGoalId(goalId === g.id ? null : g.id); setGoalSuggestion(null) }}
                 >
                   {g.name}
                 </button>
               ))}
             </div>
+            {goalSuggestion && !goalId && (
+              <button
+                className="blk-goal-suggest"
+                onClick={() => { setGoalId(goalSuggestion.id); setGoalSuggestion(null) }}
+              >
+                ✦ usually tagged as <strong style={{ color: goalSuggestion.color }}>{goalSuggestion.name}</strong> — apply?
+              </button>
+            )}
           </>
         )}
 

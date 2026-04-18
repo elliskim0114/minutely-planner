@@ -1617,6 +1617,21 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .blk-type-suggest:hover{background:var(--accbg2);transform:translateY(-1px)}
 .blk-type-suggest strong{font-weight:700}
 @keyframes suggest-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.blk-goal-suggest{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 11px;
+  margin-top:6px;
+  background:var(--bg2);
+  border:1px dashed var(--bd2);
+  border-radius:20px;
+  cursor:pointer;
+  font-family:var(--font-u);font-size:11px;font-weight:500;
+  color:var(--ink2);
+  transition:background .15s,border-color .15s,transform .12s;
+  animation:suggest-in .2s var(--spring);
+}
+.blk-goal-suggest:hover{background:var(--bg3);border-color:var(--ink4);transform:translateY(-1px)}
+.blk-goal-suggest strong{font-weight:700}
 
 .free-slots{margin-top:10px}
 .free-slots-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink4);display:block;margin-bottom:6px}
