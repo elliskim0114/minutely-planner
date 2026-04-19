@@ -1,8 +1,8 @@
 import { useStore } from '../store'
-import { toT, toM } from '../utils'
+import { toT, toM, todayStr } from '../utils'
 
 export default function ContextMenu() {
-  const { ctxMenu, hideCtxMenu, ctxCopy, ctxPaste, ctxDelete, copiedBlock, openBlockModalEdit, openBlockModalNew, cfg } = useStore()
+  const { ctxMenu, hideCtxMenu, ctxCopy, ctxPaste, ctxDelete, copiedBlock, openBlockModalEdit, openBlockModalNew, cfg, deleteFutureBlocks, blocks } = useStore()
   const { x, y, block } = ctxMenu
 
   const safeX = Math.min(x, window.innerWidth - 210)
@@ -75,13 +75,30 @@ export default function ContextMenu() {
       {block && (
         <>
           <div className="ctx-sep" />
+          {/* "delete this + future" — only show when future copies exist */}
+          {block && blocks.some(b => b.name.toLowerCase() === block.name.toLowerCase() && b.date > block.date) && (
+            <div className="ctx-item red" onClick={() => {
+              hideCtxMenu()
+              deleteFutureBlocks(block.id)
+              useStore.getState().showToast(`removed this + all future "${block.name}"`)
+            }}>
+              <svg viewBox="0 0 13 13" fill="none">
+                <path d="M2 3.5h9M5 3.5V2h3v1.5M4 3.5l.5 7h4l.5-7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M9.5 7l2 2M11.5 7l-2 2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+              </svg>
+              <div className="ctx-content">
+                <div className="ctx-lbl">delete this + future</div>
+                <div className="ctx-sub">remove all "{block.name}" from today on</div>
+              </div>
+            </div>
+          )}
           <div className="ctx-item red" onClick={ctxDelete}>
             <svg viewBox="0 0 13 13" fill="none">
               <path d="M2 3.5h9M5 3.5V2h3v1.5M4 3.5l.5 7h4l.5-7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
             <div className="ctx-content">
               <div className="ctx-lbl">delete block</div>
-              <div className="ctx-sub">permanently remove this block</div>
+              <div className="ctx-sub">remove just this one</div>
             </div>
           </div>
         </>

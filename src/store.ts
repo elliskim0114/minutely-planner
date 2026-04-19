@@ -394,6 +394,7 @@ type Actions = {
   dismissHabitClassify: (name: string) => void
   suppressCheckinThisHour: () => void
   dismissSuggestion: (date: string, name: string) => void
+  deleteFutureBlocks: (blockId: number) => void
   // PD Profiles
   savePdProfile: (id: number | null, name: string, emoji: string) => void
   loadPdProfile: (id: number) => void
@@ -1136,6 +1137,18 @@ export const useStore = create<Store>()(
           ? s.habitNotAHabit
           : [...s.habitNotAHabit, name.toLowerCase()],
       })),
+      deleteFutureBlocks: (blockId) => set(s => {
+        const block = s.blocks.find(b => b.id === blockId)
+        if (!block) return {}
+        const nameLower = block.name.toLowerCase()
+        return {
+          blockHistory: [...s.blockHistory.slice(-29), s.blocks],
+          blockFuture: [],
+          blocks: s.blocks.filter(b =>
+            !(b.name.toLowerCase() === nameLower && b.date >= block.date)
+          ),
+        }
+      }),
       suppressCheckinThisHour: () => {
         const key = new Date().toISOString().slice(0, 13)  // YYYY-MM-DDTHH
         set({ checkinSuppressedHour: key })

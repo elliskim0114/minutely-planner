@@ -101,7 +101,7 @@ const ALL_BUILTIN: Array<{ key: BType; dot: string }> = [
 
 export default function BlockModal() {
   const {
-    blockModal, closeBlockModal, saveBlockModal, deleteFromBlockModal, stopAndCleanRecurring,
+    blockModal, closeBlockModal, saveBlockModal, deleteFromBlockModal, stopAndCleanRecurring, deleteFutureBlocks,
     customLabels, customLabelColors, addCustomLabel, removeCustomLabel, reorderCustomLabels, saveAsTemplate,
     blocks, cfg, setTypeColorOverride, hideBuiltinCustom, setHideBuiltinCustom,
     hiddenBuiltinTypes, hideBuiltinType, showBuiltinType,
@@ -611,15 +611,24 @@ export default function BlockModal() {
         <div className="macts">
           {!isNew && !deleteConfirm && (
             <button className="mact-btn mdel" onClick={() => {
-              const hasOtherCopies = block && blocks.some(b => b.name.toLowerCase() === block.name.toLowerCase() && b.repeat && b.repeat !== 'none')
-              if (hasOtherCopies) { setDeleteConfirm(true) } else { deleteFromBlockModal() }
+              const hasCopies = block && blocks.some(b =>
+                b.name.toLowerCase() === block.name.toLowerCase() && b.id !== block.id
+              )
+              if (hasCopies) { setDeleteConfirm(true) } else { deleteFromBlockModal() }
             }}>delete</button>
           )}
           {!isNew && deleteConfirm && (
             <div className="mdel-confirm">
               <span className="mdel-confirm-lbl">delete…</span>
               <button className="mact-btn mdel" onClick={deleteFromBlockModal}>just this</button>
-              <button className="mact-btn mdel" style={{whiteSpace:'nowrap'}} onClick={() => { stopAndCleanRecurring(block!.id); closeBlockModal(); useStore.getState().showToast(`removed all "${block!.name}" copies`) }}>every copy</button>
+              {block && blocks.some(b => b.name.toLowerCase() === block.name.toLowerCase() && b.date >= block.date && b.id !== block.id) && (
+                <button className="mact-btn mdel" style={{whiteSpace:'nowrap'}} onClick={() => {
+                  deleteFutureBlocks(block!.id)
+                  closeBlockModal()
+                  useStore.getState().showToast(`removed this + all future "${block!.name}"`)
+                }}>this + future</button>
+              )}
+              <button className="mact-btn mdel" style={{whiteSpace:'nowrap'}} onClick={() => { stopAndCleanRecurring(block!.id); closeBlockModal(); useStore.getState().showToast(`removed all "${block!.name}" copies`) }}>all copies</button>
               <button className="mact-btn" style={{opacity:.55,fontSize:11}} onClick={() => setDeleteConfirm(false)}>cancel</button>
             </div>
           )}
