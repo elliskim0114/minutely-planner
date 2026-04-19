@@ -82,6 +82,115 @@ export const totalDayMinutes = (cfg: Config): number => toM(cfg.de) - toM(cfg.ds
 // Using new Date("2026-03-25") parses as UTC midnight → wrong day in western timezones
 export const parseLocalDate = (dateStr: string): Date => new Date(dateStr + 'T00:00:00')
 
+// ── Natural-language block parser (client-side, no API needed) ──────────────
+// Handles: "deep work 2pm–4pm", "standup 9am 30min", "gym tomorrow 7am 1h"
+export function parseNL(
+  text: string,
+  today: string,
+  cfg: { ds: string; de: string },
+): { name: string; start: string; end: string; type: 'focus' | 'routine' | 'study' | 'free'; date: string } | null {
+  const raw = text.trim()
+  if (!raw) return null
+
+  const p2 = (n: number) => String(n).padStart(2, '0')
+  const minsToStr = (m: number) => `${p2(Math.floor(m / 60))}:${p2(m % 60)}`
+  const endM = toM(cfg.de)
+
+  // Convert "H[:MM] [am|pm]" token to 24h minutes; ampm may be undefined
+  const hToM = (h: number, m: number, ap?: string): number => {
+    let hh = h
+    if (ap) {
+      const a = ap.toLowerCase()
+      if (a === 'pm' && hh !== 12) hh += 12
+      if (a === 'am' && hh === 12) hh = 0
+    } else {
+      // no am/pm hint — hours 1–7 → assume PM; 8–12 stay as-is
+      if (hh >= 1 && hh <= 7) hh += 12
+    }
+    return hh * 60 + m
+  }
+
+  // ── Date extraction ──
+  let date = today
+  let working = raw
+
+  if (/\btomorrow\b/i.test(working)) {
+    const d = new Date(today + 'T12:00'); d.setDate(d.getDate() + 1)
+    date = d.toISOString().slice(0, 10)
+    working = working.replace(/\btomorrow\b/i, '').trim()
+  } else {
+    const DOWS = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday']
+    for (const [i, day] of DOWS.entries()) {
+      if (new RegExp(`\\b${day}\\b`, 'i').test(working)) {
+        const base = new Date(today + 'T12:00')
+        let diff = i - base.getDay(); if (diff <= 0) diff += 7
+        base.setDate(base.getDate() + diff)
+        date = base.toISOString().slice(0, 10)
+        working = working.replace(new RegExp(`\\b${day}\\b`, 'i'), '').trim()
+        break
+      }
+    }
+  }
+
+  // ── Time extraction ──
+  // Time range: "2pm-4pm", "14:00–16:00", "2:30pm to 4pm"
+  const rangeRe = /(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\s*(?:-{1,2}|–|to)\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i
+  // Single time: "2pm", "14:30"
+  const singleRe = /\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/i
+  // Duration: "1h", "30m", "45min", "1.5h", "1 hour"
+  const durRe = /(\d+(?:\.\d+)?)\s*h(?:ours?|r)?\b|(\d+)\s*m(?:in(?:utes?)?)?\b/i
+
+  let startMins: number | null = null
+  let endMins: number | null = null
+  let nameText = working
+
+  const rangeM = working.match(rangeRe)
+  if (rangeM) {
+    const [full, h1, m1, ap1, h2, m2, ap2] = rangeM
+    const inferredAp = ap1 || ap2  // propagate am/pm across range
+    startMins = hToM(+h1, +(m1 || 0), ap1 || (ap2 && !ap1 ? inferredAp : undefined))
+    endMins   = hToM(+h2, +(m2 || 0), ap2 || (ap1 && !ap2 ? inferredAp : undefined))
+    if (endMins <= startMins) endMins += 12 * 60  // e.g. "11pm–1am"
+    nameText = working.replace(full, '').trim()
+  } else {
+    const singleM = working.match(singleRe)
+    if (singleM) {
+      const [full, h, m, ap] = singleM
+      startMins = hToM(+h, +(m || 0), ap)
+      nameText = working.replace(full, '').trim()
+      // Look for duration in remaining text
+      const durM = nameText.match(durRe)
+      if (durM) {
+        const durMins = durM[1] ? Math.round(+durM[1] * 60) : +durM[2]
+        endMins = startMins + durMins
+        nameText = nameText.replace(durM[0], '').trim()
+      } else {
+        endMins = startMins + 60  // default 1h
+      }
+    }
+  }
+
+  if (startMins === null || endMins === null) return null
+  endMins = Math.min(endMins, endM)
+  if (endMins <= startMins) return null
+
+  // ── Name cleanup ──
+  const name = nameText.replace(/\s+/g, ' ').replace(/^[\s,.\-–]+|[\s,.\-–]+$/g, '').trim()
+  if (!name) return null
+
+  // ── Type detection from name ──
+  const nl = name.toLowerCase()
+  let type: 'focus' | 'routine' | 'study' | 'free' = 'routine'
+  if (/deep work|focus|coding|design|writing|build|develop|implement|draft|produce/.test(nl)) type = 'focus'
+  else if (/study|learn|homework|revision|reading session|research|practice|course|workshop/.test(nl)) type = 'study'
+  else if (/gym|workout|run(?:ning)?|yoga|pilates|walk|hike|swim|exercise|sport|lunch|dinner|break|nap|rest|relax|media/.test(nl)) type = 'free'
+
+  // Title-case name
+  const titled = name.replace(/\b\w/g, c => c.toUpperCase())
+
+  return { name: titled, start: minsToStr(startMins), end: minsToStr(endMins), type, date }
+}
+
 export function getFreeSlots(
   blocks: Array<{ start: string; end: string }>,
   ds: string,

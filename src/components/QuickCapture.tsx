@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useStore } from '../store'
-import { todayStr } from '../utils'
+import { todayStr, parseNL } from '../utils'
 
 interface Props { onClose: () => void }
 
@@ -26,6 +26,18 @@ export default function QuickCapture({ onClose }: Props) {
   const submit = async (text: string) => {
     const t = text.trim()
     if (!t || loading) return
+
+    // Try client-side NL parser first — works offline, zero latency
+    const { cfg } = useStore.getState()
+    const local = parseNL(t, todayStr(), cfg)
+    if (local) {
+      addBlock({ name: local.name, date: local.date, start: local.start, end: local.end, type: local.type, cc: null, customName: null })
+      showToast(`"${local.name}" added ✓`)
+      onClose()
+      return
+    }
+
+    // Fall back to AI server for complex / ambiguous input
     setLoading(true)
     setHint('')
     try {
@@ -38,25 +50,17 @@ export default function QuickCapture({ onClose }: Props) {
       const blocks = Array.isArray(data) ? data.filter((b: any) => b.start && b.end) : []
       if (blocks.length > 0) {
         blocks.forEach((b: any) => {
-          addBlock({
-            name: b.name,
-            date: b.date || todayStr(),
-            start: b.start,
-            end: b.end,
-            type: b.type || 'routine',
-            cc: null,
-            customName: null,
-          })
+          addBlock({ name: b.name, date: b.date || todayStr(), start: b.start, end: b.end, type: b.type || 'routine', cc: null, customName: null })
         })
         showToast(`${blocks.length} block${blocks.length !== 1 ? 's' : ''} added ✓`)
         onClose()
       } else {
-        setHint("couldn't find a time — try adding one, e.g. 'meeting 2pm 1h'")
+        setHint("couldn't find a time — try e.g. 'meeting 2pm 1h' or 'gym 7am–8am'")
         setLoading(false)
         inputRef.current?.select()
       }
     } catch {
-      setHint('something went wrong — try again')
+      setHint("couldn't reach server — try: 'standup 9am 30min' (works offline too)")
       setLoading(false)
     }
   }

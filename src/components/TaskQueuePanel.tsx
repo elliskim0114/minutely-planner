@@ -87,7 +87,17 @@ export default function TaskQueuePanel({ onClose }: Props) {
         ) : (
           <div className="tq-list">
             {queue.map(item => (
-              <div key={item.id} className="tq-item">
+              <div
+                key={item.id}
+                className="tq-item"
+                draggable
+                onDragStart={e => {
+                  e.dataTransfer.setData('queue-item-id', String(item.id))
+                  e.dataTransfer.effectAllowed = 'copy'
+                }}
+                title="drag onto the calendar to place, or click schedule →"
+              >
+                <div className="tq-drag-handle" title="drag to calendar">⠿</div>
                 <div
                   className="tq-item-dot"
                   style={{ background: TYPE_DOTS[item.type] || 'var(--acc)' }}

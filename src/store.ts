@@ -226,6 +226,7 @@ type Actions = {
     name: string; start: string; end: string
     type: Block['type']; ccIdx: number | null; customName: string | null
     repeat?: Block['repeat']; goalId?: number | null; note?: string | null
+    protected?: boolean
   }) => void
   deleteFromBlockModal: () => void
 
@@ -726,7 +727,7 @@ export const useStore = create<Store>()(
         })
       },
       closeBlockModal: () => set({ blockModal: { ...get().blockModal, open: false } }),
-      saveBlockModal: ({ name, start, end, type, ccIdx, customName, repeat, goalId, note }) => {
+      saveBlockModal: ({ name, start, end, type, ccIdx, customName, repeat, goalId, note, protected: isProtected }) => {
         const { blockModal, blocks, perfectDay, nid } = get()
         const fromQueueId = blockModal.fromQueueId  // capture before any state resets
         const cc = type === 'custom' && ccIdx !== null ? { ...CCOLS[ccIdx] } : null
@@ -748,7 +749,7 @@ export const useStore = create<Store>()(
         const MEETING_KEYWORDS = ['meeting', 'call', 'sync', 'standup', 'interview', 'demo', 'review', 'presentation', '1:1', 'one-on-one', 'oneon-one']
 
         if (blockModal.isNew) {
-          const newBlocks: Block[] = [{ id: nid, date: blockModal.date!, name, type: actualType, start, end, cc, customName, repeat: repeat || 'none', goalId: goalId ?? null, note: note || null }]
+          const newBlocks: Block[] = [{ id: nid, date: blockModal.date!, name, type: actualType, start, end, cc, customName, repeat: repeat || 'none', goalId: goalId ?? null, note: note || null, protected: isProtected || undefined }]
           let nextNid = nid + 1
 
           // Meeting Prep Auto-block: if it's a routine block with a meeting keyword, add a 10-min prep before it
@@ -784,7 +785,7 @@ export const useStore = create<Store>()(
         } else if (blockModal.block) {
           set({
             blocks: blocks.map(b => b.id === blockModal.block!.id
-              ? { ...b, name, type: actualType, start, end, cc, customName, repeat: repeat || b.repeat || 'none', goalId: goalId !== undefined ? goalId : b.goalId, note: note !== undefined ? note : b.note }
+              ? { ...b, name, type: actualType, start, end, cc, customName, repeat: repeat || b.repeat || 'none', goalId: goalId !== undefined ? goalId : b.goalId, note: note !== undefined ? note : b.note, protected: isProtected !== undefined ? (isProtected || undefined) : b.protected }
               : b
             ),
           })

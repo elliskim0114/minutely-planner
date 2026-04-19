@@ -2491,6 +2491,8 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .rsch-blocks{display:flex;flex-direction:column;gap:5px}
 .rsch-block{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--bg2);border:1.5px solid var(--bd);border-radius:10px;transition:all .15s}
 .rsch-block.changed{border-color:var(--acc);background:var(--accbg)}
+.rsch-block-protected{opacity:.6;border-style:dashed!important}
+.rsch-protected-badge{font-size:10px;color:var(--ink3);font-family:var(--font-u);white-space:nowrap}
 .rsch-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .rsch-name{flex:1;font-family:var(--font-u);font-size:13px;font-weight:500;color:var(--ink);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rsch-times{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0}
@@ -3797,6 +3799,17 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .blk-check.done{background:rgba(255,255,255,.2);border-color:currentColor}
 .blk-check.skipped{opacity:.7!important;background:rgba(0,0,0,.15)}
 
+/* ── Block protect ─────────────────────────────────────────── */
+.blk-protected{box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.35)!important}
+.blk-lock-icon{position:absolute;bottom:5px;left:4px;font-size:9px;opacity:.75;pointer-events:none;z-index:6;line-height:1}
+
+/* ── Morning buffer shade ───────────────────────────────────── */
+.morning-buffer-shade{position:absolute;inset-inline:0;top:0;background:repeating-linear-gradient(135deg,rgba(0,0,0,.04) 0,rgba(0,0,0,.04) 4px,transparent 4px,transparent 10px);pointer-events:none;z-index:1;border-bottom:1.5px dashed rgba(var(--acc-rgb,.5),0.35)}
+
+/* ── Mobile swipe hint (brief flash on swipe) ───────────────── */
+@keyframes swipeFlash{0%{opacity:.6}100%{opacity:0}}
+.blk.swipe-hint{animation:swipeFlash .4s ease-out}
+
 .blk.blk-done{opacity:.72}
 .blk.blk-done .bn{text-decoration:line-through;opacity:.8}
 .blk.blk-done::after{content:'✓';position:absolute;top:5px;right:26px;font-size:9px;opacity:.7;pointer-events:none}
@@ -4278,6 +4291,9 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .tq-empty{padding:40px 20px;text-align:center;font-family:var(--font-u);font-size:12px;color:var(--ink3);line-height:1.6}
 .tq-empty-icon{font-size:28px;margin-bottom:10px;opacity:.4}
 .tq-footer{padding:12px 18px;border-top:1px solid var(--bd);font-family:var(--font-u);font-size:11px;color:var(--ink4);text-align:center}
+.tq-drag-handle{font-size:14px;opacity:.35;cursor:grab;flex-shrink:0;user-select:none;padding:0 2px}
+.tq-item[draggable=true]:hover .tq-drag-handle{opacity:.7}
+.tq-item[draggable=true]{cursor:default}
 
 /* Sidebar goal gap banner */
 .sb-goal-gap{margin:8px 0 4px;display:flex;flex-direction:column;gap:4px}

@@ -158,12 +158,16 @@ export default function CoachCheckin() {
       suggestionBlock = { name: orig?.name ?? key, ...val, customName: cnEntries[0]?.[0] ?? null }
     }
   }
-  // Hide if already on today's schedule or dismissed today
+  // Hide if already on today's schedule, dismissed today, or in the morning buffer
   const dismissedToday = dismissedSuggestions[td] || []
   if (suggestionBlock && todayBlocks.some(b => b.name.toLowerCase() === suggestionBlock!.name.toLowerCase())) {
     suggestionBlock = null
   }
   if (suggestionBlock && dismissedToday.includes(suggestionBlock.name.toLowerCase())) {
+    suggestionBlock = null
+  }
+  const morningBuffer = cfg.morningBuffer
+  if (suggestionBlock && morningBuffer && suggestionBlock.start < morningBuffer) {
     suggestionBlock = null
   }
 

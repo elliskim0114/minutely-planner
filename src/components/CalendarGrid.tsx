@@ -42,6 +42,8 @@ export default function CalendarGrid({ scrollId, numDays, getDate }: Props) {
   const nowLineRef = useRef<HTMLDivElement | null>(null)
   const didDragRef = useRef(false)
   const [dragOverCol, setDragOverCol] = useState<number | null>(null)
+  const touchStartX = useRef<number>(0)
+  const touchStartY = useRef<number>(0)
 
   const startM = toM(cfg.ds)
   const endM = toM(cfg.de)
@@ -360,6 +362,12 @@ export default function CalendarGrid({ scrollId, numDays, getDate }: Props) {
               {isToday && <div className="today-tint" />}
               {isToday && <div className="today-bar" />}
               {pastY > 0 && <div className="pov" style={{ height: pastY }} />}
+              {cfg.morningBuffer && (() => {
+                const bufM = toM(cfg.morningBuffer)
+                if (bufM <= startM) return null
+                const bufH = Math.min(bufM, endM)
+                return <div className="morning-buffer-shade" style={{ height: m2y(bufH, cfg.ds) }} title={`morning buffer until ${cfg.morningBuffer}`} />
+              })()}
               {isToday && nowSlot !== null && nowSlot >= startM && nowSlot < endM && (
                 <div className="nss" style={{ top: m2y(nowSlot, cfg.ds), height: SH }} />
               )}
@@ -405,11 +413,20 @@ export default function CalendarGrid({ scrollId, numDays, getDate }: Props) {
           return (
             <div
               key={b.id}
-              className={`blk ${blkClass(b)}${isCompact ? ' compact' : ''}${b.timerStart ? ' tracking' : ''}`}
+              className={`blk ${blkClass(b)}${isCompact ? ' compact' : ''}${b.timerStart ? ' tracking' : ''}${b.protected ? ' blk-protected' : ''}`}
               data-id={b.id}
               style={{ top, left, width, height, ...customStyle }}
               onMouseEnter={() => setHoveredBlock(b.id)}
               onMouseLeave={() => setHoveredBlock(null)}
+              onTouchStart={e => { touchStartX.current = e.touches[0].clientX; touchStartY.current = e.touches[0].clientY }}
+              onTouchEnd={e => {
+                const dx = e.changedTouches[0].clientX - touchStartX.current
+                const dy = e.changedTouches[0].clientY - touchStartY.current
+                if (Math.abs(dx) > 60 && Math.abs(dy) < 40) {
+                  e.preventDefault()
+                  completeBlock(b.id, dx > 0 ? 'done' : 'skipped')
+                }
+              }}
               onContextMenu={e => {
                 e.preventDefault()
                 e.stopPropagation()
@@ -474,6 +491,7 @@ export default function CalendarGrid({ scrollId, numDays, getDate }: Props) {
               >
                 {b.completed === 'done' ? '✓' : b.completed === 'skipped' ? '–' : '○'}
               </button>
+              {b.protected && <span className="blk-lock-icon" title="protected — won't be rescheduled">🔒</span>}
               <div className="brz brz-top" onMouseDown={e => handleBlockResizeTop(e, b)} />
               <div className="brz" onMouseDown={e => handleBlockResize(e, b)} />
             </div>

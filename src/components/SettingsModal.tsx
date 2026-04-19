@@ -358,6 +358,30 @@ export default function SettingsModal() {
                     onChange={e => setCfgDraft(d => ({ ...d, de: e.target.value }))} />
                 </div>
               </div>
+              <div className="sm-notif-card" style={{ marginTop: 10 }}>
+                <div className="sm-notif-row">
+                  <div className="sm-notif-info">
+                    <span className="sm-notif-title">🌅 protect my morning</span>
+                    <span className="sm-notif-sub">blocks won't be suggested or moved before this time</span>
+                  </div>
+                  <button
+                    className={`sm-switch${cfgDraft.morningBuffer ? ' on' : ''}`}
+                    onClick={() => setCfgDraft(d => ({ ...d, morningBuffer: d.morningBuffer ? null : '10:00' }))}
+                    aria-label="toggle morning buffer"
+                  ><span className="sm-switch-knob" /></button>
+                </div>
+                {cfgDraft.morningBuffer && (
+                  <div className="sm-notif-time-row">
+                    <span className="sm-lbl">protect until</span>
+                    <input
+                      className="sm-inp sm-inp-time sm-notif-time-inp"
+                      type="time"
+                      value={cfgDraft.morningBuffer}
+                      onChange={e => setCfgDraft(d => ({ ...d, morningBuffer: e.target.value }))}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="sm-section">

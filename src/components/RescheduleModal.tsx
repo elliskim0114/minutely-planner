@@ -15,6 +15,7 @@ interface Props { onClose: () => void }
 
 export default function RescheduleModal({ onClose }: Props) {
   const { blocks, selDate, cfg, anthropicKey, clearDay, addBlock, showToast, rescheduleDelay } = useStore()
+  const morningBuffer = cfg.morningBuffer || null
   const date = selDate || todayStr()
 
   // Support "running late" offset: shift current time forward by rescheduleDelay minutes
@@ -23,9 +24,11 @@ export default function RescheduleModal({ onClose }: Props) {
   const isLate = (rescheduleDelay || 0) > 0
 
   // Blocks that haven't started yet (relative to currentTime which may be offset)
+  // Protected blocks are excluded — they stay put
   const remainingBlocks = blocks
-    .filter(b => b.date === date && b.start >= currentTime)
+    .filter(b => b.date === date && b.start >= currentTime && !b.protected)
     .sort((a, b) => a.start.localeCompare(b.start))
+  const protectedBlocks = blocks.filter(b => b.date === date && b.start >= currentTime && b.protected)
 
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<{ blocks: RescheduledBlock[]; reasoning: string } | null>(null)
@@ -42,6 +45,8 @@ export default function RescheduleModal({ onClose }: Props) {
         body: JSON.stringify({
           date,
           currentTime,
+          morningBuffer: morningBuffer || undefined,
+          protectedSlots: protectedBlocks.map(b => ({ start: b.start, end: b.end })),
           blocks: remainingBlocks.map(b => ({ name: b.name, start: b.start, end: b.end, type: b.type })),
           apiKey: anthropicKey || undefined,
         }),
@@ -121,13 +126,21 @@ export default function RescheduleModal({ onClose }: Props) {
             <>
               {!result && (
                 <>
-                  <div className="rsch-list-lbl">remaining blocks today</div>
+                  <div className="rsch-list-lbl">blocks to reschedule</div>
                   <div className="rsch-blocks">
                     {remainingBlocks.map((b, i) => (
                       <div key={i} className="rsch-block">
                         <span className={`rsch-dot tc ${b.type === 'focus' ? 'tf' : b.type === 'routine' ? 'tr' : b.type === 'study' ? 'ts' : 'tl'}`} />
                         <span className="rsch-name">{b.name}</span>
                         <span className="rsch-time">{b.start}–{b.end}</span>
+                      </div>
+                    ))}
+                    {protectedBlocks.map((b, i) => (
+                      <div key={`p-${i}`} className="rsch-block rsch-block-protected">
+                        <span className={`rsch-dot tc ${b.type === 'focus' ? 'tf' : b.type === 'routine' ? 'tr' : b.type === 'study' ? 'ts' : 'tl'}`} />
+                        <span className="rsch-name">{b.name}</span>
+                        <span className="rsch-time">{b.start}–{b.end}</span>
+                        <span className="rsch-protected-badge">🔒 locked</span>
                       </div>
                     ))}
                   </div>

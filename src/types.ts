@@ -34,6 +34,7 @@ export interface Block {
   goalId?: number | null
   completed?: 'done' | 'skipped' | null
   note?: string | null
+  protected?: boolean
 }
 
 export interface PDBlock {
@@ -67,6 +68,7 @@ export interface Config {
   de: string // day end HH:MM
   ws: 0 | 1  // week start: 0=Sun, 1=Mon
   tz?: string // IANA timezone e.g. 'America/New_York' (optional, defaults to system tz)
+  morningBuffer?: string | null // HH:MM — blocks won't be suggested/moved before this time
 }
 
 export interface UserProfile {
