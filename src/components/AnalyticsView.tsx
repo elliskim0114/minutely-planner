@@ -41,6 +41,7 @@ export default function AnalyticsView() {
   const [habitsError, setHabitsError] = useState('')
   const [habitsFetched, setHabitsFetched] = useState(false)
   const [showAllTypes, setShowAllTypes] = useState(false)
+  const [showHealthInfo, setShowHealthInfo] = useState(false)
   const [editingHabits, setEditingHabits] = useState(false)
   const [newHabitName, setNewHabitName] = useState('')
   const [newHabitKind, setNewHabitKind] = useState<'good' | 'bad'>('good')
@@ -135,6 +136,26 @@ export default function AnalyticsView() {
     mins: blocks.filter(b => b.date === date).reduce((s, b) => s + toM(b.end) - toM(b.start), 0),
   }))
   const busiestDay = dayTotals.reduce((a, b) => b.mins > a.mins ? b : a, dayTotals[0])
+
+  // Week at a glance extras
+  const totalBlocksThisWeek = blocks.filter(b => last7.some(d => d.date === b.date)).length
+  const totalHoursThisWeek = Math.round(totalMins / 60 * 10) / 10
+  const topType = typeEntries[0]?.[0] ?? null
+  const glanceObs: string[] = []
+  if (totalBlocksThisWeek === 0) {
+    glanceObs.push('No blocks scheduled yet — start planning your week!')
+  } else {
+    if (weekFocusH >= 5) glanceObs.push(`Strong deep-work week with ${weekFocusH}h of focus time`)
+    else if (weekFocusH >= 2) glanceObs.push(`${weekFocusH}h of focus so far — keep building the habit`)
+    else if (weekFocusH === 0) glanceObs.push('No focus blocks this week — try scheduling at least one')
+    if (busiestDay?.mins > 0) {
+      const bh = Math.round(busiestDay.mins / 60 * 10) / 10
+      glanceObs.push(`Busiest day is ${busiestDay.label} at ${bh}h`)
+    }
+    if (avgHealth >= 80) glanceObs.push('Schedule structure looks really solid this week')
+    else if (avgHealth >= 60) glanceObs.push('Good consistency — small tweaks can push health higher')
+    else glanceObs.push('Add priorities and buffer time to boost your plan health')
+  }
 
   // Habit stats — last 30 days
   const last30: string[] = []
@@ -298,7 +319,41 @@ export default function AnalyticsView() {
             </div>
 
             <div className="av-card">
-              <div className="av-card-ttl">plan health · last 7 days</div>
+              <div className="av-card-hdr">
+                <div className="av-card-ttl" style={{ marginBottom: 0 }}>plan health · last 7 days</div>
+                <button
+                  className={`av-health-info-btn${showHealthInfo ? ' active' : ''}`}
+                  onClick={() => setShowHealthInfo(s => !s)}
+                  title="how plan health is calculated"
+                >ⓘ</button>
+              </div>
+              {showHealthInfo && (
+                <div className="av-health-info">
+                  <div className="av-health-info-title">how plan health is graded</div>
+                  <div className="av-health-info-items">
+                    <div className="av-health-info-item">
+                      <span className="av-hi-icon">📊</span>
+                      <div><strong>schedule density (60–85%)</strong><br />A healthy day fills most of the day without being jam-packed. Under 60% = lots of unplanned time; over 85% = no breathing room.</div>
+                    </div>
+                    <div className="av-health-info-item">
+                      <span className="av-hi-icon">🎯</span>
+                      <div><strong>at least one focus block</strong><br />Focus sessions are deep work. Having at least one ensures the day is productive, not just busy.</div>
+                    </div>
+                    <div className="av-health-info-item">
+                      <span className="av-hi-icon">🛡️</span>
+                      <div><strong>buffer or free time ≥ 15 min</strong><br />A buffer prevents burnout and gives you space between tasks. Even a short break counts.</div>
+                    </div>
+                    <div className="av-health-info-item">
+                      <span className="av-hi-icon">🏆</span>
+                      <div><strong>priorities set</strong><br />Setting 1–3 intentions for the day makes planning deliberate and keeps you on track.</div>
+                    </div>
+                    <div className="av-health-info-item">
+                      <span className="av-hi-icon">⚡</span>
+                      <div><strong>energy logged</strong><br />Tracking your energy shows self-awareness and helps spot patterns over time.</div>
+                    </div>
+                  </div>
+                </div>
+              )}
               <div className="av-health-bars">
                 {last7.map(({ label }, i) => {
                   const score = healthScores[i]
@@ -315,6 +370,43 @@ export default function AnalyticsView() {
                   )
                 })}
               </div>
+            </div>
+
+            {/* Week at a glance — fills empty space */}
+            <div className="av-card av-glance-card">
+              <div className="av-card-ttl">this week at a glance</div>
+              <div className="av-glance-grid">
+                <div className="av-glance-item">
+                  <div className="av-glance-val">{totalHoursThisWeek}h</div>
+                  <div className="av-glance-lbl">total scheduled</div>
+                </div>
+                <div className="av-glance-item">
+                  <div className="av-glance-val">{totalBlocksThisWeek}</div>
+                  <div className="av-glance-lbl">blocks planned</div>
+                </div>
+                <div className="av-glance-item">
+                  <div className="av-glance-val">{weekFocusH}h</div>
+                  <div className="av-glance-lbl">focus time</div>
+                </div>
+                <div className="av-glance-item">
+                  <div className="av-glance-val" style={{ color: gradeColor }}>{avgGrade}</div>
+                  <div className="av-glance-lbl">plan health</div>
+                </div>
+              </div>
+              {glanceObs.length > 0 && (
+                <div className="av-glance-obs">
+                  {glanceObs.map((obs, i) => (
+                    <div key={i} className="av-glance-obs-item">· {obs}</div>
+                  ))}
+                </div>
+              )}
+              {topType && (
+                <div className="av-glance-top-type">
+                  <span className="av-glance-top-lbl">top activity</span>
+                  <span className="av-glance-top-val">{topType}</span>
+                  <span className="av-glance-top-pct">{Math.round((typeMinutes[topType] / totalMins) * 100)}% of time</span>
+                </div>
+              )}
             </div>
 
             {/* AI Insights — fills whitespace in left column */}
