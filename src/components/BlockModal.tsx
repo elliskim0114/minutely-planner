@@ -308,17 +308,6 @@ export default function BlockModal() {
             <span className="mbm-chev">›</span>
           </button>
 
-          {/* Repeat pill */}
-          {!isForPD && (
-            <button
-              className={`mbm-pill${openPicker === 'repeat' ? ' open' : ''}${repeat !== 'none' ? ' set' : ''}`}
-              onClick={() => togglePicker('repeat')}
-            >
-              ↻ {repeatLabel}
-              <span className="mbm-chev">›</span>
-            </button>
-          )}
-
           {/* Goal pill */}
           {!isForPD && goals.length > 0 && (
             <button

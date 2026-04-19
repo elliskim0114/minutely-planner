@@ -1671,7 +1671,7 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .btr-hint{margin-left:auto;font-size:10px;color:var(--acc);font-weight:600}
 /* ── Block modal meta pills ── */
 .mbm-hint{font-size:11px;color:var(--ink4);margin:14px 0 8px;letter-spacing:.01em}
-.mbm-row{display:flex;gap:6px;flex-wrap:wrap;margin:0}
+.mbm-row{display:flex;gap:6px;flex-wrap:nowrap;margin:0}
 .mbm-pill{
   display:flex;align-items:center;gap:5px;
   padding:6px 10px;border-radius:20px;
