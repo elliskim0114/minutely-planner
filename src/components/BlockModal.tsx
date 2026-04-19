@@ -607,15 +607,13 @@ export default function BlockModal() {
         )}
 
         <div className="macts">
-          <div className="macts-right">
-            <div className="msave-wrap">
-              <button className="mact-btn mcanc" onClick={closeBlockModal}>cancel</button>
-              <span className="msave-hint"><kbd className="msave-kbd">esc</kbd></span>
-            </div>
-            <div className="msave-wrap">
-              <button className="mact-btn msave" onClick={handleSave}>save</button>
-              <span className="msave-hint"><kbd className="msave-kbd">enter</kbd></span>
-            </div>
+          <div className="msave-wrap">
+            <button className="mact-btn mcanc" onClick={closeBlockModal}>cancel</button>
+            <span className="msave-hint"><kbd className="msave-kbd">esc</kbd></span>
+          </div>
+          <div className="msave-wrap" style={{ marginLeft: 'auto' }}>
+            <button className="mact-btn msave" onClick={handleSave}>save</button>
+            <span className="msave-hint"><kbd className="msave-kbd">enter</kbd></span>
           </div>
         </div>
       </div>

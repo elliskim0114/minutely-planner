@@ -839,14 +839,7 @@ export const useStore = create<Store>()(
         const { ctxMenu } = get()
         get().hideCtxMenu()
         if (ctxMenu.block) {
-          const bname = ctxMenu.block.name.toLowerCase()
-          const hasTemplate = get().blocks.some(b => b.name.toLowerCase() === bname && b.repeat && b.repeat !== 'none')
-          if (hasTemplate) {
-            get().stopAndCleanRecurring(ctxMenu.block.id)
-            get().showToast(`removed all "${ctxMenu.block.name}" copies`)
-          } else {
-            get().deleteBlock(ctxMenu.block.id)
-          }
+          get().deleteBlock(ctxMenu.block.id)
         }
       },
 
