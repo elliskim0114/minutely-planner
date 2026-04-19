@@ -4223,6 +4223,30 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 /* FAB */
 .mob-fab{font-size:22px}
 
+/* ─────────────────────────── TASK QUEUE FAB ─────────────────────────── */
+.tq-fab{
+  position:fixed;bottom:28px;right:28px;z-index:280;
+  display:flex;align-items:center;justify-content:center;
+  width:48px;height:48px;border-radius:50%;
+  background:var(--surf);border:1.5px solid var(--bd2);
+  cursor:pointer;box-shadow:0 4px 18px rgba(0,0,0,.22);
+  transition:transform .15s var(--spring),box-shadow .15s,border-color .15s;
+}
+.tq-fab:hover{transform:scale(1.1);box-shadow:0 6px 24px rgba(0,0,0,.3);border-color:var(--acc)}
+.tq-fab-icon{font-size:18px;line-height:1;color:var(--ink2);transition:color .15s}
+.tq-fab:hover .tq-fab-icon{color:var(--acc)}
+.tq-fab-badge{
+  position:absolute;top:-4px;right:-4px;
+  background:var(--acc);color:#fff;
+  border-radius:10px;padding:1px 5px;
+  font-family:var(--font-u);font-size:9px;font-weight:700;
+  min-width:16px;text-align:center;line-height:14px;
+  border:1.5px solid var(--surf);
+}
+@media(max-width:768px){
+  .tq-fab{bottom:calc(76px + env(safe-area-inset-bottom,0px));right:80px;width:44px;height:44px}
+}
+
 /* ─────────────────────────── TASK QUEUE PANEL ─────────────────────────── */
 .tq-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9000;display:flex;align-items:flex-end;justify-content:flex-end}
 .tq-panel{width:380px;max-width:100vw;height:100vh;background:var(--surf);border-left:1.5px solid var(--bd);display:flex;flex-direction:column;overflow:hidden}
@@ -4236,13 +4260,15 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .tq-add-inp{width:100%;padding:8px 12px;border-radius:8px;border:1.5px solid var(--bd);background:var(--surf);font-family:var(--font-u);font-size:13px;color:var(--ink);outline:none;margin-bottom:8px}
 .tq-add-inp:focus{border-color:var(--acc)}
 .tq-add-row{display:flex;gap:6px;align-items:center}
-.tq-type-seg{display:flex;gap:4px;flex:1;overflow-x:auto}
+.tq-type-seg{display:flex;gap:4px;flex:1;overflow-x:auto;scrollbar-width:none}
+.tq-type-seg::-webkit-scrollbar{display:none}
 .tq-type-btn{padding:4px 8px;border-radius:6px;border:1px solid var(--bd);background:none;font-family:var(--font-u);font-size:11px;color:var(--ink2);cursor:pointer;white-space:nowrap;transition:.12s}
 .tq-type-btn.on{font-weight:600}
 .tq-dur-sel{padding:4px 6px;border-radius:6px;border:1px solid var(--bd);background:var(--surf);font-family:var(--font-u);font-size:12px;color:var(--ink);outline:none}
 .tq-add-btn{padding:6px 12px;border-radius:8px;background:var(--acc);color:#fff;border:none;cursor:pointer;font-family:var(--font-u);font-size:12px;font-weight:600;white-space:nowrap;transition:.15s}
 .tq-add-btn:disabled{opacity:.4;cursor:default}
-.tq-list{flex:1;overflow-y:auto;padding:8px 0}
+.tq-list{flex:1;overflow-y:auto;padding:8px 0;scrollbar-width:none}
+.tq-list::-webkit-scrollbar{display:none}
 .tq-item{display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--bd);transition:.12s}
 .tq-item:hover{background:var(--bg2)}
 .tq-item-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
@@ -4266,12 +4292,7 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .sbgg-text{flex:1}
 .sbgg-arrow{color:var(--acc);font-size:12px}
 
-/* Sidebar task queue button */
-.sb-queue-section{margin:8px 0}
-.sb-queue-btn{width:100%;display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:var(--bg2);border:1px solid var(--bd);font-family:var(--font-u);font-size:12px;color:var(--ink2);cursor:pointer;transition:.15s;text-align:left}
-.sb-queue-btn:hover{background:var(--bg3);color:var(--ink)}
-.sb-queue-icon{font-size:14px;opacity:.6}
-.sb-queue-badge{margin-left:auto;background:var(--acc);color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700}
+
 
 /* ─────────────────────────── EOD RITUAL REDESIGN ─────────────────────────── */
 .eod-ritual-box{padding:0;overflow:hidden}

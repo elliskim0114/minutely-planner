@@ -2,9 +2,6 @@ import { useState } from 'react'
 import { useStore } from '../store'
 import { DAYS, MONTHS, ENERGY_TIPS } from '../constants'
 import { todayStr, plannedMinutes, totalDayMinutes, toM, nowMinutes } from '../utils'
-import TaskQueuePanel from './TaskQueuePanel'
-
-
 export default function Sidebar() {
   const {
     sbCol, toggleSidebar, toggleMode, mode, view, setView,
@@ -17,12 +14,11 @@ export default function Sidebar() {
     templates, openTemplates, applyTemplate,
     openCoachAt,
     focusStreak, focusStreakDate,
-    focusGems, queue,
+    focusGems,
   } = useStore()
   const [notesOpen, setNotesOpen] = useState(false)
   const [prioArchiveOpen, setPrioArchiveOpen] = useState(false)
   const [editingPrio, setEditingPrio] = useState<{ date: string; idx: number; val: string } | null>(null)
-  const [taskQueueOpen, setTaskQueueOpen] = useState(false)
 
   const [lateMenuOpen, setLateMenuOpen] = useState(false)
   const [dismissedPatterns, setDismissedPatterns] = useState<Set<string>>(new Set())
@@ -337,15 +333,6 @@ export default function Sidebar() {
               </div>
             )}
 
-            {/* Task queue */}
-            <div className="sb-queue-section">
-              <button className="sb-queue-btn" onClick={() => setTaskQueueOpen(true)}>
-                <span className="sb-queue-icon">☰</span>
-                <span>task queue</span>
-                {queue.length > 0 && <span className="sb-queue-badge">{queue.length}</span>}
-              </button>
-            </div>
-
             {/* Routines section */}
             <div className="sb-tmpl-section">
               <div className="sb-goals-hdr">
@@ -559,9 +546,6 @@ export default function Sidebar() {
         </div>
       </div>
     )}
-
-    {/* Task Queue Panel */}
-    {taskQueueOpen && <TaskQueuePanel onClose={() => setTaskQueueOpen(false)} />}
 
     {/* All Notes modal */}
     {notesOpen && (

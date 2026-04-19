@@ -41,13 +41,14 @@ import WeekPlanModal from './components/WeekPlanModal'
 import MonthView from './components/MonthView'
 import QuickCapture from './components/QuickCapture'
 import ExportModal from './components/ExportModal'
+import TaskQueuePanel from './components/TaskQueuePanel'
 
 export default function App() {
   const {
     onboarded, mode, view, sbCol,
     blockModal, kbdOpen, whatNowOpen, notifOpen, shareOpen, signInOpen,
     copyBlock, pasteBlock, ctxMenu, blocks, selDate, notifSettings, hoveredBlockId,
-    addToQueue,
+    addToQueue, queue,
     openKbd, closeKbd, closeWhatNow, closeNotif, closeShare, closeSignIn,
     setView, navWeek, navDay, goToday,
     hideCtxMenu,
@@ -77,6 +78,7 @@ export default function App() {
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [quickCaptureOpen, setQuickCaptureOpen] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
+  const [taskQueueOpen, setTaskQueueOpen] = useState(false)
 
   const [session, setSession] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
@@ -654,6 +656,17 @@ export default function App() {
         >⚡</button>
       )}
       {quickCaptureOpen && <QuickCapture onClose={() => setQuickCaptureOpen(false)} />}
+
+      {/* Task Queue FAB */}
+      <button
+        className="tq-fab"
+        onClick={() => setTaskQueueOpen(true)}
+        title="task queue (Q)"
+      >
+        <span className="tq-fab-icon">☰</span>
+        {queue.length > 0 && <span className="tq-fab-badge">{queue.length}</span>}
+      </button>
+      {taskQueueOpen && <TaskQueuePanel onClose={() => setTaskQueueOpen(false)} />}
     </div>
   )
 }
