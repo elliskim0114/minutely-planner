@@ -24,7 +24,6 @@ function predictType(
   if (!name.trim() || name.length < 3) return null
   const n = name.toLowerCase().trim()
 
-  // 1. History — same name used before → use that type
   const counts: Record<string, number> = {}
   recentBlocks.forEach(b => {
     if (b.name.toLowerCase() === n) {
@@ -41,12 +40,10 @@ function predictType(
     }
   }
 
-  // 2. Keyword patterns
   for (const { words, type } of TYPE_PATTERNS) {
     if (words.some(w => n.includes(w))) return { type, label: type }
   }
 
-  // 3. Fuzzy match against saved custom labels
   const lbl = customLabels.find(l => {
     const ll = l.toLowerCase()
     return n.includes(ll) || ll.split(' ').some(w => w.length > 3 && n.includes(w))
@@ -62,42 +59,38 @@ function predictGoal(
   recentBlocks: Array<{ name: string; goalId?: number | null }>,
   goals: Goal[],
 ): { id: number; name: string; color: string } | null {
-  if (!name.trim() || name.length < 3 || goals.length === 0) return null
+  if (!name.trim() || goals.length === 0) return null
   const n = name.toLowerCase().trim()
-
-  // Count how often each goalId has been used with blocks of the same name
   const counts: Record<number, number> = {}
-  for (const b of recentBlocks) {
-    if (b.goalId && b.name.toLowerCase() === n) {
+  recentBlocks.forEach(b => {
+    if (b.name.toLowerCase() === n && b.goalId) {
       counts[b.goalId] = (counts[b.goalId] || 0) + 1
     }
-  }
-
+  })
   const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]
   if (!top) return null
-  const [idStr, count] = top
-  // Require at least 2 uses before suggesting (more conservative than type)
-  if (count < 2) return null
-  const goalId = parseInt(idStr)
-  const goal = goals.find(g => g.id === goalId)
-  if (!goal) return null
-  return { id: goalId, name: goal.name, color: goal.color }
+  const gid = Number(top[0])
+  const g = goals.find(x => x.id === gid)
+  return g ? { id: g.id, name: g.name, color: g.color } : null
 }
-
-const DARK_THRESHOLD = ['midnight', 'forest', 'espresso', 'galaxy']
 
 type BType = Block['type'] | 'custom'
 
-const TYPE_ACTIVE: Record<string, string> = {
-  focus: 'af', routine: 'ar', study: 'as', free: 'al', custom: 'ad',
-}
-
-const ALL_BUILTIN: Array<{ key: BType; dot: string }> = [
-  { key: 'focus',   dot: 'tf' },
-  { key: 'routine', dot: 'tr' },
-  { key: 'study',   dot: 'ts' },
-  { key: 'free',    dot: 'tl' },
+const ALL_BUILTIN = [
+  { key: 'focus' as const,   dot: 'tf' },
+  { key: 'routine' as const, dot: 'tr' },
+  { key: 'study' as const,   dot: 'ts' },
+  { key: 'free' as const,    dot: 'tl' },
 ]
+const TYPE_ACTIVE: Record<string, string> = {
+  focus: 'af', routine: 'ar', study: 'as', free: 'al',
+}
+const TYPE_DOT_MAP: Record<string, string> = {
+  focus: 'tf', routine: 'tr', study: 'ts', free: 'tl', gcal: 'tg2',
+}
+const DARK_THRESHOLD = ['Onyx', 'Plum', 'Forest', 'Espresso', 'Aubergine']
+
+type PickerTab = 'type' | 'repeat' | 'goal' | 'color' | 'note' | null
 
 export default function BlockModal() {
   const {
@@ -128,53 +121,42 @@ export default function BlockModal() {
   const [newLabelVal, setNewLabelVal] = useState('')
   const [suggestion, setSuggestion] = useState<Prediction | null>(null)
   const [goalSuggestion, setGoalSuggestion] = useState<{ id: number; name: string; color: string } | null>(null)
-  const suggestTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  // ── Drag-to-reorder: only active when user explicitly unlocks label order ──
+  const [openPicker, setOpenPicker] = useState<PickerTab>(null)
   const [lblUnlocked, setLblUnlocked] = useState(false)
+  const suggestTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const dragFromIdx  = useRef<number | null>(null)
   const dragOverEl   = useRef<HTMLElement | null>(null)
+
+  const togglePicker = (p: PickerTab) => setOpenPicker(prev => prev === p ? null : p)
 
   const onLblDragStart = useCallback((e: React.DragEvent<HTMLElement>, i: number) => {
     dragFromIdx.current = i
   }, [])
-
   const onLblDragOver = useCallback((e: React.DragEvent<HTMLElement>, i: number) => {
     e.preventDefault()
     const el = e.currentTarget
-    if (dragOverEl.current && dragOverEl.current !== el) {
-      dragOverEl.current.classList.remove('drag-over-lbl')
-    }
+    if (dragOverEl.current && dragOverEl.current !== el) dragOverEl.current.classList.remove('drag-over-lbl')
     el.classList.add('drag-over-lbl')
     dragOverEl.current = el
   }, [])
-
   const onLblDrop = useCallback((e: React.DragEvent<HTMLElement>, i: number) => {
     e.currentTarget.classList.remove('drag-over-lbl')
     dragOverEl.current = null
-    if (dragFromIdx.current !== null && dragFromIdx.current !== i) {
-      reorderCustomLabels(dragFromIdx.current, i)
-    }
+    if (dragFromIdx.current !== null && dragFromIdx.current !== i) reorderCustomLabels(dragFromIdx.current, i)
     dragFromIdx.current = null
   }, [reorderCustomLabels])
-
   const onLblDragEnd = useCallback(() => {
-    if (dragOverEl.current) {
-      dragOverEl.current.classList.remove('drag-over-lbl')
-      dragOverEl.current = null
-    }
+    if (dragOverEl.current) { dragOverEl.current.classList.remove('drag-over-lbl'); dragOverEl.current = null }
     dragFromIdx.current = null
   }, [])
 
-  // Free slots for smart scheduling (only for new blocks)
   const dateBlocks = isNew && blockModal.date
     ? blocks.filter(b => b.date === blockModal.date && (!block || b.id !== block.id))
     : []
   const freeSlots = isNew && blockModal.date
-    ? getFreeSlots(dateBlocks, cfg.ds, cfg.de).slice(0, 4)
+    ? getFreeSlots(dateBlocks, cfg.ds, cfg.de).slice(0, 3)
     : []
 
-  // Initialize ccIdx from block's cc
   useEffect(() => {
     if (block?.cc) {
       const idx = CCOLS.findIndex(c => c.bg === block.cc!.bg)
@@ -182,7 +164,6 @@ export default function BlockModal() {
     }
   }, [])
 
-  // Focus name input on open
   useEffect(() => {
     const timer = setTimeout(() => {
       if (isNew) nameRef.current?.focus()
@@ -191,18 +172,14 @@ export default function BlockModal() {
     return () => clearTimeout(timer)
   }, [isNew])
 
-  // Focus new label input when it appears
   useEffect(() => {
-    if (showNewLabelInput) {
-      setTimeout(() => newLabelRef.current?.focus(), 50)
-    }
+    if (showNewLabelInput) setTimeout(() => newLabelRef.current?.focus(), 50)
   }, [showNewLabelInput])
 
   const title = isForPD
     ? (isNew ? 'add to blueprint' : 'edit blueprint block')
     : (isNew ? 'new block' : 'edit block')
 
-  // When selecting a saved custom label, set type=custom, customName, and load its saved color
   const pickSavedLabel = (lbl: string) => {
     setType('custom')
     setCustomName(lbl)
@@ -212,10 +189,7 @@ export default function BlockModal() {
 
   const commitNewLabel = () => {
     const lbl = newLabelVal.trim()
-    if (lbl) {
-      addCustomLabel(lbl, ccIdx)
-      pickSavedLabel(lbl)
-    }
+    if (lbl) { addCustomLabel(lbl, ccIdx); pickSavedLabel(lbl) }
     setShowNewLabelInput(false)
     setNewLabelVal('')
   }
@@ -235,38 +209,28 @@ export default function BlockModal() {
 
   const handleSave = useCallback(() => {
     if (!name.trim()) { nameRef.current?.focus(); return }
-    // Auto-save custom label with its current color
-    if (type === 'custom' && customName.trim()) {
-      addCustomLabel(customName.trim(), ccIdx)
-    }
-    // Always pass ccIdx — for built-in types it applies if set as override; for custom it's the block color
+    if (type === 'custom' && customName.trim()) addCustomLabel(customName.trim(), ccIdx)
     const effectiveCcIdx = type === 'custom' ? ccIdx : null
     saveBlockModal({
-      name: name.trim(),
-      start,
-      end,
+      name: name.trim(), start, end,
       type: type === 'custom' ? 'custom' : type,
       ccIdx: effectiveCcIdx,
       customName: type === 'custom' ? customName || null : null,
-      repeat,
-      goalId,
+      repeat, goalId,
       note: note.trim() || null,
     })
   }, [name, type, customName, ccIdx, start, end, repeat, goalId, note, nameRef, addCustomLabel, saveBlockModal])
 
-  // Enter: apply suggestion first, then save on second press
   const handleEnter = useCallback(() => {
     if (suggestion) { applySuggestion(); return }
     handleSave()
   }, [suggestion, applySuggestion, handleSave])
 
-  // Global Enter — fires even when focus is on body (after clicking off an input)
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key !== 'Enter' || e.shiftKey) return
       const tag = (e.target as HTMLElement).tagName
-      if (tag === 'TEXTAREA') return
-      if (tag === 'BUTTON') return
+      if (tag === 'TEXTAREA' || tag === 'BUTTON') return
       e.preventDefault()
       handleEnter()
     }
@@ -275,6 +239,12 @@ export default function BlockModal() {
   }, [handleEnter])
 
   const isBuiltin = type !== 'custom' && ALL_BUILTIN.some(b => b.key === type)
+
+  // Current type display
+  const currentDot = type === 'custom' ? null : TYPE_DOT_MAP[type]
+  const typeLabel = type === 'custom' ? (customName || 'custom') : type
+  const repeatLabel = repeat === 'none' ? 'repeat' : repeat === 'weekdays' ? 'M–F' : repeat
+  const goalLabel = goalId ? (goals.find(g => g.id === goalId)?.name || 'goal') : 'goal'
 
   return (
     <div className="mb on" id="bm"
@@ -286,7 +256,7 @@ export default function BlockModal() {
           <button className="mx" onClick={closeBlockModal}>×</button>
         </div>
 
-        <span className="mlbl" style={{ marginTop: 0 }}>name</span>
+        {/* Name */}
         <input
           ref={nameRef}
           className="minp"
@@ -300,10 +270,7 @@ export default function BlockModal() {
             if (suggestTimer.current) clearTimeout(suggestTimer.current)
             suggestTimer.current = setTimeout(() => {
               const pred = predictType(val, customLabels, blocks)
-              if (pred && !(pred.type === type && pred.customName === customName)) {
-                setSuggestion(pred)
-              }
-              // Only suggest a goal if none is already set and user hasn't picked one
+              if (pred && !(pred.type === type && pred.customName === customName)) setSuggestion(pred)
               if (!goalId) {
                 const gPred = predictGoal(val, blocks, goals)
                 if (gPred) setGoalSuggestion(gPred)
@@ -313,54 +280,25 @@ export default function BlockModal() {
           onKeyDown={e => { if (e.key === 'Enter') handleEnter() }}
         />
         {suggestion && (
-          <button
-            className="blk-type-suggest"
-            onClick={() => {
-              setType(suggestion.type as BType)
-              if (suggestion.customName) {
-                setCustomName(suggestion.customName)
-                const savedIdx = customLabelColors[suggestion.customName]
-                if (savedIdx !== undefined) setCcIdx(savedIdx)
-              } else {
-                setCustomName('')
-              }
-              setSuggestion(null)
-            }}
-          >
+          <button className="blk-type-suggest" onClick={applySuggestion}>
             ✦ looks like <strong>{suggestion.label}</strong> — apply?
           </button>
         )}
 
-        {/* Note */}
-        {!isForPD && (
-          <>
-            <span className="mlbl">note <span className="mlbl-opt">(optional)</span></span>
-            <textarea
-              className="minp block-note-inp"
-              placeholder="reflections, blockers, what happened…"
-              value={note}
-              onChange={e => setNote(e.target.value)}
-              rows={2}
-            />
-          </>
-        )}
-
-        <span className="mlbl">time</span>
-        <div className="mrow">
+        {/* Time row */}
+        <div className="mrow mtrow">
           <input className="minp" type="time" value={start} onChange={e => setStart(e.target.value)} />
+          <span className="mtrow-arr">→</span>
           <input className="minp" type="time" value={end} onChange={e => setEnd(e.target.value)} />
         </div>
 
+        {/* Free slots */}
         {isNew && freeSlots.length > 0 && (
           <div className="free-slots">
             <span className="free-slots-lbl">free slots</span>
             <div className="free-slots-row">
               {freeSlots.map(s => (
-                <button
-                  key={s.start}
-                  className="free-slot-btn"
-                  onClick={() => { setStart(s.start); setEnd(s.end) }}
-                >
+                <button key={s.start} className="free-slot-btn" onClick={() => { setStart(s.start); setEnd(s.end) }}>
                   {s.start}–{s.end}
                   <span className="fsd">{s.duration >= 60 ? `${Math.floor(s.duration/60)}h${s.duration%60 ? `${s.duration%60}m` : ''}` : `${s.duration}m`}</span>
                 </button>
@@ -369,243 +307,272 @@ export default function BlockModal() {
           </div>
         )}
 
-        <span className="mlbl">type</span>
-        <div className="mtyps">
-          {/* Built-in types — each has a hover × to hide */}
-          {ALL_BUILTIN.filter(({ key }) => !(hiddenBuiltinTypes || []).includes(key as string)).map(({ key, dot }) => (
-            <div key={key} className="mtyp-preset-wrap">
-              <button
-                className={`mtyp${type === key ? ` ${TYPE_ACTIVE[key]}` : ''}`}
-                onClick={() => { setType(key); setCustomName('') }}
-              >
-                <div className={`tc ${dot}`} style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0 }} />
-                {key}
-              </button>
-              <button
-                className="mtyp-hide-btn"
-                title={`hide ${key} from this list`}
-                onClick={e => {
-                  e.stopPropagation()
-                  hideBuiltinType(key as string)
-                  if (type === key) setType(customLabels.length > 0 ? 'custom' : 'focus' as BType)
-                }}
-              >×</button>
-            </div>
-          ))}
+        {/* ── Meta pills row ── */}
+        <div className="mbm-row">
+          {/* Type pill */}
+          <button
+            className={`mbm-pill mbm-type-pill${openPicker === 'type' ? ' open' : ''}`}
+            onClick={() => togglePicker('type')}
+          >
+            {currentDot
+              ? <span className={`mbm-dot tc ${currentDot}`} />
+              : <span className="mbm-dot" style={{ background: CCOLS[ccIdx].bg, border: `1px solid ${CCOLS[ccIdx].bd}` }} />
+            }
+            {typeLabel}
+            <span className="mbm-chev">›</span>
+          </button>
 
-          {/* Divider if any presets visible and custom labels exist */}
-          {ALL_BUILTIN.some(({ key }) => !(hiddenBuiltinTypes || []).includes(key as string)) && customLabels.length > 0 && (
-            <div className="mtyps-div" />
+          {/* Repeat pill */}
+          {!isForPD && (
+            <button
+              className={`mbm-pill${openPicker === 'repeat' ? ' open' : ''}${repeat !== 'none' ? ' set' : ''}`}
+              onClick={() => togglePicker('repeat')}
+            >
+              ↻ {repeatLabel}
+            </button>
           )}
 
-          {/* Custom labels */}
-          {customLabels.map((lbl, i) => {
-            const savedColor = customLabelColors[lbl] !== undefined ? CCOLS[customLabelColors[lbl]] : null
-            const isActive = type === 'custom' && customName === lbl
-            return (
-              <div
-                key={lbl}
-                className={`mtyp saved-lbl-btn${isActive ? ' ad' : ''}${lblUnlocked ? ' unlocked' : ''}`}
-                style={savedColor && isActive ? { background: savedColor.bg, color: savedColor.ink } : {}}
-                draggable={lblUnlocked}
-                onDragStart={lblUnlocked ? e => onLblDragStart(e, i) : undefined}
-                onDragOver={lblUnlocked ? e => onLblDragOver(e, i) : undefined}
-                onDrop={lblUnlocked ? e => onLblDrop(e, i) : undefined}
-                onDragEnd={lblUnlocked ? onLblDragEnd : undefined}
-                onClick={() => { if (!lblUnlocked) pickSavedLabel(lbl) }}
-              >
-                {lblUnlocked && (
-                  <span className="slb-drag" title="drag to reorder">
-                    <svg width="8" height="12" viewBox="0 0 8 12" fill="none">
-                      <circle cx="2" cy="2" r="1.2" fill="currentColor" opacity=".5"/>
-                      <circle cx="6" cy="2" r="1.2" fill="currentColor" opacity=".5"/>
-                      <circle cx="2" cy="6" r="1.2" fill="currentColor" opacity=".5"/>
-                      <circle cx="6" cy="6" r="1.2" fill="currentColor" opacity=".5"/>
-                      <circle cx="2" cy="10" r="1.2" fill="currentColor" opacity=".5"/>
-                      <circle cx="6" cy="10" r="1.2" fill="currentColor" opacity=".5"/>
-                    </svg>
-                  </span>
+          {/* Goal pill */}
+          {!isForPD && goals.length > 0 && (
+            <button
+              className={`mbm-pill${openPicker === 'goal' ? ' open' : ''}${goalId ? ' set' : ''}`}
+              style={goalId ? { borderColor: goals.find(g => g.id === goalId)?.color, color: goals.find(g => g.id === goalId)?.color } : {}}
+              onClick={() => togglePicker('goal')}
+            >
+              ◎ {goalLabel}
+            </button>
+          )}
+
+          {/* Color pill */}
+          <button
+            className={`mbm-pill mbm-color-pill${openPicker === 'color' ? ' open' : ''}`}
+            onClick={() => togglePicker('color')}
+          >
+            <span className="mbm-cswatch" style={{ background: CCOLS[ccIdx].bg, borderColor: CCOLS[ccIdx].bd }} />
+            color
+          </button>
+
+          {/* Note pill */}
+          {!isForPD && (
+            <button
+              className={`mbm-pill${openPicker === 'note' ? ' open' : ''}${note.trim() ? ' set' : ''}`}
+              onClick={() => togglePicker('note')}
+            >
+              📝 {note.trim() ? 'note ✓' : 'note'}
+            </button>
+          )}
+        </div>
+
+        {/* ── Expanded picker panel ── */}
+        {openPicker && (
+          <div className="mbm-panel">
+
+            {/* TYPE PANEL */}
+            {openPicker === 'type' && (
+              <div className="mtyps">
+                {ALL_BUILTIN.filter(({ key }) => !(hiddenBuiltinTypes || []).includes(key as string)).map(({ key, dot }) => (
+                  <div key={key} className="mtyp-preset-wrap">
+                    <button
+                      className={`mtyp${type === key ? ` ${TYPE_ACTIVE[key]}` : ''}`}
+                      onClick={() => { setType(key); setCustomName('') }}
+                    >
+                      <div className={`tc ${dot}`} style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0 }} />
+                      {key}
+                    </button>
+                    <button className="mtyp-hide-btn" title={`hide ${key}`} onClick={e => {
+                      e.stopPropagation()
+                      hideBuiltinType(key as string)
+                      if (type === key) setType(customLabels.length > 0 ? 'custom' : 'focus' as BType)
+                    }}>×</button>
+                  </div>
+                ))}
+
+                {ALL_BUILTIN.some(({ key }) => !(hiddenBuiltinTypes || []).includes(key as string)) && customLabels.length > 0 && (
+                  <div className="mtyps-div" />
                 )}
-                <span className="slb-dot" style={{
-                  background: savedColor ? savedColor.bg : 'var(--bd2)',
-                  border: `1px solid ${savedColor ? savedColor.bd : 'var(--bd)'}`,
-                }} />
-                {lbl}
-                {lblUnlocked && (
-                  <button
-                    className="slb-rm"
-                    onClick={e => { e.stopPropagation(); removeCustomLabel(lbl); if (customName === lbl) { setCustomName(''); setType('custom') } }}
-                    title="remove label"
-                  >×</button>
+
+                {customLabels.map((lbl, i) => {
+                  const savedColor = customLabelColors[lbl] !== undefined ? CCOLS[customLabelColors[lbl]] : null
+                  const isActive = type === 'custom' && customName === lbl
+                  return (
+                    <div
+                      key={lbl}
+                      className={`mtyp saved-lbl-btn${isActive ? ' ad' : ''}${lblUnlocked ? ' unlocked' : ''}`}
+                      style={savedColor && isActive ? { background: savedColor.bg, color: savedColor.ink } : {}}
+                      draggable={lblUnlocked}
+                      onDragStart={lblUnlocked ? e => onLblDragStart(e, i) : undefined}
+                      onDragOver={lblUnlocked ? e => onLblDragOver(e, i) : undefined}
+                      onDrop={lblUnlocked ? e => onLblDrop(e, i) : undefined}
+                      onDragEnd={lblUnlocked ? onLblDragEnd : undefined}
+                      onClick={() => { if (!lblUnlocked) pickSavedLabel(lbl) }}
+                    >
+                      {lblUnlocked && (
+                        <span className="slb-drag" title="drag to reorder">
+                          <svg width="8" height="12" viewBox="0 0 8 12" fill="none">
+                            <circle cx="2" cy="2" r="1.2" fill="currentColor" opacity=".5"/>
+                            <circle cx="6" cy="2" r="1.2" fill="currentColor" opacity=".5"/>
+                            <circle cx="2" cy="6" r="1.2" fill="currentColor" opacity=".5"/>
+                            <circle cx="6" cy="6" r="1.2" fill="currentColor" opacity=".5"/>
+                            <circle cx="2" cy="10" r="1.2" fill="currentColor" opacity=".5"/>
+                            <circle cx="6" cy="10" r="1.2" fill="currentColor" opacity=".5"/>
+                          </svg>
+                        </span>
+                      )}
+                      <span className="slb-dot" style={{
+                        background: savedColor ? savedColor.bg : 'var(--bd2)',
+                        border: `1px solid ${savedColor ? savedColor.bd : 'var(--bd)'}`,
+                      }} />
+                      {lbl}
+                      {lblUnlocked && (
+                        <button className="slb-rm" onClick={e => {
+                          e.stopPropagation()
+                          removeCustomLabel(lbl)
+                          if (customName === lbl) { setCustomName(''); setType('custom') }
+                        }} title="remove label">×</button>
+                      )}
+                    </div>
+                  )
+                })}
+
+                <button className="mtyp new-lbl-btn" onClick={() => setShowNewLabelInput(v => !v)} title="add a new custom label">
+                  {showNewLabelInput ? '×' : '+ new'}
+                </button>
+                {customLabels.length > 0 && (
+                  <button className={`mtyp lbl-lock-btn${lblUnlocked ? ' unlocked' : ''}`}
+                    onClick={() => setLblUnlocked(v => !v)}
+                    title={lblUnlocked ? 'lock label order' : 'reorder / remove labels'}
+                  >{lblUnlocked ? '🔓 done' : '⠿'}</button>
+                )}
+                {(hiddenBuiltinTypes || []).length > 0 && (
+                  <button className="mtyp-restore" onClick={() => (hiddenBuiltinTypes || []).forEach(t => showBuiltinType(t))}>
+                    restore {(hiddenBuiltinTypes || []).join(', ')}
+                  </button>
+                )}
+
+                {/* New label input */}
+                {showNewLabelInput && (
+                  <div className="label-inp-row" style={{ marginTop: 8, width: '100%' }}>
+                    <input
+                      ref={newLabelRef}
+                      placeholder="label name…"
+                      value={newLabelVal}
+                      onChange={e => setNewLabelVal(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') commitNewLabel()
+                        if (e.key === 'Escape') { setShowNewLabelInput(false); setNewLabelVal('') }
+                      }}
+                    />
+                    {newLabelVal.trim() && (
+                      <button className="label-save-btn" onClick={commitNewLabel}>save</button>
+                    )}
+                  </div>
+                )}
+
+                {/* Custom label name input when custom selected with no name */}
+                {type === 'custom' && !customName && !showNewLabelInput && (
+                  <div className="label-inp-row" style={{ marginTop: 8, width: '100%' }}>
+                    <input
+                      placeholder="label name (e.g. meditation, meeting…)"
+                      value={customName}
+                      onChange={e => setCustomName(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && customName.trim()) addCustomLabel(customName.trim(), ccIdx)
+                      }}
+                    />
+                    {customName.trim() && (
+                      <button className="label-save-btn" onClick={() => addCustomLabel(customName.trim(), ccIdx)}>save</button>
+                    )}
+                  </div>
                 )}
               </div>
-            )
-          })}
+            )}
 
-          {/* + new / lock-unlock controls */}
-          <button className="mtyp new-lbl-btn" onClick={() => setShowNewLabelInput(v => !v)} title="add a new custom label">
-            {showNewLabelInput ? '×' : '+ new'}
-          </button>
-          {customLabels.length > 0 && (
-            <button
-              className={`mtyp lbl-lock-btn${lblUnlocked ? ' unlocked' : ''}`}
-              onClick={() => setLblUnlocked(v => !v)}
-              title={lblUnlocked ? 'lock label order' : 'reorder / remove labels'}
-            >
-              {lblUnlocked ? '🔓 done' : '⠿'}
-            </button>
-          )}
+            {/* REPEAT PANEL */}
+            {openPicker === 'repeat' && (
+              <div className="mtyps">
+                {(['none', 'daily', 'weekdays', 'weekly'] as const).map(r => (
+                  <button key={r} className={`mtyp${repeat === r ? ' af' : ''}`} onClick={() => setRepeat(r)}>
+                    {r === 'weekdays' ? 'M–F' : r}
+                  </button>
+                ))}
+              </div>
+            )}
 
-          {/* Restore hidden presets link */}
-          {(hiddenBuiltinTypes || []).length > 0 && (
-            <button className="mtyp-restore" onClick={() => (hiddenBuiltinTypes || []).forEach(t => showBuiltinType(t))}>
-              restore {(hiddenBuiltinTypes || []).join(', ')}
-            </button>
-          )}
-        </div>
+            {/* GOAL PANEL */}
+            {openPicker === 'goal' && (
+              <>
+                <div className="mtyps goal-chips">
+                  <button className={`mtyp${!goalId ? ' af' : ''}`} onClick={() => { setGoalId(null); setGoalSuggestion(null) }}>none</button>
+                  {goals.map(g => (
+                    <button
+                      key={g.id}
+                      className={`mtyp goal-chip${goalId === g.id ? ' af' : ''}`}
+                      style={goalId === g.id ? { background: g.color, borderColor: g.color, color: '#fff' } : { borderColor: g.color, color: g.color }}
+                      onClick={() => { setGoalId(goalId === g.id ? null : g.id); setGoalSuggestion(null) }}
+                    >{g.name}</button>
+                  ))}
+                </div>
+                {goalSuggestion && !goalId && (
+                  <button className="blk-goal-suggest" onClick={() => { setGoalId(goalSuggestion.id); setGoalSuggestion(null) }}>
+                    ✦ usually tagged as <strong style={{ color: goalSuggestion.color }}>{goalSuggestion.name}</strong> — apply?
+                  </button>
+                )}
+              </>
+            )}
 
-        {/* Inline new label input — only when + new is clicked */}
-        {showNewLabelInput && (
-          <div className="label-inp-row">
-            <input
-              ref={newLabelRef}
-              id="type-name-inp"
-              placeholder="label name (e.g. meditation, meeting…)"
-              value={newLabelVal}
-              onChange={e => setNewLabelVal(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === 'Enter') commitNewLabel()
-                if (e.key === 'Escape') { setShowNewLabelInput(false); setNewLabelVal('') }
-              }}
-            />
-            {newLabelVal.trim() && (
-              <button
-                className="label-save-btn"
-                onClick={commitNewLabel}
-                title="save label with current color"
-              >save</button>
+            {/* COLOR PANEL */}
+            {openPicker === 'color' && (
+              <>
+                <div id="type-color-row">
+                  {CCOLS.map((c, i) => (
+                    <div
+                      key={i}
+                      className={`tcsw${ccIdx === i ? ' on' : ''}${DARK_THRESHOLD.includes(c.n) ? ' dark-swatch' : ''}`}
+                      style={{ background: c.bg, borderColor: c.bd }}
+                      title={c.n}
+                      onClick={() => setCcIdx(i)}
+                    />
+                  ))}
+                </div>
+                <div className="tcsw-sel-name" style={{ background: CCOLS[ccIdx].bg, borderColor: CCOLS[ccIdx].bd, color: CCOLS[ccIdx].ink }}>
+                  {CCOLS[ccIdx].n}
+                </div>
+                {isBuiltin && (
+                  <button className="set-default-btn" onClick={() => {
+                    setTypeColorOverride(type as string, ccIdx)
+                    useStore.getState().showToast(`default color for ${type} updated`)
+                  }}>set as default for {type}</button>
+                )}
+              </>
+            )}
+
+            {/* NOTE PANEL */}
+            {openPicker === 'note' && (
+              <textarea
+                className="minp block-note-inp"
+                placeholder="reflections, blockers, what happened…"
+                value={note}
+                onChange={e => setNote(e.target.value)}
+                rows={3}
+                autoFocus
+              />
             )}
           </div>
         )}
 
-        {/* Repeat picker — not for Perfect Day blocks */}
-        {!isForPD && (
-          <>
-            <span className="mlbl">repeat</span>
-            <div className="mtyps">
-              {(['none', 'daily', 'weekdays', 'weekly'] as const).map(r => (
-                <button
-                  key={r}
-                  className={`mtyp${repeat === r ? ' af' : ''}`}
-                  onClick={() => setRepeat(r)}
-                >
-                  {r === 'weekdays' ? 'M–F' : r}
-                </button>
-              ))}
-            </div>
-          </>
-        )}
-
-        {/* Goal picker — only for real blocks, not PD */}
-        {!isForPD && goals.length > 0 && (
-          <>
-            <span className="mlbl">goal</span>
-            <div className="mtyps goal-chips">
-              <button className={`mtyp${!goalId ? ' af' : ''}`} onClick={() => { setGoalId(null); setGoalSuggestion(null) }}>none</button>
-              {goals.map(g => (
-                <button
-                  key={g.id}
-                  className={`mtyp goal-chip${goalId === g.id ? ' af' : ''}`}
-                  style={goalId === g.id ? { background: g.color, borderColor: g.color, color: '#fff' } : { borderColor: g.color, color: g.color }}
-                  onClick={() => { setGoalId(goalId === g.id ? null : g.id); setGoalSuggestion(null) }}
-                >
-                  {g.name}
-                </button>
-              ))}
-            </div>
-            {goalSuggestion && !goalId && (
-              <button
-                className="blk-goal-suggest"
-                onClick={() => { setGoalId(goalSuggestion.id); setGoalSuggestion(null) }}
-              >
-                ✦ usually tagged as <strong style={{ color: goalSuggestion.color }}>{goalSuggestion.name}</strong> — apply?
-              </button>
-            )}
-          </>
-        )}
-
-        {/* Color picker — always shown for selected type */}
-        <div id="custom-type-sec" className="on">
-          {/* For custom type: show label name input (when no saved label selected) */}
-          {type === 'custom' && !customName && (
-            <div className="label-inp-row">
-              <input
-                id="type-name-inp"
-                placeholder="label name (e.g. meditation, meeting…)"
-                value={customName}
-                onChange={e => setCustomName(e.target.value)}
-                onKeyDown={e => {
-                  if (e.key === 'Enter') {
-                    if (customName.trim()) addCustomLabel(customName.trim(), ccIdx)
-                  }
-                }}
-              />
-              {customName.trim() && (
-                <button
-                  className="label-save-btn"
-                  onClick={() => addCustomLabel(customName.trim(), ccIdx)}
-                  title="save label with current color"
-                >save</button>
-              )}
-            </div>
-          )}
-
-          <div id="type-color-row">
-            {CCOLS.map((c, i) => (
-              <div
-                key={i}
-                className={`tcsw${ccIdx === i ? ' on' : ''}${DARK_THRESHOLD.includes(c.n) ? ' dark-swatch' : ''}`}
-                style={{ background: c.bg, borderColor: c.bd }}
-                title={c.n}
-                onClick={() => setCcIdx(i)}
-              />
-            ))}
-          </div>
-          <div className="tcsw-sel-name" style={{ background: CCOLS[ccIdx].bg, borderColor: CCOLS[ccIdx].bd, color: CCOLS[ccIdx].ink }}>
-            {CCOLS[ccIdx].n}
-          </div>
-
-          {/* Set as global default — only for built-in types */}
-          {isBuiltin && (
-            <button
-              className="set-default-btn"
-              onClick={() => {
-                setTypeColorOverride(type as string, ccIdx)
-                useStore.getState().showToast(`default color for ${type} updated`)
-              }}
-              title={`set this color as the default for all ${type} blocks`}
-            >
-              set as default for {type}
-            </button>
-          )}
-        </div>
-
-        {/* Actual vs planned — show when timer data exists */}
+        {/* Tracked time row */}
         {!isNew && !isForPD && block && (block.totalTracked || 0) > 0 && (
           <div className="blk-tracked-row">
             <span className="btr-lbl">tracked</span>
             <span className="btr-val">{Math.round((block.totalTracked! / 60))}m</span>
             <span className="btr-sep">vs</span>
             <span className="btr-planned">{toM(block.end) - toM(block.start)}m planned</span>
-            {(block.totalTracked! / 60) < (toM(block.end) - toM(block.start)) * 0.8 && (
-              <span className="btr-hint">came up short</span>
-            )}
-            {(block.totalTracked! / 60) > (toM(block.end) - toM(block.start)) * 1.1 && (
-              <span className="btr-hint">ran over</span>
-            )}
+            {(block.totalTracked! / 60) < (toM(block.end) - toM(block.start)) * 0.8 && <span className="btr-hint">came up short</span>}
+            {(block.totalTracked! / 60) > (toM(block.end) - toM(block.start)) * 1.1 && <span className="btr-hint">ran over</span>}
           </div>
         )}
 
+        {/* Footer */}
         <div className="macts">
           <div className="msave-wrap">
             <button className="mact-btn mcanc" onClick={closeBlockModal}>cancel</button>

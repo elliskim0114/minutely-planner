@@ -1525,7 +1525,8 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 /* ── MODALS ── */
 .mb{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s;backdrop-filter:blur(6px)}
 .mb.on{opacity:1;pointer-events:all}
-.mbox{background:var(--surf);border:1px solid var(--bd2);border-radius:22px;padding:26px 28px;width:100%;max-width:360px;max-height:90vh;overflow-y:auto;box-shadow:var(--s3);transform:translateY(16px) scale(.95);transition:transform .28s cubic-bezier(.22,1,.36,1)}
+.mbox{background:var(--surf);border:1px solid var(--bd2);border-radius:22px;padding:26px 28px;width:100%;max-width:360px;max-height:90vh;overflow-y:auto;box-shadow:var(--s3);transform:translateY(16px) scale(.95);transition:transform .28s cubic-bezier(.22,1,.36,1);scrollbar-width:none}
+.mbox::-webkit-scrollbar{display:none}
 .mb.on .mbox{transform:none}
 .mhdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--bd)}
 .mttl{font-family:var(--font-d);font-size:18px;font-weight:800;color:var(--ink);letter-spacing:-.01em}
@@ -1668,6 +1669,39 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .btr-sep{font-size:10px;color:var(--ink4)}
 .btr-planned{font-size:11px;color:var(--ink3)}
 .btr-hint{margin-left:auto;font-size:10px;color:var(--acc);font-weight:600}
+/* ── Block modal meta pills ── */
+.mbm-row{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 0}
+.mbm-pill{
+  display:flex;align-items:center;gap:5px;
+  padding:5px 11px;border-radius:20px;
+  border:1.5px solid var(--bd);background:var(--surf2);
+  color:var(--ink2);font-size:11.5px;font-weight:600;
+  cursor:pointer;font-family:var(--font-u);white-space:nowrap;
+  transition:all .15s var(--ease);
+}
+.mbm-pill:hover{border-color:var(--bd2);color:var(--ink);background:var(--bg2)}
+.mbm-pill.open{border-color:var(--acc);color:var(--acc);background:var(--accbg)}
+.mbm-pill.set{border-color:var(--acc2);color:var(--ink)}
+.mbm-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;display:inline-block}
+.mbm-chev{font-size:12px;opacity:.5;margin-left:1px;rotate:90deg;display:inline-block}
+.mbm-pill.open .mbm-chev{rotate:-90deg}
+.mbm-cswatch{width:10px;height:10px;border-radius:50%;flex-shrink:0;border:1.5px solid transparent}
+.mbm-color-pill .mbm-cswatch{border-color:rgba(0,0,0,.15)}
+
+/* Expanded panel */
+.mbm-panel{
+  margin-top:10px;padding:14px;
+  background:var(--bg2);border:1px solid var(--bd);
+  border-radius:14px;
+  animation:mbmIn .18s var(--ease);
+}
+@keyframes mbmIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+
+/* Time row arrow */
+.mtrow{display:flex;align-items:center;gap:6px}
+.mtrow .minp{flex:1}
+.mtrow-arr{color:var(--ink3);font-size:14px;flex-shrink:0}
+
 .macts{display:flex;gap:8px;align-items:center;margin-top:16px}
 .mact-btn{min-width:72px;padding:8px 16px;border-radius:var(--r-sm);font-family:var(--font-u);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s var(--spring);text-align:center;white-space:nowrap}
 .mcanc{background:var(--bg3);border:1.5px solid var(--bd2);color:var(--ink)}
