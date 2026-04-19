@@ -29,7 +29,7 @@ export default function ShortcutsModal() {
           <div className="kbd-r"><span className="kbd-d">ai coach</span><span className="kk">C</span></div>
           <div className="kbd-r"><span className="kbd-d">focus mode</span><span className="kk">F</span></div>
           <div className="kbd-r"><span className="kbd-d">export PNG</span><span className="kk">E</span></div>
-          <div className="kbd-r"><span className="kbd-d">task queue</span><span className="kk">Q</span></div>
+          <div className="kbd-r"><span className="kbd-d">open task queue</span><span className="kk">Q</span></div>
           <div className="kbd-r">
             <span className="kbd-d">routines</span>
             <div className="kbd-ks"><span className="kk">⇧</span><span className="kk">T</span></div>
@@ -49,7 +49,7 @@ export default function ShortcutsModal() {
           <div className="kbd-r"><span className="kbd-d">mark block skipped</span><span className="kbd-d2">right-click ○</span></div>
           <div className="kbd-r"><span className="kbd-d">drag to reschedule</span><span className="kbd-d2">drag block header</span></div>
           <div className="kbd-r"><span className="kbd-d">resize block</span><span className="kbd-d2">drag top/bottom edge</span></div>
-          <div className="kbd-r"><span className="kbd-d">queue hovered block</span><span className="kk">Q</span></div>
+          <div className="kbd-r"><span className="kbd-d">add hovered block to queue</span><span className="kk">Q</span></div>
           <div className="kbd-r">
             <span className="kbd-d">undo</span>
             <div className="kbd-ks"><span className="kk">⌘</span><span className="kk">Z</span></div>

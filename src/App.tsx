@@ -48,7 +48,7 @@ export default function App() {
     onboarded, mode, view, sbCol,
     blockModal, kbdOpen, whatNowOpen, notifOpen, shareOpen, signInOpen,
     copyBlock, pasteBlock, ctxMenu, blocks, selDate, notifSettings, hoveredBlockId,
-    addToQueue, queue,
+    addToQueue,
     openKbd, closeKbd, closeWhatNow, closeNotif, closeShare, closeSignIn,
     setView, navWeek, navDay, goToday,
     hideCtxMenu,
@@ -231,6 +231,8 @@ export default function App() {
           const dur = (() => { const [sh,sm]=hb.start.split(':').map(Number); const [eh,em]=hb.end.split(':').map(Number); return (eh*60+em)-(sh*60+sm) })()
           addToQueue({ name: hb.customName || hb.name, type: hb.type, duration: dur, cc: hb.cc ?? null, customName: hb.customName ?? null })
           useStore.getState().showToast(`"${hb.customName || hb.name}" added to queue`)
+        } else {
+          setTaskQueueOpen(true)
         }
       }
       else if (k === 'c') {
@@ -659,15 +661,6 @@ export default function App() {
       )}
       {quickCaptureOpen && <QuickCapture onClose={() => setQuickCaptureOpen(false)} />}
 
-      {/* Task Queue FAB */}
-      <button
-        className="tq-fab"
-        onClick={() => setTaskQueueOpen(true)}
-        title="task queue (Q)"
-      >
-        <span className="tq-fab-icon">☰</span>
-        {queue.length > 0 && <span className="tq-fab-badge">{queue.length}</span>}
-      </button>
       {taskQueueOpen && <TaskQueuePanel onClose={() => setTaskQueueOpen(false)} />}
     </div>
   )
