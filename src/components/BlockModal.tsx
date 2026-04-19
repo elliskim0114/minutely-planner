@@ -101,8 +101,8 @@ const ALL_BUILTIN: Array<{ key: BType; dot: string }> = [
 
 export default function BlockModal() {
   const {
-    blockModal, closeBlockModal, saveBlockModal, deleteFromBlockModal, stopAndCleanRecurring, deleteFutureBlocks,
-    customLabels, customLabelColors, addCustomLabel, removeCustomLabel, reorderCustomLabels, saveAsTemplate,
+    blockModal, closeBlockModal, saveBlockModal,
+    customLabels, customLabelColors, addCustomLabel, removeCustomLabel, reorderCustomLabels,
     blocks, cfg, setTypeColorOverride, hideBuiltinCustom, setHideBuiltinCustom,
     hiddenBuiltinTypes, hideBuiltinType, showBuiltinType,
     goals, habits,
@@ -124,8 +124,6 @@ export default function BlockModal() {
   const [repeat, setRepeat] = useState<Block['repeat']>(block?.repeat || 'none')
   const [goalId, setGoalId] = useState<number | null>(block?.goalId ?? null)
   const [note, setNote] = useState(block?.note || '')
-  const [savedTmpl, setSavedTmpl] = useState(false)
-  const [deleteConfirm, setDeleteConfirm] = useState(false)
   const [showNewLabelInput, setShowNewLabelInput] = useState(false)
   const [newLabelVal, setNewLabelVal] = useState('')
   const [suggestion, setSuggestion] = useState<Prediction | null>(null)
@@ -609,44 +607,7 @@ export default function BlockModal() {
         )}
 
         <div className="macts">
-          {!isNew && !deleteConfirm && (
-            <button className="mact-btn mdel" onClick={() => {
-              const hasCopies = block && blocks.some(b =>
-                b.name.toLowerCase() === block.name.toLowerCase() && b.id !== block.id
-              )
-              if (hasCopies) { setDeleteConfirm(true) } else { deleteFromBlockModal() }
-            }}>delete</button>
-          )}
-          {!isNew && deleteConfirm && (
-            <div className="mdel-confirm">
-              <span className="mdel-confirm-lbl">delete…</span>
-              <button className="mact-btn mdel" onClick={deleteFromBlockModal}>just this</button>
-              {block && blocks.some(b => b.name.toLowerCase() === block.name.toLowerCase() && b.date >= block.date && b.id !== block.id) && (
-                <button className="mact-btn mdel" style={{whiteSpace:'nowrap'}} onClick={() => {
-                  deleteFutureBlocks(block!.id)
-                  closeBlockModal()
-                  useStore.getState().showToast(`removed this + all future "${block!.name}"`)
-                }}>this + future</button>
-              )}
-              <button className="mact-btn mdel" style={{whiteSpace:'nowrap'}} onClick={() => { stopAndCleanRecurring(block!.id); closeBlockModal(); useStore.getState().showToast(`removed all "${block!.name}" copies`) }}>all copies</button>
-              <button className="mact-btn" style={{opacity:.55,fontSize:11}} onClick={() => setDeleteConfirm(false)}>cancel</button>
-            </div>
-          )}
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginLeft: 'auto' }}>
-            {!isForPD && name.trim() && (
-              <button
-                className={`mact-btn mtmpl-btn${savedTmpl ? ' tmpl-saved' : ''}`}
-                title="save as a reusable routine"
-                onClick={() => {
-                  const dur = toM(end) - toM(start)
-                  saveAsTemplate(name.trim(), [{ name: name.trim(), type: type === 'custom' ? 'custom' : type, duration: dur, cc: type === 'custom' ? CCOLS[ccIdx] : undefined, customName: type === 'custom' ? customName || undefined : undefined }])
-                  setSavedTmpl(true)
-                  setTimeout(() => setSavedTmpl(false), 2000)
-                }}
-              >
-                {savedTmpl ? '✓ saved!' : '+ routine'}
-              </button>
-            )}
+          <div className="macts-right">
             <div className="msave-wrap">
               <button className="mact-btn mcanc" onClick={closeBlockModal}>cancel</button>
               <span className="msave-hint"><kbd className="msave-kbd">esc</kbd></span>
