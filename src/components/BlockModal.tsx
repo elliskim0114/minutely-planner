@@ -100,11 +100,11 @@ export default function BlockModal() {
     hiddenBuiltinTypes, hideBuiltinType, showBuiltinType,
     goals, habits,
   } = useStore()
-  const { isNew, isForPD, block, initStart, initEnd } = blockModal
+  const { isNew, isForPD, block, initStart, initEnd, initName } = blockModal
 
   const nameRef = useRef<HTMLInputElement>(null)
   const newLabelRef = useRef<HTMLInputElement>(null)
-  const [name, setName] = useState(block?.name || '')
+  const [name, setName] = useState(initName ?? block?.name ?? '')
   const [start, setStart] = useState(initStart)
   const [end, setEnd] = useState(initEnd)
   const [type, setType] = useState<BType>(() => {

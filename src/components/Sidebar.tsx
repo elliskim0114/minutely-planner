@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useStore } from '../store'
 import { DAYS, MONTHS, ENERGY_TIPS } from '../constants'
 import { todayStr, plannedMinutes, totalDayMinutes, toM, nowMinutes } from '../utils'
+import TaskQueuePanel from './TaskQueuePanel'
 
 
 export default function Sidebar() {
@@ -16,11 +17,12 @@ export default function Sidebar() {
     templates, openTemplates, applyTemplate,
     openCoachAt,
     focusStreak, focusStreakDate,
-    focusGems,
+    focusGems, queue,
   } = useStore()
   const [notesOpen, setNotesOpen] = useState(false)
   const [prioArchiveOpen, setPrioArchiveOpen] = useState(false)
   const [editingPrio, setEditingPrio] = useState<{ date: string; idx: number; val: string } | null>(null)
+  const [taskQueueOpen, setTaskQueueOpen] = useState(false)
 
   const [lateMenuOpen, setLateMenuOpen] = useState(false)
   const [dismissedPatterns, setDismissedPatterns] = useState<Set<string>>(new Set())
@@ -60,6 +62,15 @@ export default function Sidebar() {
         return sum + ((eh * 60 + em) - (sh * 60 + sm)) / 60
       }, 0)
   }
+
+  // Goal gap: goals where user is behind (< 60% with 2+ days elapsed)
+  const weekDayOfWeek = new Date().getDay()
+  const daysElapsed = cfg.ws === 1 ? ((weekDayOfWeek + 6) % 7) + 1 : weekDayOfWeek + 1
+  const behindGoals = goals.filter(g => {
+    const actual = goalHours(g.id)
+    const expected = g.targetHours * (daysElapsed / 7)
+    return daysElapsed >= 2 && actual < expected * 0.6 && g.targetHours > 0
+  }).slice(0, 2)
 
   // Pattern insight
   const patternEntry = Object.entries(blockMoveCounts)
@@ -307,6 +318,34 @@ export default function Sidebar() {
               </div>
             )}
 
+            {/* Goal gap banner */}
+            {behindGoals.length > 0 && (
+              <div className="sb-goal-gap">
+                {behindGoals.map(g => {
+                  const actual = Math.round(goalHours(g.id) * 10) / 10
+                  const deficit = Math.round((g.targetHours - actual) * 10) / 10
+                  return (
+                    <div key={g.id} className="sb-goal-gap-row" onClick={openGoals}>
+                      <span className="sbgg-dot" style={{ background: g.color }} />
+                      <span className="sbgg-text">
+                        <strong>{g.name}</strong>: {deficit}h behind this week
+                      </span>
+                      <span className="sbgg-arrow">→</span>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
+            {/* Task queue */}
+            <div className="sb-queue-section">
+              <button className="sb-queue-btn" onClick={() => setTaskQueueOpen(true)}>
+                <span className="sb-queue-icon">☰</span>
+                <span>task queue</span>
+                {queue.length > 0 && <span className="sb-queue-badge">{queue.length}</span>}
+              </button>
+            </div>
+
             {/* Routines section */}
             <div className="sb-tmpl-section">
               <div className="sb-goals-hdr">
@@ -520,6 +559,9 @@ export default function Sidebar() {
         </div>
       </div>
     )}
+
+    {/* Task Queue Panel */}
+    {taskQueueOpen && <TaskQueuePanel onClose={() => setTaskQueueOpen(false)} />}
 
     {/* All Notes modal */}
     {notesOpen && (

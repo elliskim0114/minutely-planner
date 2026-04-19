@@ -95,6 +95,8 @@ export interface BlockModalState {
   initStart: string
   initEnd: string
   block: Block | null
+  initName: string | null     // pre-fill name (e.g. from task queue)
+  fromQueueId: number | null  // if set, remove this queue item after save
 }
 
 export interface CtxMenuState {

@@ -40,6 +40,7 @@ import EodPlanModal from './components/EodPlanModal'
 import WeekPlanModal from './components/WeekPlanModal'
 import MonthView from './components/MonthView'
 import QuickCapture from './components/QuickCapture'
+import ExportModal from './components/ExportModal'
 
 export default function App() {
   const {
@@ -75,6 +76,7 @@ export default function App() {
   const [quickAddOpen, setQuickAddOpen] = useState(false)
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [quickCaptureOpen, setQuickCaptureOpen] = useState(false)
+  const [exportOpen, setExportOpen] = useState(false)
 
   const [session, setSession] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
@@ -219,6 +221,7 @@ export default function App() {
       else if (k === 'n') setQuickAddOpen(true)
       else if (k === 'i') openCapture()
       else if (k === 'f') openFocus()
+      else if (k === 'e') setExportOpen(true)
       else if (k === 'q') {
         const hid = useStore.getState().hoveredBlockId
         const hb = hid !== null ? useStore.getState().blocks.find(b => b.id === hid) : null
@@ -448,6 +451,56 @@ export default function App() {
     }
   }, [])
 
+  // Milestone detection — runs when blocks or intentions change
+  useEffect(() => {
+    const s = useStore.getState()
+    const td = new Date().toISOString().slice(0, 10)
+
+    // Build last-7-days window
+    const last7: string[] = []
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i)
+      last7.push(d.toISOString().slice(0, 10))
+    }
+
+    const claim = (key: string, msg: string) => {
+      if (s.milestones[key]) return
+      s.claimMilestone(key)
+      setTimeout(() => {
+        useStore.setState(st => ({ confettiKey: st.confettiKey + 1 }))
+        s.showToast(msg)
+      }, 300)
+    }
+
+    // 1. First time 5+ focus blocks in one week
+    const focusThisWeek = s.blocks.filter(b => last7.includes(b.date) && b.type === 'focus').length
+    if (focusThisWeek >= 5) claim('focus_5_week', '🎯 milestone: 5 focus blocks in a week!')
+
+    // 2. First time any goal hits 100% for the week
+    const now7Start = last7[0]
+    const goalHit = s.goals.some(g => {
+      const actual = s.blocks
+        .filter(b => b.goalId === g.id && b.date >= now7Start)
+        .reduce((sum, b) => {
+          const [sh, sm] = b.start.split(':').map(Number)
+          const [eh, em] = b.end.split(':').map(Number)
+          return sum + ((eh * 60 + em) - (sh * 60 + sm)) / 60
+        }, 0)
+      return g.targetHours > 0 && actual >= g.targetHours
+    })
+    if (goalHit) claim('first_goal_week', '🏆 milestone: weekly goal achieved!')
+
+    // 3. All 3 priorities completed on 3+ different days
+    const priorityDaysComplete = Object.entries(s.intentions)
+      .filter(([, v]) => v.done?.every(Boolean) && v.p.every(p => p.trim()))
+      .length
+    if (priorityDaysComplete >= 3) claim('priorities_3_days', '✅ milestone: all priorities done 3 days — focused week!')
+
+    // 4. Blocks on 7 consecutive days
+    const has7Row = last7.every(d => s.blocks.some(b => b.date === d))
+    if (has7Row) claim('planned_7_row', '📅 milestone: 7 days planned in a row — incredible consistency!')
+  }, [blocks])
+
   // Hourly coach check-in — fires exactly on the hour (:00 only), once per hour
   const checkinFiredRef = useRef<string | null>(null)
   useEffect(() => {
@@ -561,6 +614,7 @@ export default function App() {
       <CelebrationAnimal />
       <UnlockCelebration />
       {weekReviewOpen && <WeekReview />}
+      {exportOpen && <ExportModal onClose={() => setExportOpen(false)} />}
       <Toast />
       {moodPrompt && (
         <div className="mood-prompt">

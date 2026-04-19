@@ -169,6 +169,33 @@ export default function CoachCheckin() {
 
   const handleOpenCoach = () => { closeCheckin(); openCoachAt('analyze') }
 
+  // ── Energy-aware insight ──
+  const todayInt = useStore.getState().intentions[td]
+  // Analyze last 14 days: does the user consistently log low/high energy on this day of week?
+  const energyInsight = (() => {
+    const dow = now.getDay()
+    const DOW_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
+    const last14: string[] = []
+    for (let i = 1; i <= 14; i++) {
+      const d = new Date(now); d.setDate(d.getDate() - i)
+      last14.push(d.toISOString().slice(0, 10))
+    }
+    const sameDowDates = last14.filter(d => new Date(d + 'T12:00').getDay() === dow)
+    const energyVals = sameDowDates
+      .map(d => (useStore.getState().intentions[d]?.e ?? 0))
+      .filter(e => e > 0)
+    if (energyVals.length < 2) return null
+    const avg = energyVals.reduce((a, b) => a + b, 0) / energyVals.length
+    const todayEnergy = todayInt?.e ?? 0
+    if (avg <= 1.2 && todayEnergy === 0) {
+      return `you usually log low energy on ${DOW_NAMES[dow]}s — consider lighter blocks today`
+    }
+    if (avg >= 2.5 && todayEnergy === 0) {
+      return `${DOW_NAMES[dow]}s are usually your high-energy days — great time for deep work!`
+    }
+    return null
+  })()
+
   // ── Render ──
   return (
     <div className="checkin-bubble">
@@ -240,6 +267,14 @@ export default function CoachCheckin() {
         <button className="checkin-btn checkin-btn-primary" onClick={handleOpenCoach}>open coach</button>
         <button className="checkin-btn checkin-btn-secondary" onClick={handleAllGood}>all good 👍</button>
       </div>
+
+      {/* Energy insight */}
+      {energyInsight && !currentStep && (
+        <div className="checkin-energy-insight">
+          <span className="checkin-ei-icon">⚡</span>
+          <span className="checkin-ei-text">{energyInsight}</span>
+        </div>
+      )}
 
       {/* Pattern suggestion */}
       {suggestionBlock && (

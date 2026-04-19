@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useStore } from '../store'
-import { toM } from '../utils'
+import { toM, todayStr } from '../utils'
 import type { Block } from '../types'
 
 function getLocalDateStr(d: Date) {
@@ -31,8 +31,10 @@ const TYPE_DOTS: Record<string, string> = {
 }
 
 export default function WeekPlanModal() {
-  const { closeWeekPlan, blocks, bulkAddBlocks, cfg } = useStore()
+  const { closeWeekPlan, blocks, bulkAddBlocks, cfg, goals, intentions } = useStore()
   const ws = cfg.ws ?? 0   // week start: 0=Sun, 1=Mon, …
+  const [ritualStep, setRitualStep] = useState<'review' | 'goals' | 'blocks'>('review')
+  const [goalIntentions, setGoalIntentions] = useState<Record<number, number>>({})  // goalId → intended hours this week
 
   // Next 7 days starting from tomorrow (which is the first day of next week)
   const weekDays = useMemo(() => {
@@ -182,20 +184,168 @@ export default function WeekPlanModal() {
 
   const totalSuggestionsAcrossWeek = weekDays.reduce((s, d) => s + (weekSuggestions[d.date]?.length ?? 0), 0)
 
+  // ── Last week's at-a-glance stats ──
+  const lastWeekDates = useMemo(() => {
+    const dates: string[] = []
+    for (let i = 14; i >= 8; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i)
+      dates.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`)
+    }
+    return dates
+  }, [])
+  const lastWeekBlocks = blocks.filter(b => lastWeekDates.includes(b.date))
+  const lastWeekFocusH = Math.round(lastWeekBlocks.filter(b => b.type === 'focus').reduce((s, b) => s + toM(b.end) - toM(b.start), 0) / 60 * 10) / 10
+  const lastWeekTotalH = Math.round(lastWeekBlocks.reduce((s, b) => s + toM(b.end) - toM(b.start), 0) / 60 * 10) / 10
+  const lastWeekHealthScores = lastWeekDates.map(date => {
+    const dayBlocks = blocks.filter(b => b.date === date)
+    const pm = dayBlocks.reduce((s, b) => s + toM(b.end) - toM(b.start), 0)
+    const tm = 17 * 60
+    const pct = Math.min(100, Math.round((pm / tm) * 100))
+    const hasFocus = dayBlocks.some(b => b.type === 'focus')
+    const hasBuffer = dayBlocks.some(b => (b.type === 'free' || b.type === 'routine') && (toM(b.end) - toM(b.start)) >= 15)
+    const int = intentions[date] || { e: 0, p: ['', '', ''] }
+    let score = 50
+    if (pct >= 60 && pct <= 85) score += 20
+    else if (pct > 85 && pct <= 95) score += 5
+    else if (pct > 95) score -= 15
+    else if (pct >= 40) score += 10
+    if (hasFocus) score += 15
+    if (hasBuffer) score += 15
+    if (int.p.filter(Boolean).length > 0 && dayBlocks.length > 0) score += 10
+    if (dayBlocks.length >= 3) score += 5
+    if (int.e > 0) score += 5
+    return Math.max(0, Math.min(100, score))
+  })
+  const lastWeekAvgHealth = Math.round(lastWeekHealthScores.reduce((a, b) => a + b, 0) / lastWeekHealthScores.length)
+  const lastWeekGrade = lastWeekAvgHealth >= 90 ? 'A' : lastWeekAvgHealth >= 75 ? 'B' : lastWeekAvgHealth >= 60 ? 'C' : lastWeekAvgHealth >= 45 ? 'D' : 'F'
+  const lastWeekGradeColor = lastWeekAvgHealth >= 90 ? '#4CAF8A' : lastWeekAvgHealth >= 75 ? '#7BB3FF' : lastWeekAvgHealth >= 60 ? '#E8C24A' : '#FF7070'
+
+  // Goal hours last week
+  const goalHoursLastWeek = (gid: number) =>
+    Math.round(lastWeekBlocks.filter(b => b.goalId === gid).reduce((s, b) => s + toM(b.end) - toM(b.start), 0) / 60 * 10) / 10
+
   return (
     <div className="eod-overlay" onClick={e => { if (e.target === e.currentTarget) closeWeekPlan() }}>
-      <div className="eod-box wpm-box">
-        {/* Header */}
-        <div className="eod-hdr">
-          <div className="eod-hdr-icon">🗓</div>
-          <div className="eod-hdr-text">
-            <div className="eod-title">plan next week?</div>
-            <div className="eod-sub">
-              based on your habits, i've suggested blocks for each day — pick what you want scheduled
+      <div className="eod-box wpm-box wpm-ritual-box">
+
+        {/* Step indicator */}
+        <div className="eod-steps">
+          {(['review', 'goals', 'blocks'] as const).map(s => (
+            <div key={s} className={`eod-step-pip${ritualStep === s ? ' active' : (ritualStep === 'goals' && s === 'review') || ritualStep === 'blocks' ? ' done' : ''}`} />
+          ))}
+        </div>
+        <button className="eod-close" onClick={closeWeekPlan}>×</button>
+
+        {/* ── Step: Review last week ── */}
+        {ritualStep === 'review' && (
+          <div className="eod-step-content">
+            <div className="eod-ritual-icon">📊</div>
+            <div className="eod-ritual-title">last week at a glance</div>
+            <div className="eod-ritual-sub">before you plan — here's how last week went</div>
+
+            <div className="wpm-stats-grid">
+              <div className="wpm-stat">
+                <div className="wpm-stat-val">{lastWeekTotalH}h</div>
+                <div className="wpm-stat-lbl">total scheduled</div>
+              </div>
+              <div className="wpm-stat">
+                <div className="wpm-stat-val">{lastWeekFocusH}h</div>
+                <div className="wpm-stat-lbl">focus time</div>
+              </div>
+              <div className="wpm-stat">
+                <div className="wpm-stat-val" style={{ color: lastWeekGradeColor }}>{lastWeekGrade}</div>
+                <div className="wpm-stat-lbl">plan health</div>
+              </div>
+              <div className="wpm-stat">
+                <div className="wpm-stat-val">{lastWeekBlocks.length}</div>
+                <div className="wpm-stat-lbl">blocks</div>
+              </div>
+            </div>
+
+            {goals.length > 0 && (
+              <div className="wpm-goal-recap">
+                <div className="eod-section-lbl" style={{ margin: '14px 0 8px' }}>goal progress last week</div>
+                {goals.map(g => {
+                  const actual = goalHoursLastWeek(g.id)
+                  const pct = g.targetHours > 0 ? Math.min(100, Math.round((actual / g.targetHours) * 100)) : 0
+                  return (
+                    <div key={g.id} className="wpm-goal-row">
+                      <div className="wpm-goal-hdr">
+                        <span className="wpm-goal-dot" style={{ background: g.color }} />
+                        <span className="wpm-goal-name">{g.name}</span>
+                        <span className="wpm-goal-val">{actual}h / {g.targetHours}h · {pct}%</span>
+                      </div>
+                      <div className="wpm-goal-bar">
+                        <div className="wpm-goal-fill" style={{ width: `${pct}%`, background: g.color }} />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
+            <button className="eod-schedule eod-next-btn" style={{ marginTop: 16 }} onClick={() => setRitualStep('goals')}>
+              plan next week →
+            </button>
+          </div>
+        )}
+
+        {/* ── Step: Goal intentions ── */}
+        {ritualStep === 'goals' && (
+          <div className="eod-step-content">
+            <div className="eod-ritual-icon">🎯</div>
+            <div className="eod-ritual-title">set your intentions</div>
+            <div className="eod-ritual-sub">how many hours do you want to spend on each goal this week?</div>
+
+            {goals.length === 0 ? (
+              <div className="eod-empty" style={{ marginTop: 16 }}>
+                <div>no goals set yet — you can add goals in the analytics view</div>
+              </div>
+            ) : (
+              <div className="wpm-goal-intentions">
+                {goals.map(g => {
+                  const val = goalIntentions[g.id] ?? g.targetHours
+                  return (
+                    <div key={g.id} className="wpm-intent-row">
+                      <span className="wpm-goal-dot" style={{ background: g.color }} />
+                      <span className="wpm-intent-name">{g.name}</span>
+                      <div className="wpm-intent-ctrl">
+                        <button
+                          className="wpm-int-step"
+                          onClick={() => setGoalIntentions(p => ({ ...p, [g.id]: Math.max(0, (p[g.id] ?? g.targetHours) - 0.5) }))}
+                        >−</button>
+                        <span className="wpm-int-val">{val}h</span>
+                        <button
+                          className="wpm-int-step"
+                          onClick={() => setGoalIntentions(p => ({ ...p, [g.id]: (p[g.id] ?? g.targetHours) + 0.5 }))}
+                        >+</button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+              <button className="eod-skip" onClick={() => setRitualStep('review')}>← back</button>
+              <button className="eod-schedule eod-next-btn" onClick={() => setRitualStep('blocks')}>
+                pick blocks →
+              </button>
             </div>
           </div>
-          <button className="eod-close" onClick={closeWeekPlan}>×</button>
-        </div>
+        )}
+
+        {/* ── Step: Block suggestions (existing logic) ── */}
+        {ritualStep === 'blocks' && (
+          <>
+            {/* Header */}
+            <div className="eod-hdr" style={{ marginBottom: 0 }}>
+              <div className="eod-hdr-icon">🗓</div>
+              <div className="eod-hdr-text">
+                <div className="eod-title">block suggestions</div>
+                <div className="eod-sub">based on your habits — pick what you want scheduled</div>
+              </div>
+            </div>
 
         {totalSuggestionsAcrossWeek === 0 ? (
           <div className="eod-empty">
@@ -273,7 +423,7 @@ export default function WeekPlanModal() {
             </div>
 
             <div className="eod-actions">
-              <button className="eod-skip" onClick={closeWeekPlan}>maybe later</button>
+              <button className="eod-skip" onClick={() => setRitualStep('goals')}>← back</button>
               <button
                 className="eod-schedule"
                 onClick={handleSchedule}
@@ -286,6 +436,8 @@ export default function WeekPlanModal() {
             <div className="eod-footer">
               blocks will be added to each day · you can edit them anytime
             </div>
+          </>
+        )}
           </>
         )}
       </div>

@@ -146,11 +146,13 @@ interface PersistedState {
   habitNotAHabit: string[]  // lowercase block names the user said are not habits
   checkinSuppressedHour: string | null  // YYYY-MM-DDTHH — persists "All good" suppression across refresh
   dismissedSuggestions: Record<string, string[]>  // date → lowercase block names dismissed for that day
+  milestones: Record<string, boolean>  // milestone key → true when first earned
 }
 
 const defaultBlockModal: BlockModalState = {
   open: false, isNew: true, isForPD: false, pdIdx: -1,
   date: null, initStart: '09:00', initEnd: '10:00', block: null,
+  initName: null, fromQueueId: null,
 }
 
 const defaultCtxMenu: CtxMenuState = {
@@ -395,6 +397,8 @@ type Actions = {
   suppressCheckinThisHour: () => void
   dismissSuggestion: (date: string, name: string) => void
   deleteFutureBlocks: (blockId: number) => void
+  claimMilestone: (key: string) => void
+  openBlockModalFromQueue: (queueItemId: number) => void
   // PD Profiles
   savePdProfile: (id: number | null, name: string, emoji: string) => void
   loadPdProfile: (id: number) => void
@@ -465,6 +469,7 @@ export const useStore = create<Store>()(
       habitNotAHabit: [],
       checkinSuppressedHour: null,
       dismissedSuggestions: {},
+      milestones: {},
 
       // ── UI defaults (not persisted) ──
       toast: '',
@@ -691,10 +696,10 @@ export const useStore = create<Store>()(
       applyPDToday: () => get().applyPDTo(todayStr()),
 
       openBlockModalNew: (date, start, end) => set({
-        blockModal: { open: true, isNew: true, isForPD: false, pdIdx: -1, date, initStart: start, initEnd: end, block: null },
+        blockModal: { open: true, isNew: true, isForPD: false, pdIdx: -1, date, initStart: start, initEnd: end, block: null, initName: null, fromQueueId: null },
       }),
       openBlockModalEdit: (block) => set({
-        blockModal: { open: true, isNew: false, isForPD: false, pdIdx: -1, date: block.date, initStart: block.start, initEnd: block.end, block },
+        blockModal: { open: true, isNew: false, isForPD: false, pdIdx: -1, date: block.date, initStart: block.start, initEnd: block.end, block, initName: null, fromQueueId: null },
       }),
       openBlockModalForPD: (startMins) => {
         const { cfg } = get()
@@ -703,7 +708,7 @@ export const useStore = create<Store>()(
             open: true, isNew: true, isForPD: true, pdIdx: -1, date: null,
             initStart: toT(startMins),
             initEnd: toT(Math.min(toM(cfg.de), startMins + 60)),
-            block: null,
+            block: null, initName: null, fromQueueId: null,
           },
         })
       },
@@ -716,12 +721,14 @@ export const useStore = create<Store>()(
             open: true, isNew: false, isForPD: true, pdIdx: idx, date: null,
             initStart: b.start, initEnd: b.end,
             block: { ...b, id: -idx, date: '' },
+            initName: null, fromQueueId: null,
           },
         })
       },
       closeBlockModal: () => set({ blockModal: { ...get().blockModal, open: false } }),
       saveBlockModal: ({ name, start, end, type, ccIdx, customName, repeat, goalId, note }) => {
         const { blockModal, blocks, perfectDay, nid } = get()
+        const fromQueueId = blockModal.fromQueueId  // capture before any state resets
         const cc = type === 'custom' && ccIdx !== null ? { ...CCOLS[ccIdx] } : null
         const actualType = type === 'custom' ? 'custom' : type
 
@@ -783,6 +790,9 @@ export const useStore = create<Store>()(
           })
         }
         get().closeBlockModal()
+        if (fromQueueId !== null) {
+          set(s => ({ queue: s.queue.filter(q => q.id !== fromQueueId) }))
+        }
       },
       deleteFromBlockModal: () => {
         const { blockModal, perfectDay } = get()
@@ -1142,6 +1152,27 @@ export const useStore = create<Store>()(
           ),
         }
       }),
+      claimMilestone: (key) => {
+        if (get().milestones[key]) return
+        set(s => ({ milestones: { ...s.milestones, [key]: true } }))
+      },
+      openBlockModalFromQueue: (queueItemId) => {
+        const { queue, cfg } = get()
+        const item = queue.find(q => q.id === queueItemId)
+        if (!item) return
+        const td = todayStr()
+        set({
+          blockModal: {
+            open: true, isNew: true, isForPD: false, pdIdx: -1,
+            date: td,
+            initStart: '09:00',
+            initEnd: toT(Math.min(toM(cfg.de), 9 * 60 + item.duration)),
+            block: null,
+            initName: item.name,
+            fromQueueId: queueItemId,
+          },
+        })
+      },
       suppressCheckinThisHour: () => {
         const key = new Date().toISOString().slice(0, 13)  // YYYY-MM-DDTHH
         set({ checkinSuppressedHour: key })
@@ -1543,6 +1574,7 @@ export const useStore = create<Store>()(
         habitNotAHabit: state.habitNotAHabit,
         checkinSuppressedHour: state.checkinSuppressedHour,
         dismissedSuggestions: state.dismissedSuggestions,
+        milestones: state.milestones,
       }),
       onRehydrateStorage: () => (state) => {
         // Re-apply timezone on page load from persisted cfg
