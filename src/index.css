@@ -1670,10 +1670,11 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .btr-planned{font-size:11px;color:var(--ink3)}
 .btr-hint{margin-left:auto;font-size:10px;color:var(--acc);font-weight:600}
 /* ── Block modal meta pills ── */
-.mbm-row{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 0}
+.mbm-hint{font-size:11px;color:var(--ink4);margin:14px 0 8px;letter-spacing:.01em}
+.mbm-row{display:flex;gap:6px;flex-wrap:wrap;margin:0}
 .mbm-pill{
   display:flex;align-items:center;gap:5px;
-  padding:5px 11px;border-radius:20px;
+  padding:6px 10px;border-radius:20px;
   border:1.5px solid var(--bd);background:var(--surf2);
   color:var(--ink2);font-size:11.5px;font-weight:600;
   cursor:pointer;font-family:var(--font-u);white-space:nowrap;
@@ -1683,10 +1684,9 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .mbm-pill.open{border-color:var(--acc);color:var(--acc);background:var(--accbg)}
 .mbm-pill.set{border-color:var(--acc2);color:var(--ink)}
 .mbm-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;display:inline-block}
-.mbm-chev{font-size:12px;opacity:.5;margin-left:1px;rotate:90deg;display:inline-block}
-.mbm-pill.open .mbm-chev{rotate:-90deg}
-.mbm-cswatch{width:10px;height:10px;border-radius:50%;flex-shrink:0;border:1.5px solid transparent}
-.mbm-color-pill .mbm-cswatch{border-color:rgba(0,0,0,.15)}
+.mbm-chev{font-size:11px;opacity:.4;margin-left:1px;display:inline-block;transition:transform .15s}
+.mbm-pill.open .mbm-chev{transform:rotate(90deg)}
+.mbm-cswatch{width:10px;height:10px;border-radius:50%;flex-shrink:0;border:1.5px solid rgba(0,0,0,.15)}
 
 /* Expanded panel */
 .mbm-panel{
@@ -1698,9 +1698,9 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 @keyframes mbmIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
 
 /* Time row arrow */
-.mtrow{display:flex;align-items:center;gap:6px}
+.mtrow{display:flex;align-items:center;gap:8px;margin-top:10px}
 .mtrow .minp{flex:1}
-.mtrow-arr{color:var(--ink3);font-size:14px;flex-shrink:0}
+.mtrow-arr{color:var(--ink3);font-size:15px;flex-shrink:0}
 
 .macts{display:flex;gap:8px;align-items:center;margin-top:16px}
 .mact-btn{min-width:72px;padding:8px 16px;border-radius:var(--r-sm);font-family:var(--font-u);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s var(--spring);text-align:center;white-space:nowrap}

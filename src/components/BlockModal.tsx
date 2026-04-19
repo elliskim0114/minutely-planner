@@ -292,24 +292,10 @@ export default function BlockModal() {
           <input className="minp" type="time" value={end} onChange={e => setEnd(e.target.value)} />
         </div>
 
-        {/* Free slots */}
-        {isNew && freeSlots.length > 0 && (
-          <div className="free-slots">
-            <span className="free-slots-lbl">free slots</span>
-            <div className="free-slots-row">
-              {freeSlots.map(s => (
-                <button key={s.start} className="free-slot-btn" onClick={() => { setStart(s.start); setEnd(s.end) }}>
-                  {s.start}–{s.end}
-                  <span className="fsd">{s.duration >= 60 ? `${Math.floor(s.duration/60)}h${s.duration%60 ? `${s.duration%60}m` : ''}` : `${s.duration}m`}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* ── Meta pills row ── */}
+        <p className="mbm-hint">pick a type, set a goal, or add a note</p>
         <div className="mbm-row">
-          {/* Type pill */}
+          {/* Type pill — label always "type", dot shows current selection */}
           <button
             className={`mbm-pill mbm-type-pill${openPicker === 'type' ? ' open' : ''}`}
             onClick={() => togglePicker('type')}
@@ -318,7 +304,7 @@ export default function BlockModal() {
               ? <span className={`mbm-dot tc ${currentDot}`} />
               : <span className="mbm-dot" style={{ background: CCOLS[ccIdx].bg, border: `1px solid ${CCOLS[ccIdx].bd}` }} />
             }
-            {typeLabel}
+            type
             <span className="mbm-chev">›</span>
           </button>
 
@@ -329,6 +315,7 @@ export default function BlockModal() {
               onClick={() => togglePicker('repeat')}
             >
               ↻ {repeatLabel}
+              <span className="mbm-chev">›</span>
             </button>
           )}
 
@@ -340,6 +327,7 @@ export default function BlockModal() {
               onClick={() => togglePicker('goal')}
             >
               ◎ {goalLabel}
+              <span className="mbm-chev">›</span>
             </button>
           )}
 
@@ -350,6 +338,7 @@ export default function BlockModal() {
           >
             <span className="mbm-cswatch" style={{ background: CCOLS[ccIdx].bg, borderColor: CCOLS[ccIdx].bd }} />
             color
+            <span className="mbm-chev">›</span>
           </button>
 
           {/* Note pill */}
@@ -359,6 +348,7 @@ export default function BlockModal() {
               onClick={() => togglePicker('note')}
             >
               📝 {note.trim() ? 'note ✓' : 'note'}
+              <span className="mbm-chev">›</span>
             </button>
           )}
         </div>
