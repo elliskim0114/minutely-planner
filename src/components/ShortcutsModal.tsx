@@ -11,9 +11,11 @@ export default function ShortcutsModal() {
           <button className="mx" onClick={closeKbd}>×</button>
         </div>
         <div className="kbd-list">
-          <div className="kbd-section">navigation</div>
+          <div className="kbd-section">views</div>
           <div className="kbd-r"><span className="kbd-d">week view</span><span className="kk">W</span></div>
           <div className="kbd-r"><span className="kbd-d">day view</span><span className="kk">D</span></div>
+          <div className="kbd-r"><span className="kbd-d">month view</span><span className="kk">M</span></div>
+          <div className="kbd-r"><span className="kbd-d">analytics</span><span className="kk">A</span></div>
           <div className="kbd-r"><span className="kbd-d">my perfect day</span><span className="kk">P</span></div>
           <div className="kbd-r"><span className="kbd-d">go to today</span><span className="kk">T</span></div>
           <div className="kbd-r">
@@ -22,13 +24,19 @@ export default function ShortcutsModal() {
           </div>
 
           <div className="kbd-section">ai & tools</div>
-          <div className="kbd-r"><span className="kbd-d">what now?</span><span className="kk">⚡</span></div>
+          <div className="kbd-r"><span className="kbd-d">what now?</span><span className="kk">Space</span></div>
           <div className="kbd-r"><span className="kbd-d">smart capture</span><span className="kk">I</span></div>
           <div className="kbd-r"><span className="kbd-d">ai coach</span><span className="kk">C</span></div>
           <div className="kbd-r"><span className="kbd-d">focus mode</span><span className="kk">F</span></div>
+          <div className="kbd-r"><span className="kbd-d">export PNG</span><span className="kk">E</span></div>
+          <div className="kbd-r"><span className="kbd-d">task queue</span><span className="kk">Q</span></div>
           <div className="kbd-r">
             <span className="kbd-d">routines</span>
             <div className="kbd-ks"><span className="kk">⇧</span><span className="kk">T</span></div>
+          </div>
+          <div className="kbd-r">
+            <span className="kbd-d">command palette</span>
+            <div className="kbd-ks"><span className="kk">⌘</span><span className="kk">K</span></div>
           </div>
 
           <div className="kbd-section">blocks</div>
@@ -58,14 +66,19 @@ export default function ShortcutsModal() {
             <span className="kbd-d">paste block</span>
             <div className="kbd-ks"><span className="kk">⌘</span><span className="kk">V</span></div>
           </div>
+          <div className="kbd-r">
+            <span className="kbd-d">clear day</span>
+            <div className="kbd-ks"><span className="kk">⇧</span><span className="kk">C</span></div>
+          </div>
 
           <div className="kbd-section">other</div>
           <div className="kbd-r">
             <span className="kbd-d">this shortcuts list</span>
-            <div className="kbd-ks"><span className="kk">?</span><span style={{fontSize:'10px',color:'var(--ink3)',alignSelf:'center'}}>or</span><span className="kk">⌘/</span></div>
+            <div className="kbd-ks"><span className="kk">?</span></div>
           </div>
           <div className="kbd-r"><span className="kbd-d">close modal</span><span className="kk">Esc</span></div>
         </div>
+        <div className="kbd-hint">press <span className="kk" style={{fontSize:'10px',padding:'1px 5px'}}>?</span> anytime to open this</div>
       </div>
     </div>
   )

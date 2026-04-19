@@ -1093,6 +1093,25 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 }
 .tb-star-focus:hover{box-shadow:0 5px 20px rgba(124,58,237,.48)}
 
+/* Shortcuts hint button in topbar */
+.tb-kbd-btn{
+  display:flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:50%;
+  background:none;border:1.5px solid var(--bd);
+  cursor:pointer;transition:.15s;margin-left:4px;flex-shrink:0;
+}
+.tb-kbd-btn:hover{background:var(--bg2);border-color:var(--bd2);transform:scale(1.1)}
+.tb-kbd-key{font-family:var(--font-u);font-size:13px;font-weight:700;color:var(--ink3);line-height:1}
+.tb-kbd-btn:hover .tb-kbd-key{color:var(--acc)}
+
+/* Shortcuts modal hint footer */
+.kbd-hint{
+  padding:10px 0 2px;
+  text-align:center;
+  font-family:var(--font-u);font-size:11px;color:var(--ink4);
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+
 /* Profile button */
 .tb-profile{
   display:flex;align-items:center;gap:6px;

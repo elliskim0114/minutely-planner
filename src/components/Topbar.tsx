@@ -6,7 +6,7 @@ export default function Topbar() {
   const {
     view, wOff, selDate,
     toggleSidebar, navWeek, navDay,
-    openCoach, openFocus, openCapture, openWhatNow, openCoachAt,
+    openCoach, openFocus, openCapture, openWhatNow, openCoachAt, openKbd,
   } = useStore()
 
   const getLabel = () => {
@@ -91,6 +91,11 @@ export default function Topbar() {
           <span>focus</span>
         </button>
       </div>
+
+      {/* Shortcuts hint button */}
+      <button className="tb-kbd-btn" onClick={openKbd} title="keyboard shortcuts (?)">
+        <span className="tb-kbd-key">?</span>
+      </button>
 
     </div>
   )

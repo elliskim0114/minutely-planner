@@ -402,18 +402,20 @@ export default function App() {
       const h = now.getHours()
       const m = now.getMinutes()
       const todayKey = now.toISOString().slice(0, 10)
-      if (h === 8 && m >= 0 && m <= 4 && morningFiredRef.current !== todayKey) {
+      const [targetH, targetM] = (notifSettings.pushTime || '08:00').split(':').map(Number)
+      if (h === targetH && m >= targetM && m <= targetM + 4 && morningFiredRef.current !== todayKey) {
         morningFiredRef.current = todayKey
-        new Notification('minutely', {
-          body: 'Good morning! Your day is planned and ready.',
-          icon: '/icon-192.png',
-        })
+        const todayBlocks = useStore.getState().blocks.filter(b => b.date === todayKey)
+        const body = todayBlocks.length > 0
+          ? `${todayBlocks.length} blocks planned today. First up: ${todayBlocks[0].name}`
+          : 'Good morning! Open minutely to plan your day.'
+        new Notification('minutely', { body, icon: '/icon-192.png' })
       }
     }
     check()
     const iv = setInterval(check, 60000)
     return () => clearInterval(iv)
-  }, [notifSettings.morning])
+  }, [notifSettings.morning, notifSettings.pushTime])
 
   const greetingFiredRef = useRef<{ morning: string | null; evening: string | null; eodcheck: string | null }>({ morning: null, evening: null, eodcheck: null })
   useEffect(() => {
