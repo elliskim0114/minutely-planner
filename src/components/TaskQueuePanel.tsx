@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useStore } from '../store'
 import type { Block } from '../types'
 
@@ -26,6 +26,24 @@ export default function TaskQueuePanel({ onClose }: Props) {
   const [newName, setNewName] = useState('')
   const [newType, setNewType] = useState<Block['type']>('focus')
   const [newDur, setNewDur] = useState(60)
+  const panelRef = useRef<HTMLDivElement>(null)
+
+  // Close on Escape
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [onClose])
+
+  // Close when clicking outside the panel
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) onClose()
+    }
+    // Small delay so the Q-key open click doesn't immediately close it
+    const t = setTimeout(() => document.addEventListener('mousedown', handler), 100)
+    return () => { clearTimeout(t); document.removeEventListener('mousedown', handler) }
+  }, [onClose])
 
   const handleAdd = () => {
     if (!newName.trim()) return
@@ -37,14 +55,15 @@ export default function TaskQueuePanel({ onClose }: Props) {
     mins >= 60 ? `${mins / 60}h${mins % 60 ? ` ${mins % 60}m` : ''}` : `${mins}m`
 
   return (
-    <div className="tq-overlay" onClick={e => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="tq-panel">
+    <div className="tq-panel" ref={panelRef}>
         <div className="tq-hdr">
-          <div className="tq-title">
-            <span className="tq-icon">☰</span>
-            task queue
+          <div className="tq-hdr-text">
+            <div className="tq-title">
+              <span className="tq-icon">☰</span>
+              task queue
+            </div>
+            <div className="tq-sub">{queue.length} task{queue.length !== 1 ? 's' : ''} · drag onto calendar to schedule</div>
           </div>
-          <div className="tq-sub">{queue.length} task{queue.length !== 1 ? 's' : ''} to schedule</div>
           <button className="tq-close" onClick={onClose}>×</button>
         </div>
 
@@ -126,9 +145,8 @@ export default function TaskQueuePanel({ onClose }: Props) {
         )}
 
         <div className="tq-footer">
-          tasks stay here until you schedule them · use as a capture inbox
+          tasks stay here until you schedule them · drag onto calendar to place
         </div>
       </div>
-    </div>
   )
 }
