@@ -13,6 +13,12 @@ function getDateRange(period: 'daily' | 'weekly' | 'monthly'): string {
   return d.toISOString().slice(0, 10)
 }
 
+const fmtDate = (s: string) => {
+  if (!s) return ''
+  const d = new Date(s + 'T12:00')
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
 export default function GoalsModal({ onClose }: { onClose: () => void }) {
   const { goals, blocks, addGoal, updateGoal, deleteGoal } = useStore()
   const [adding, setAdding] = useState(false)
@@ -23,14 +29,29 @@ export default function GoalsModal({ onClose }: { onClose: () => void }) {
   const [targetUnit, setTargetUnit] = useState<'hours' | 'minutes'>('hours')
   const [targetPeriod, setTargetPeriod] = useState<'daily' | 'weekly' | 'monthly'>('weekly')
   const [description, setDescription] = useState('')
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
 
   const today = todayStr()
 
+  // Progress within a recurring period (for active goals)
   const goalActual = (gid: number, unit: 'hours' | 'minutes' = 'hours', period: 'daily' | 'weekly' | 'monthly' = 'weekly') => {
     const since = getDateRange(period)
     const filtered = blocks.filter(b =>
       b.goalId === gid && (period === 'daily' ? b.date === since : b.date >= since)
     )
+    const totalMins = filtered.reduce((s, b) => s + toM(b.end) - toM(b.start), 0)
+    return unit === 'minutes' ? totalMins : Math.round((totalMins / 60) * 10) / 10
+  }
+
+  // Total time logged in goal's full date range (for completed goals)
+  const goalTotal = (gid: number, unit: 'hours' | 'minutes' = 'hours', sd?: string, ed?: string) => {
+    const filtered = blocks.filter(b => {
+      if (b.goalId !== gid) return false
+      if (sd && b.date < sd) return false
+      if (ed && b.date > ed) return false
+      return true
+    })
     const totalMins = filtered.reduce((s, b) => s + toM(b.end) - toM(b.start), 0)
     return unit === 'minutes' ? totalMins : Math.round((totalMins / 60) * 10) / 10
   }
@@ -41,12 +62,18 @@ export default function GoalsModal({ onClose }: { onClose: () => void }) {
   const resetForm = () => {
     setName(''); setColor(GOAL_COLORS[0]); setTargetAmount(10)
     setTargetUnit('hours'); setTargetPeriod('weekly'); setDescription('')
+    setStartDate(''); setEndDate('')
     setAdding(false); setEditId(null)
   }
 
   const save = () => {
     if (!name.trim()) return
-    const payload = { name: name.trim(), color, targetHours: targetAmount, targetUnit, targetPeriod, description: description.trim() || undefined }
+    const payload = {
+      name: name.trim(), color, targetHours: targetAmount, targetUnit, targetPeriod,
+      description: description.trim() || undefined,
+      startDate: startDate || undefined,
+      endDate: endDate || undefined,
+    }
     if (editId !== null) updateGoal(editId, payload)
     else addGoal(payload)
     resetForm()
@@ -56,8 +83,20 @@ export default function GoalsModal({ onClose }: { onClose: () => void }) {
     setEditId(g.id); setName(g.name); setColor(g.color)
     setTargetAmount(g.targetHours); setTargetUnit(g.targetUnit || 'hours')
     setTargetPeriod(g.targetPeriod || 'weekly'); setDescription(g.description || '')
+    setStartDate(g.startDate || ''); setEndDate(g.endDate || '')
     setAdding(true)
   }
+
+  const handleComplete = (gid: number, g: typeof goals[0]) => {
+    updateGoal(gid, { completed: true, endDate: g.endDate || today })
+  }
+
+  const handleReopen = (gid: number) => {
+    updateGoal(gid, { completed: false })
+  }
+
+  const activeGoals = goals.filter(g => !g.completed)
+  const completedGoals = goals.filter(g => g.completed)
 
   return (
     <div className="goals-overlay" onClick={e => { if (e.target === e.currentTarget) onClose() }}>
@@ -73,8 +112,9 @@ export default function GoalsModal({ onClose }: { onClose: () => void }) {
           <div className="goals-empty">no goals yet — add one to start tracking your progress</div>
         )}
 
+        {/* Active goals */}
         <div className="goals-list">
-          {goals.map(g => {
+          {activeGoals.map(g => {
             const unit = g.targetUnit || 'hours'
             const period = g.targetPeriod || 'weekly'
             const actual = goalActual(g.id, unit, period)
@@ -87,6 +127,11 @@ export default function GoalsModal({ onClose }: { onClose: () => void }) {
                   <div className="gi-info">
                     <div className="gi-name">{g.name}</div>
                     {g.description && <div className="gi-desc">{g.description}</div>}
+                    {(g.startDate || g.endDate) && (
+                      <div className="gi-dates">
+                        {g.startDate ? fmtDate(g.startDate) : '—'} → {g.endDate ? fmtDate(g.endDate) : 'ongoing'}
+                      </div>
+                    )}
                   </div>
                   <div className="gi-stat">
                     <span className="gi-actual">{actual}{unitSuffix}</span>
@@ -94,6 +139,7 @@ export default function GoalsModal({ onClose }: { onClose: () => void }) {
                     <span className="gi-target">{g.targetHours}{unitSuffix} / {period === 'daily' ? 'day' : period === 'monthly' ? 'mo' : 'wk'}</span>
                   </div>
                   <div className="gi-acts">
+                    <button className="gi-complete-btn" onClick={() => handleComplete(g.id, g)} title="mark as complete">✓</button>
                     <button className="gi-edit" onClick={() => startEdit(g)}>edit</button>
                     <button className="gi-del" onClick={() => deleteGoal(g.id)}>×</button>
                   </div>
@@ -109,6 +155,48 @@ export default function GoalsModal({ onClose }: { onClose: () => void }) {
             )
           })}
         </div>
+
+        {/* Completed goals */}
+        {completedGoals.length > 0 && (
+          <>
+            <div className="goals-completed-hdr">completed</div>
+            <div className="goals-list">
+              {completedGoals.map(g => {
+                const unit = g.targetUnit || 'hours'
+                const total = goalTotal(g.id, unit, g.startDate, g.endDate)
+                const unitSuffix = unit === 'minutes' ? 'min' : 'h'
+                return (
+                  <div key={g.id} className="goal-item gi-completed">
+                    <div className="gi-top">
+                      <div className="gi-dot" style={{ background: g.color, opacity: 0.5 }} />
+                      <div className="gi-info">
+                        <div className="gi-name gi-name-done">{g.name}</div>
+                        {g.description && <div className="gi-desc">{g.description}</div>}
+                        {(g.startDate || g.endDate) && (
+                          <div className="gi-dates">
+                            {g.startDate ? fmtDate(g.startDate) : '—'} → {g.endDate ? fmtDate(g.endDate) : '—'}
+                          </div>
+                        )}
+                      </div>
+                      <div className="gi-stat">
+                        <span className="gi-actual gi-actual-done">{total}{unitSuffix}</span>
+                        <span className="gi-sep"> total</span>
+                      </div>
+                      <div className="gi-acts">
+                        <span className="gi-completed-chip">✓ done</span>
+                        <button className="gi-edit" onClick={() => handleReopen(g.id)}>reopen</button>
+                        <button className="gi-del" onClick={() => deleteGoal(g.id)}>×</button>
+                      </div>
+                    </div>
+                    <div className="gi-bar" style={{ opacity: 0.4 }}>
+                      <div className="gi-fill" style={{ width: '100%', background: g.color }} />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </>
+        )}
 
         {adding ? (
           <div className="goal-form">
@@ -128,13 +216,37 @@ export default function GoalsModal({ onClose }: { onClose: () => void }) {
               onChange={e => setDescription(e.target.value)}
             />
 
+            {/* Date range */}
+            <div className="gf-row" style={{ marginBottom: 8 }}>
+              <div className="gf-field" style={{ flex: 1 }}>
+                <span className="gf-lbl">start date <span className="gf-opt">(optional)</span></span>
+                <input
+                  type="date"
+                  className="gf-date"
+                  value={startDate}
+                  onChange={e => setStartDate(e.target.value)}
+                />
+              </div>
+              <div className="gf-field" style={{ flex: 1 }}>
+                <span className="gf-lbl">end date <span className="gf-opt">(optional)</span></span>
+                <input
+                  type="date"
+                  className="gf-date"
+                  value={endDate}
+                  onChange={e => setEndDate(e.target.value)}
+                />
+              </div>
+            </div>
+
             {/* Period selector */}
             <div className="gf-row" style={{ marginBottom: 8 }}>
-              <span className="gf-lbl" style={{ marginBottom: 4, display: 'block' }}>tracking period</span>
-              <div className="gf-period-tabs">
-                {(['daily', 'weekly', 'monthly'] as const).map(p => (
-                  <button key={p} className={`gf-period-tab${targetPeriod === p ? ' on' : ''}`} onClick={() => setTargetPeriod(p)}>{p}</button>
-                ))}
+              <div className="gf-field" style={{ flex: 1 }}>
+                <span className="gf-lbl" style={{ marginBottom: 4, display: 'block' }}>tracking period</span>
+                <div className="gf-period-tabs">
+                  {(['daily', 'weekly', 'monthly'] as const).map(p => (
+                    <button key={p} className={`gf-period-tab${targetPeriod === p ? ' on' : ''}`} onClick={() => setTargetPeriod(p)}>{p}</button>
+                  ))}
+                </div>
               </div>
             </div>
 

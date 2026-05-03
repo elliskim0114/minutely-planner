@@ -9,7 +9,21 @@ export interface Goal {
   targetUnit?: 'hours' | 'minutes'    // default: 'hours'
   targetPeriod?: 'daily' | 'weekly' | 'monthly'  // default: 'weekly'
   description?: string
+  startDate?: string   // YYYY-MM-DD
+  endDate?: string     // YYYY-MM-DD
+  completed?: boolean
 }
+export interface Deadline {
+  id: number
+  name: string
+  date: string          // YYYY-MM-DD due date
+  course?: string       // e.g. "CS 101"
+  color: string         // hex (derived from priority by default)
+  priority: 'low' | 'medium' | 'high'
+  done?: boolean
+  note?: string
+}
+
 export type BlockType = 'focus' | 'routine' | 'study' | 'free' | 'gcal' | 'custom'
 
 export interface CustomColor {

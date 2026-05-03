@@ -2921,6 +2921,23 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .goal-chips{flex-wrap:wrap}
 .goal-chip{font-size:11px!important;padding:4px 10px!important}
 
+/* Goal dates */
+.gi-dates{font-family:var(--font-u);font-size:10px;color:var(--ink4);margin-top:2px}
+/* Complete button */
+.gi-complete-btn{background:none;border:1px solid var(--bd);border-radius:7px;padding:3px 7px;font-family:var(--font-u);font-size:11px;color:#4caf8a;cursor:pointer;transition:.12s;font-weight:600}
+.gi-complete-btn:hover{border-color:#4caf8a;background:rgba(76,175,138,.08)}
+/* Completed goal styling */
+.gi-completed{opacity:.7}
+.gi-name-done{text-decoration:line-through;color:var(--ink3)!important}
+.gi-actual-done{color:var(--ink3)!important;font-size:13px!important;font-weight:500!important}
+.gi-completed-chip{font-family:var(--font-u);font-size:10px;font-weight:700;color:#4caf8a;background:rgba(76,175,138,.12);border-radius:6px;padding:2px 7px;flex-shrink:0}
+/* Completed section header */
+.goals-completed-hdr{font-family:var(--font-u);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink4);padding:4px 22px 2px;margin-top:4px}
+/* Date pickers in goal form */
+.gf-date{width:100%;background:var(--surf);border:1px solid var(--bd);border-radius:9px;padding:8px 10px;font-family:var(--font-u);font-size:12px;color:var(--ink);outline:none;transition:border-color .14s;box-sizing:border-box;cursor:pointer}
+.gf-date:focus{border-color:var(--acc)}
+.gf-opt{font-weight:400;color:var(--ink4)}
+
 /* ── Mobile responsive ── */
 @media (max-width: 768px) {
   /* Sidebar: fixed drawer */
@@ -4170,6 +4187,128 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
   border-top:1px solid var(--bd);
 }
 .mv-leg-hint{font-size:11px;color:var(--ink3);font-style:italic}
+
+/* ── Upcoming deadlines strip ── */
+.mv-upcoming{
+  display:flex;align-items:center;gap:6px;
+  padding:6px 0 12px;overflow-x:auto;scrollbar-width:none;
+  flex-wrap:nowrap;
+}
+.mv-upcoming::-webkit-scrollbar{display:none}
+.mv-upcoming-lbl{font-size:13px;flex-shrink:0;opacity:.75}
+.mv-upcoming-chip{
+  display:flex;align-items:center;gap:5px;
+  padding:4px 10px;border-radius:20px;
+  border:1.5px solid var(--bd);background:var(--surf);
+  cursor:pointer;white-space:nowrap;flex-shrink:0;
+  font-family:var(--font-u);transition:.12s;
+}
+.mv-upcoming-chip:hover{border-color:var(--acc);background:var(--bg2)}
+.mv-uc-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.mv-uc-name{font-size:11px;font-weight:500;color:var(--ink);max-width:200px;overflow:hidden;text-overflow:ellipsis}
+.mv-uc-course{font-weight:400;color:var(--ink3)}
+.mv-uc-due{font-size:10px;font-weight:700}
+
+/* ── Deadline chips inside month cells ── */
+.mv-dl-chip{
+  display:flex;align-items:center;gap:3px;
+  padding:2px 5px 2px 4px;border-radius:4px;
+  border-left:2.5px solid var(--bd);
+  background:var(--bg2);overflow:hidden;cursor:pointer;
+  max-width:100%;transition:.1s;
+}
+.mv-dl-chip:hover{filter:brightness(.92)}
+.mv-dl-chip.done{opacity:.45}
+.mv-dl-chip.done .mv-dl-name{text-decoration:line-through}
+.mv-dl-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.mv-dl-name{
+  font-family:var(--font-u);font-size:9.5px;color:var(--ink2);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;
+}
+.mv-dl-more{font-family:var(--font-u);font-size:9px;color:var(--ink4);padding:0 2px}
+
+/* Add deadline hover button */
+.mv-dl-add{
+  position:absolute;top:5px;right:5px;display:none;
+  background:none;border:none;cursor:pointer;
+  font-size:11px;padding:1px 3px;
+  border-radius:4px;line-height:1;opacity:.5;transition:.1s;
+}
+.mv-cell:hover .mv-dl-add{display:block}
+.mv-dl-add:hover{opacity:1;background:var(--bg3)}
+
+/* ── DEADLINE MODAL ────────────────────────────────── */
+.dl-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.45);
+  backdrop-filter:blur(4px);z-index:9500;
+  display:flex;align-items:center;justify-content:center;padding:24px;
+}
+.dl-box{
+  background:var(--surf);border:1px solid var(--bd);
+  border-radius:18px;width:100%;max-width:440px;
+  box-shadow:var(--s3);
+}
+.dl-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 18px 0;margin-bottom:14px;
+}
+.dl-title{font-family:var(--font-u);font-size:15px;font-weight:700;color:var(--ink)}
+.dl-close{background:none;border:none;cursor:pointer;font-size:20px;color:var(--ink3);line-height:1;padding:2px 6px;transition:color .12s}
+.dl-close:hover{color:var(--ink)}
+.dl-body{padding:0 18px;display:flex;flex-direction:column;gap:8px}
+.dl-inp{
+  width:100%;background:var(--bg2);border:1px solid var(--bd);
+  border-radius:9px;padding:9px 12px;
+  font-family:var(--font-u);font-size:13px;color:var(--ink);
+  outline:none;box-sizing:border-box;transition:border-color .14s;resize:none;
+}
+.dl-inp:focus{border-color:var(--acc)}
+.dl-note{resize:vertical;min-height:60px}
+.dl-row{display:flex;gap:12px}
+.dl-field{display:flex;flex-direction:column;gap:5px;flex:1}
+.dl-lbl{font-family:var(--font-u);font-size:11px;color:var(--ink3);font-weight:500}
+.dl-date{
+  width:100%;background:var(--bg2);border:1px solid var(--bd);
+  border-radius:9px;padding:8px 10px;
+  font-family:var(--font-u);font-size:12px;color:var(--ink);
+  outline:none;transition:border-color .14s;box-sizing:border-box;cursor:pointer;
+}
+.dl-date:focus{border-color:var(--acc)}
+.dl-priority-tabs{display:flex;gap:4px}
+.dl-prio-btn{
+  background:var(--bg2);border:1px solid var(--bd);border-radius:7px;
+  padding:5px 10px;font-family:var(--font-u);font-size:11px;font-weight:500;
+  color:var(--ink3);cursor:pointer;transition:.12s;
+}
+.dl-prio-btn:hover{border-color:var(--ink3);color:var(--ink)}
+.dl-done-row{
+  display:flex;align-items:center;gap:8px;
+  font-family:var(--font-u);font-size:12px;color:var(--ink3);
+  cursor:pointer;padding:4px 0;
+}
+.dl-foot{
+  display:flex;align-items:center;gap:8px;
+  padding:16px 18px 18px;
+}
+.dl-delete{
+  background:none;border:1px solid #fca5a5;border-radius:9px;
+  padding:8px 12px;font-family:var(--font-u);font-size:12px;
+  color:#ef4444;cursor:pointer;transition:.12s;
+}
+.dl-delete:hover{background:#fef2f2}
+.dl-cancel{
+  background:none;border:1px solid var(--bd);border-radius:9px;
+  padding:8px 14px;font-family:var(--font-u);font-size:12px;
+  color:var(--ink3);cursor:pointer;transition:.12s;margin-left:auto;
+}
+.dl-cancel:hover{border-color:var(--ink3)}
+.dl-save{
+  border:none;border-radius:9px;padding:8px 18px;
+  font-family:var(--font-u);font-size:12px;font-weight:600;
+  color:#fff;cursor:pointer;transition:.12s;
+}
+.dl-save:hover{filter:brightness(1.1)}
+.dl-save:disabled{opacity:.4;cursor:not-allowed}
 
 /* ── QUICK CAPTURE (command-palette style) ────────── */
 .qc-overlay{

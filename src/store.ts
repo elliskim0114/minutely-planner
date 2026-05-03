@@ -4,7 +4,7 @@ import { supabase } from './supabase'
 import type {
   Mode, View, Block, PDBlock, PDProfile, Config, Intentions,
   BlockModalState, CtxMenuState, NotifSettings, QueueItem, BlockTemplate, WeeklyTemplate, Goal, UserProfile,
-  Habit, HabitOutcome,
+  Habit, HabitOutcome, Deadline,
 } from './types'
 import { todayStr, weekStart, dateStr, toM, toT, snap, setAppTz } from './utils'
 import { CCOLS } from './constants'
@@ -132,6 +132,8 @@ interface PersistedState {
   rewardedGoals: Record<string, boolean>   // "goalId-period-periodKey" → true when reward already given
   goals: Goal[]
   gid: number
+  deadlines: Deadline[]
+  did: number
   userProfile: UserProfile | null
   profileSummary: string | null
   focusStreak: number
@@ -373,6 +375,10 @@ type Actions = {
   addGoal: (goal: Omit<Goal, 'id'>) => void
   updateGoal: (id: number, patch: Partial<Goal>) => void
   deleteGoal: (id: number) => void
+  // Deadlines
+  addDeadline: (d: Omit<Deadline, 'id'>) => void
+  updateDeadline: (id: number, patch: Partial<Deadline>) => void
+  deleteDeadline: (id: number) => void
   reorderGoals: (orderedIds: number[]) => void
   rewardGoal: (key: string, goalName: string) => void
   openGoals: () => void
@@ -456,6 +462,8 @@ export const useStore = create<Store>()(
       rewardedGoals: {},
       goals: [],
       gid: 1,
+      deadlines: [],
+      did: 1,
       userProfile: null,
       profileSummary: null,
       focusStreak: 0,
@@ -1245,6 +1253,9 @@ export const useStore = create<Store>()(
       addGoal: (goal) => set(s => ({ goals: [...s.goals, { ...goal, id: s.gid }], gid: s.gid + 1 })),
       updateGoal: (id, patch) => set(s => ({ goals: s.goals.map(g => g.id === id ? { ...g, ...patch } : g) })),
       deleteGoal: (id) => set(s => ({ goals: s.goals.filter(g => g.id !== id) })),
+      addDeadline: (d) => set(s => ({ deadlines: [...s.deadlines, { ...d, id: s.did }], did: s.did + 1 })),
+      updateDeadline: (id, patch) => set(s => ({ deadlines: s.deadlines.map(d => d.id === id ? { ...d, ...patch } : d) })),
+      deleteDeadline: (id) => set(s => ({ deadlines: s.deadlines.filter(d => d.id !== id) })),
       reorderGoals: (orderedIds) => set(s => {
         const map = new Map(s.goals.map(g => [g.id, g]))
         return { goals: orderedIds.map(id => map.get(id)!).filter(Boolean) }
