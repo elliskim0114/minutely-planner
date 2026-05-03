@@ -2938,9 +2938,23 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 
 /* Goal dates */
 .gi-dates{font-family:var(--font-u);font-size:10px;color:var(--ink4);margin-top:2px}
-/* Complete button */
-.gi-complete-btn{background:none;border:1px solid var(--bd);border-radius:7px;padding:3px 7px;font-family:var(--font-u);font-size:11px;color:#4caf8a;cursor:pointer;transition:.12s;font-weight:600}
-.gi-complete-btn:hover{border-color:#4caf8a;background:rgba(76,175,138,.08)}
+/* ⋮ hint on hover */
+.gi-ctx-hint{font-size:16px;color:var(--ink4);opacity:0;transition:opacity .15s;padding:0 4px;cursor:context-menu;flex-shrink:0;user-select:none}
+.goal-item:hover .gi-ctx-hint{opacity:.6}
+/* Right-click context menu */
+.gi-ctx-menu{
+  position:fixed;z-index:9999;
+  background:var(--surf);border:1px solid var(--bd);border-radius:12px;
+  box-shadow:0 8px 32px rgba(0,0,0,.18);
+  padding:6px;min-width:150px;
+}
+.gi-ctx-name{font-family:var(--font-u);font-size:11px;font-weight:600;color:var(--ink3);padding:4px 10px 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px}
+.gi-ctx-sep{height:1px;background:var(--bd);margin:4px 0}
+.gi-ctx-item{display:block;width:100%;background:none;border:none;border-radius:8px;padding:7px 10px;font-family:var(--font-u);font-size:12px;color:var(--ink);cursor:pointer;text-align:left;transition:background .1s}
+.gi-ctx-item:hover{background:var(--bg2)}
+.gi-ctx-del{color:#ef4444}
+.gi-ctx-del:hover{background:#fef2f2}
+.goals-sub-hint{color:var(--ink4);font-style:italic}
 /* Completed goal styling */
 .gi-completed{opacity:.7}
 .gi-name-done{text-decoration:line-through;color:var(--ink3)!important}

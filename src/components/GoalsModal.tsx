@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useStore } from '../store'
 import { todayStr } from '../utils'
 import { toM } from '../utils'
+import type { Goal } from '../types'
 
 const GOAL_COLORS = ['#FF4D1C', '#6C63FF', '#059669', '#0EA5E9', '#F59E0B', '#EC4899', '#8B5CF6', '#14B8A6']
 
@@ -19,6 +20,8 @@ const fmtDate = (s: string) => {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
+type CtxMenu = { x: number; y: number; goal: Goal } | null
+
 export default function GoalsModal({ onClose }: { onClose: () => void }) {
   const { goals, blocks, addGoal, updateGoal, deleteGoal } = useStore()
   const [adding, setAdding] = useState(false)
@@ -31,10 +34,33 @@ export default function GoalsModal({ onClose }: { onClose: () => void }) {
   const [description, setDescription] = useState('')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
+  const [ctx, setCtx] = useState<CtxMenu>(null)
+  const ctxRef = useRef<HTMLDivElement>(null)
 
   const today = todayStr()
 
-  // Progress within a recurring period (for active goals)
+  // Close context menu on outside click or Escape
+  useEffect(() => {
+    if (!ctx) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setCtx(null) }
+    const onDown = (e: MouseEvent) => {
+      if (ctxRef.current && !ctxRef.current.contains(e.target as Node)) setCtx(null)
+    }
+    document.addEventListener('keydown', onKey)
+    document.addEventListener('mousedown', onDown)
+    return () => { document.removeEventListener('keydown', onKey); document.removeEventListener('mousedown', onDown) }
+  }, [ctx])
+
+  const openCtx = (e: React.MouseEvent, goal: Goal) => {
+    e.preventDefault()
+    e.stopPropagation()
+    // Keep menu inside viewport
+    const x = Math.min(e.clientX, window.innerWidth - 160)
+    const y = Math.min(e.clientY, window.innerHeight - 140)
+    setCtx({ x, y, goal })
+  }
+
+  // Progress within a recurring period (active goals)
   const goalActual = (gid: number, unit: 'hours' | 'minutes' = 'hours', period: 'daily' | 'weekly' | 'monthly' = 'weekly') => {
     const since = getDateRange(period)
     const filtered = blocks.filter(b =>
@@ -44,7 +70,7 @@ export default function GoalsModal({ onClose }: { onClose: () => void }) {
     return unit === 'minutes' ? totalMins : Math.round((totalMins / 60) * 10) / 10
   }
 
-  // Total time logged in goal's full date range (for completed goals)
+  // Total time in goal's date range (completed goals)
   const goalTotal = (gid: number, unit: 'hours' | 'minutes' = 'hours', sd?: string, ed?: string) => {
     const filtered = blocks.filter(b => {
       if (b.goalId !== gid) return false
@@ -79,20 +105,28 @@ export default function GoalsModal({ onClose }: { onClose: () => void }) {
     resetForm()
   }
 
-  const startEdit = (g: typeof goals[0]) => {
+  const startEdit = (g: Goal) => {
     setEditId(g.id); setName(g.name); setColor(g.color)
     setTargetAmount(g.targetHours); setTargetUnit(g.targetUnit || 'hours')
     setTargetPeriod(g.targetPeriod || 'weekly'); setDescription(g.description || '')
     setStartDate(g.startDate || ''); setEndDate(g.endDate || '')
     setAdding(true)
+    setCtx(null)
   }
 
-  const handleComplete = (gid: number, g: typeof goals[0]) => {
-    updateGoal(gid, { completed: true, endDate: g.endDate || today })
+  const handleComplete = (g: Goal) => {
+    updateGoal(g.id, { completed: true, endDate: g.endDate || today })
+    setCtx(null)
   }
 
-  const handleReopen = (gid: number) => {
-    updateGoal(gid, { completed: false })
+  const handleReopen = (g: Goal) => {
+    updateGoal(g.id, { completed: false })
+    setCtx(null)
+  }
+
+  const handleDelete = (g: Goal) => {
+    deleteGoal(g.id)
+    setCtx(null)
   }
 
   const activeGoals = goals.filter(g => !g.completed)
@@ -106,7 +140,9 @@ export default function GoalsModal({ onClose }: { onClose: () => void }) {
           <button className="goals-close" onClick={onClose}>×</button>
         </div>
 
-        <div className="goals-sub">track your bigger-picture objectives. link blocks to goals to measure progress.</div>
+        <div className="goals-sub">
+          track your bigger-picture objectives · link blocks to goals to measure progress · <span className="goals-sub-hint">right-click a goal to edit, complete, or delete</span>
+        </div>
 
         {goals.length === 0 && !adding && (
           <div className="goals-empty">no goals yet — add one to start tracking your progress</div>
@@ -121,7 +157,12 @@ export default function GoalsModal({ onClose }: { onClose: () => void }) {
             const pct = Math.min(100, Math.round((actual / g.targetHours) * 100))
             const unitSuffix = unit === 'minutes' ? 'min' : 'h'
             return (
-              <div key={g.id} className="goal-item">
+              <div
+                key={g.id}
+                className="goal-item"
+                onContextMenu={e => openCtx(e, g)}
+                title="right-click for options"
+              >
                 <div className="gi-top">
                   <div className="gi-dot" style={{ background: g.color }} />
                   <div className="gi-info">
@@ -138,11 +179,7 @@ export default function GoalsModal({ onClose }: { onClose: () => void }) {
                     <span className="gi-sep">/</span>
                     <span className="gi-target">{g.targetHours}{unitSuffix} / {period === 'daily' ? 'day' : period === 'monthly' ? 'mo' : 'wk'}</span>
                   </div>
-                  <div className="gi-acts">
-                    <button className="gi-complete-btn" onClick={() => handleComplete(g.id, g)} title="mark as complete">✓</button>
-                    <button className="gi-edit" onClick={() => startEdit(g)}>edit</button>
-                    <button className="gi-del" onClick={() => deleteGoal(g.id)}>×</button>
-                  </div>
+                  <div className="gi-ctx-hint">⋮</div>
                 </div>
                 <div className="gi-bar">
                   <div className="gi-fill" style={{ width: `${pct}%`, background: g.color }} />
@@ -166,7 +203,12 @@ export default function GoalsModal({ onClose }: { onClose: () => void }) {
                 const total = goalTotal(g.id, unit, g.startDate, g.endDate)
                 const unitSuffix = unit === 'minutes' ? 'min' : 'h'
                 return (
-                  <div key={g.id} className="goal-item gi-completed">
+                  <div
+                    key={g.id}
+                    className="goal-item gi-completed"
+                    onContextMenu={e => openCtx(e, g)}
+                    title="right-click for options"
+                  >
                     <div className="gi-top">
                       <div className="gi-dot" style={{ background: g.color, opacity: 0.5 }} />
                       <div className="gi-info">
@@ -182,11 +224,8 @@ export default function GoalsModal({ onClose }: { onClose: () => void }) {
                         <span className="gi-actual gi-actual-done">{total}{unitSuffix}</span>
                         <span className="gi-sep"> total</span>
                       </div>
-                      <div className="gi-acts">
-                        <span className="gi-completed-chip">✓ done</span>
-                        <button className="gi-edit" onClick={() => handleReopen(g.id)}>reopen</button>
-                        <button className="gi-del" onClick={() => deleteGoal(g.id)}>×</button>
-                      </div>
+                      <span className="gi-completed-chip">✓ done</span>
+                      <div className="gi-ctx-hint">⋮</div>
                     </div>
                     <div className="gi-bar" style={{ opacity: 0.4 }}>
                       <div className="gi-fill" style={{ width: '100%', background: g.color }} />
@@ -220,21 +259,11 @@ export default function GoalsModal({ onClose }: { onClose: () => void }) {
             <div className="gf-row" style={{ marginBottom: 8 }}>
               <div className="gf-field" style={{ flex: 1 }}>
                 <span className="gf-lbl">start date <span className="gf-opt">(optional)</span></span>
-                <input
-                  type="date"
-                  className="gf-date"
-                  value={startDate}
-                  onChange={e => setStartDate(e.target.value)}
-                />
+                <input type="date" className="gf-date" value={startDate} onChange={e => setStartDate(e.target.value)} />
               </div>
               <div className="gf-field" style={{ flex: 1 }}>
                 <span className="gf-lbl">end date <span className="gf-opt">(optional)</span></span>
-                <input
-                  type="date"
-                  className="gf-date"
-                  value={endDate}
-                  onChange={e => setEndDate(e.target.value)}
-                />
+                <input type="date" className="gf-date" value={endDate} onChange={e => setEndDate(e.target.value)} />
               </div>
             </div>
 
@@ -294,6 +323,28 @@ export default function GoalsModal({ onClose }: { onClose: () => void }) {
           <button className="goals-add-btn" onClick={() => setAdding(true)}>+ add goal</button>
         )}
       </div>
+
+      {/* Right-click context menu */}
+      {ctx && (
+        <div
+          ref={ctxRef}
+          className="gi-ctx-menu"
+          style={{ top: ctx.y, left: ctx.x }}
+        >
+          <div className="gi-ctx-name">{ctx.goal.name}</div>
+          <div className="gi-ctx-sep" />
+          {!ctx.goal.completed ? (
+            <>
+              <button className="gi-ctx-item" onClick={() => startEdit(ctx.goal)}>✏️ edit</button>
+              <button className="gi-ctx-item" onClick={() => handleComplete(ctx.goal)}>✅ mark complete</button>
+            </>
+          ) : (
+            <button className="gi-ctx-item" onClick={() => handleReopen(ctx.goal)}>🔄 reopen</button>
+          )}
+          <div className="gi-ctx-sep" />
+          <button className="gi-ctx-item gi-ctx-del" onClick={() => handleDelete(ctx.goal)}>🗑 delete</button>
+        </div>
+      )}
     </div>
   )
 }
