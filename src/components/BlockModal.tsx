@@ -117,7 +117,7 @@ export default function BlockModal() {
   const [repeat, setRepeat] = useState<Block['repeat']>(block?.repeat || 'none')
   const [goalId, setGoalId] = useState<number | null>(block?.goalId ?? null)
   const [note, setNote] = useState(block?.note || '')
-  const [isProtected, setIsProtected] = useState(block?.protected || false)
+
   const [showNewLabelInput, setShowNewLabelInput] = useState(false)
   const [newLabelVal, setNewLabelVal] = useState('')
   const [suggestion, setSuggestion] = useState<Prediction | null>(null)
@@ -219,9 +219,8 @@ export default function BlockModal() {
       customName: type === 'custom' ? customName || null : null,
       repeat, goalId,
       note: note.trim() || null,
-      protected: isProtected || undefined,
     })
-  }, [name, type, customName, ccIdx, start, end, repeat, goalId, note, isProtected, nameRef, addCustomLabel, saveBlockModal])
+  }, [name, type, customName, ccIdx, start, end, repeat, goalId, note, nameRef, addCustomLabel, saveBlockModal])
 
   const handleEnter = useCallback(() => {
     if (suggestion) { applySuggestion(); return }
@@ -343,16 +342,6 @@ export default function BlockModal() {
             </button>
           )}
 
-          {/* Protect pill */}
-          {!isForPD && (
-            <button
-              className={`mbm-pill${isProtected ? ' set' : ''}`}
-              onClick={() => setIsProtected(p => !p)}
-              title="protected blocks won't be moved by reschedule"
-            >
-              {isProtected ? '🔒 protected' : '🔓 protect'}
-            </button>
-          )}
         </div>
 
         {/* ── Expanded picker panel ── */}
