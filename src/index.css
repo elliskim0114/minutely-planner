@@ -1153,10 +1153,19 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 .whd-name.t{color:var(--acc)}
 .whd-num{font-family:var(--font-d);font-size:20px;font-weight:700;color:var(--ink);line-height:1.1}
 .whd-num.t{color:var(--acc)}
-.whd-foc{margin-top:4px;padding-top:4px;border-top:1px solid var(--bd)}
-.wff{width:100%;background:none;border:none;outline:none;font-family:var(--font-d);font-style:italic;font-size:11px;color:var(--acc);height:18px}
-.wff::placeholder{color:var(--ink4)}
-.wfd{font-family:var(--font-d);font-style:italic;font-size:11px;color:var(--acc);cursor:text;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Week header deadline area (replaces focus input) */
+.whd-dl{margin-top:4px;padding-top:4px;border-top:1px solid var(--bd);display:flex;flex-direction:column;gap:2px;min-height:22px;position:relative}
+.whd-dl-chip{display:flex;align-items:center;gap:3px;padding:2px 4px;border-radius:4px;border-left:2.5px solid var(--bd);background:var(--bg2);overflow:hidden;cursor:pointer;max-width:100%;transition:.1s}
+.whd-dl-chip:hover{filter:brightness(.92)}
+.whd-dl-chip.done{opacity:.45}
+.whd-dl-chip.done .whd-dl-name{text-decoration:line-through}
+.whd-dl-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.whd-dl-name{font-family:var(--font-u);font-size:9px;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.whd-dl-more{font-family:var(--font-u);font-size:9px;color:var(--ink4)}
+.whd-dl-add{background:none;border:none;cursor:pointer;font-size:11px;padding:1px 3px;border-radius:3px;opacity:0;pointer-events:none;transition:opacity .15s;line-height:1.4;display:block;text-align:left}
+.whd-dl-add.empty{opacity:.22;pointer-events:auto}
+.whd:hover .whd-dl-add{opacity:.65;pointer-events:auto}
+.whd-dl-add:hover{opacity:1!important;background:var(--bg3)}
 #gs{flex:1;overflow-y:auto;overflow-x:hidden;position:relative;padding-top:10px;padding-bottom:10px}
 #gs::-webkit-scrollbar{width:4px}
 #gs::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
@@ -1265,11 +1274,17 @@ body.sbcol #sb-main-tog svg{transform:rotate(180deg)}
 #dv-hdr{display:flex;align-items:center;gap:12px;padding:10px 20px 8px;border-bottom:1px solid var(--bd);background:var(--surf);flex-shrink:0;position:relative;z-index:10}
 .dvh-d{font-family:var(--font-d);font-size:22px;font-weight:700;color:var(--ink);line-height:1}
 .dvh-n{font-size:11px;color:var(--ink3);margin-top:1px}
-.dvh-fw{margin-left:auto;display:flex;align-items:center;gap:7px}
-.dvh-fl{font-family:var(--font-d);font-style:italic;font-size:12px;color:var(--ink3)}
-.dvh-fi{background:none;border:none;border-bottom:1.5px solid var(--bd);outline:none;font-family:var(--font-d);font-style:italic;font-size:13px;color:var(--acc);padding:2px 4px;min-width:130px;transition:border-color .12s}
-.dvh-fi:focus{border-color:var(--acc)}
-.dvh-fi::placeholder{color:var(--ink4)}
+/* Day header deadline area (replaces focus input) */
+.dvh-dls{margin-left:auto;display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.dvh-dl-chip{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;border:1.5px solid var(--bd);background:var(--surf);cursor:pointer;transition:.12s}
+.dvh-dl-chip:hover{background:var(--bg2)}
+.dvh-dl-chip.done{opacity:.5}
+.dvh-dl-chip.done .dvh-dl-name{text-decoration:line-through}
+.dvh-dl-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dvh-dl-name{font-family:var(--font-u);font-size:12px;color:var(--ink);font-weight:500}
+.dvh-dl-course{font-weight:400;color:var(--ink3);font-size:11px}
+.dvh-dl-add{background:none;border:1.5px dashed var(--bd2);border-radius:20px;padding:4px 12px;font-family:var(--font-u);font-size:11px;color:var(--ink3);cursor:pointer;transition:.12s}
+.dvh-dl-add:hover{border-color:var(--acc);color:var(--acc)}
 
 /* ── MPD VIEW ── */
 #mpd-view{display:none;flex:1;flex-direction:column;overflow:hidden;background:var(--bg)}
