@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { useStore } from '../store'
-import { toM } from '../utils'
+import { toM, todayStr } from '../utils'
 import GoalDetailView from './GoalDetailView'
 import { Goal } from '../types'
+
+type CtxMenu = { x: number; y: number; goal: Goal } | null
 
 const COLORS = ['#FF4D1C','#6C63FF','#059669','#0EA5E9','#F59E0B','#EC4899','#8B5CF6','#14B8A6']
 
@@ -24,11 +26,35 @@ function ProgressRing({ pct, color, size = 80, stroke = 7 }: { pct: number; colo
 }
 
 export default function GoalsView() {
-  const { view, goals, blocks, addGoal, openGoals, rewardedGoals, rewardGoal, typeIcons, reorderGoals } = useStore()
+  const { view, goals, blocks, addGoal, updateGoal, deleteGoal, openGoals, rewardedGoals, rewardGoal, typeIcons, reorderGoals } = useStore()
   const [adding, setAdding] = useState(false)
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null)
   const dragId = useRef<number | null>(null)
   const [dragOverId, setDragOverId] = useState<number | null>(null)
+  const [ctx, setCtx] = useState<CtxMenu>(null)
+  const ctxRef = useRef<HTMLDivElement>(null)
+
+  // Close context menu on outside click or Escape
+  useEffect(() => {
+    if (!ctx) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setCtx(null) }
+    const onDown = (e: MouseEvent) => {
+      if (ctxRef.current && !ctxRef.current.contains(e.target as Node)) setCtx(null)
+    }
+    document.addEventListener('keydown', onKey)
+    document.addEventListener('mousedown', onDown)
+    return () => { document.removeEventListener('keydown', onKey); document.removeEventListener('mousedown', onDown) }
+  }, [ctx])
+
+  const openCtx = (e: React.MouseEvent, goal: Goal) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const x = Math.min(e.clientX, window.innerWidth - 160)
+    const y = Math.min(e.clientY, window.innerHeight - 140)
+    setCtx({ x, y, goal })
+  }
+
+  const today = todayStr()
   const [name, setName] = useState('')
   const [color, setColor] = useState(COLORS[1])
   const [targetAmount, setTargetAmount] = useState(10)
@@ -113,7 +139,7 @@ export default function GoalsView() {
           <div className="gv-hero-left">
             <div className="gv-tag">goals & projects</div>
             <h1 className="gv-title">what you're building towards</h1>
-            <p className="gv-sub">link blocks to goals to track your focused hours week by week</p>
+            <p className="gv-sub">link blocks to goals to track your focused hours week by week · <span style={{ opacity: .6 }}>right-click any card to edit, complete, or delete</span></p>
           </div>
           {goals.length > 0 && (
             <div className="gv-hero-kpi">
@@ -167,9 +193,10 @@ export default function GoalsView() {
 
               return (
                 <div key={g.id}
-                  className={`gv-card${isComplete ? ' complete' : ''}${dragOverId === g.id ? ' drag-over' : ''}`}
+                  className={`gv-card${isComplete ? ' complete' : ''}${g.completed ? ' gv-card-done' : ''}${dragOverId === g.id ? ' drag-over' : ''}`}
                   style={{ '--gv-col': g.color, cursor: 'pointer' } as React.CSSProperties}
                   onClick={() => setSelectedGoal(g)}
+                  onContextMenu={e => openCtx(e, g)}
                   draggable
                   onDragStart={e => { e.stopPropagation(); dragId.current = g.id }}
                   onDragOver={e => { e.preventDefault(); setDragOverId(g.id) }}
@@ -329,6 +356,21 @@ export default function GoalsView() {
 
       </>)}
       </div>
+
+      {/* Right-click context menu */}
+      {ctx && (
+        <div ref={ctxRef} className="gi-ctx-menu" style={{ top: ctx.y, left: ctx.x }}>
+          <div className="gi-ctx-name">{ctx.goal.name}</div>
+          <div className="gi-ctx-sep" />
+          <button className="gi-ctx-item" onClick={() => { openGoals(); setCtx(null) }}>✏️ edit</button>
+          {!ctx.goal.completed
+            ? <button className="gi-ctx-item" onClick={() => { updateGoal(ctx.goal.id, { completed: true, endDate: ctx.goal.endDate || today }); setCtx(null) }}>✅ mark complete</button>
+            : <button className="gi-ctx-item" onClick={() => { updateGoal(ctx.goal.id, { completed: false }); setCtx(null) }}>🔄 reopen</button>
+          }
+          <div className="gi-ctx-sep" />
+          <button className="gi-ctx-item gi-ctx-del" onClick={() => { deleteGoal(ctx.goal.id); setCtx(null) }}>🗑 delete</button>
+        </div>
+      )}
     </div>
   )
 }
